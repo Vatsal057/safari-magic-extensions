@@ -60,6 +60,6 @@ echo "✓ Installed safari-magic-ext ($("$TARGET" --version 2>/dev/null || echo 
 if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
   echo ""
   echo "Notice: add $INSTALL_DIR to your PATH to run it from anywhere:"
-  echo "  echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> ~/.zshrc"
+  echo "  echo 'export PATH=\"${INSTALL_DIR}:\$PATH\"' >> ~/.zshrc"
   echo "  source ~/.zshrc"
 fi
