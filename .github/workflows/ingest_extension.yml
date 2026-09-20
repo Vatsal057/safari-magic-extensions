@@ -8,6 +8,7 @@ permissions:
   contents: write
   pull-requests: write
   issues: write
+  actions: write
 
 jobs:
   ingest:
@@ -52,10 +53,11 @@ jobs:
             echo "No changes to commit."
           else
             git commit -m "feat(registry): publish extension from issue #${{ github.event.issue.number }}"
+            git pull --rebase origin main
             git push origin main
           fi
 
-      - name: Close Issue with Success Message
+      - name: Close Issue and Deploy Gallery Site
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -63,3 +65,4 @@ jobs:
           
           Your extension has been verified, screenshots generated, and it is now live in the Community Gallery and available for 1-click install via the CLI! 🪄"
           gh issue close ${{ github.event.issue.number }} --reason completed
+          gh workflow run deploy-pages.yml --ref main || true
