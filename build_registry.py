@@ -59,6 +59,20 @@ def build():
                 # Check if we have manual tags in existing registry
                 tags = existing_meta.get(ext_id, {}).get("tags") or ["ambient", "newtab"]
 
+                art_map = {
+                    "night_meadow": "assets/night_meadow.jpg",
+                    "nightlife": "assets/hero_cyberpunk.jpg",
+                    "zen_focus": "assets/zen_pagoda.jpg",
+                    "night_garden": "assets/art_night_garden.svg",
+                    "hacker_news": "assets/art_hackernews.svg",
+                    "chitchat": "assets/art_chitchat.svg",
+                }
+                art_image = "assets/hero_cyberpunk.jpg"
+                for k, v in art_map.items():
+                    if k in pkg.stem.lower():
+                        art_image = v
+                        break
+
                 item = {
                     "id": ext_id,
                     "name": meta.get("name", pkg.stem),
@@ -69,6 +83,8 @@ def build():
                     "selected_symbol": meta.get("selected_symbol", "puzzlepiece.extension"),
                     "symbol_color_name": meta.get("symbol_color_name", "blue"),
                     "tags": tags,
+                    "art_image": art_image,
+                    "likes": existing_meta.get(ext_id, {}).get("likes") or 248,
                     "download_url": f"packages/{pkg.name}",
                 }
                 built_extensions.append(item)

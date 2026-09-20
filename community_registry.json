@@ -1,7 +1,7 @@
 {
   "version": 1,
   "registry_name": "Safari Magic Extensions Community Hub",
-  "updated_at": "2026-09-20T06:41:34Z",
+  "updated_at": "2026-09-20T07:01:26Z",
   "extensions": [
     {
       "id": "80A670DF-18EB-48F4-9B83-6A3B79B77892",
@@ -16,6 +16,8 @@
         "ambient",
         "newtab"
       ],
+      "art_image": "assets/art_hackernews.svg",
+      "likes": 248,
       "download_url": "packages/Hacker_News_Minimal.magicext"
     },
     {
@@ -31,6 +33,8 @@
         "ambient",
         "newtab"
       ],
+      "art_image": "assets/art_night_garden.svg",
+      "likes": 248,
       "download_url": "packages/Night_Garden_Tab.magicext"
     },
     {
@@ -46,6 +50,8 @@
         "ambient",
         "newtab"
       ],
+      "art_image": "assets/night_meadow.jpg",
+      "likes": 248,
       "download_url": "packages/Night_Meadow_New_Tab.magicext"
     },
     {
@@ -61,6 +67,8 @@
         "ambient",
         "newtab"
       ],
+      "art_image": "assets/hero_cyberpunk.jpg",
+      "likes": 248,
       "download_url": "packages/Nightlife_in_the_Wild.magicext"
     },
     {
@@ -76,7 +84,43 @@
         "ambient",
         "newtab"
       ],
+      "art_image": "assets/zen_pagoda.jpg",
+      "likes": 248,
       "download_url": "packages/Zen_Focus_Timer.magicext"
+    },
+    {
+      "id": "80A670DF-18EB-48F4-9B83-6A3B79B77892",
+      "name": "Hacker News Minimal",
+      "author": "community",
+      "version": "1.0",
+      "description": "Clean, ultra-fast Hacker News top stories reader directly in your Safari new tab.",
+      "prompt": "Create a modern minimalist Hacker News top stories reader for new tab with dark mode, score badges, and direct discussion links.",
+      "selected_symbol": "newspaper.fill",
+      "symbol_color_name": "blue",
+      "tags": [
+        "ambient",
+        "newtab"
+      ],
+      "art_image": "assets/hero_cyberpunk.jpg",
+      "likes": 248,
+      "download_url": "packages/hackernews-minimal.magicext"
+    },
+    {
+      "id": "F89D3197-64F5-486B-9E53-28210F6B6D3C",
+      "name": "Zen Focus & Timer",
+      "author": "community",
+      "version": "1.0",
+      "description": "Distraction-free Pomodoro timer and daily intentions board with ambient lo-fi soundscapes.",
+      "prompt": "Create a peaceful Zen focus new tab page with a customizable 25-minute Pomodoro timer, minimal daily intention list, and calming background gradients.",
+      "selected_symbol": "sparkles",
+      "symbol_color_name": "blue",
+      "tags": [
+        "ambient",
+        "newtab"
+      ],
+      "art_image": "assets/hero_cyberpunk.jpg",
+      "likes": 248,
+      "download_url": "packages/zen-focus-tab.magicext"
     }
   ]
 }

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 40" shape-rendering="crispEdges" width="48" height="60">
+  <!-- Rocket Body Pixel Art -->
+  <!-- Nosecone -->
+  <rect x="14" y="0" width="4" height="2" fill="#E8E0C6"/>
+  <rect x="12" y="2" width="8" height="2" fill="#E8E0C6"/>
+  <rect x="10" y="4" width="12" height="4" fill="#E8E0C6"/>
+  
+  <!-- Main Body -->
+  <rect x="8" y="8" width="16" height="12" fill="#E8E0C6"/>
+  
+  <!-- Porthole Window -->
+  <rect x="12" y="10" width="8" height="8" fill="#252525"/>
+  <rect x="14" y="12" width="4" height="4" fill="#E8E0C6"/>
+  
+  <!-- Fins -->
+  <rect x="6" y="14" width="2" height="10" fill="#E8E0C6"/>
+  <rect x="4" y="18" width="2" height="8" fill="#E8E0C6"/>
+  <rect x="2" y="22" width="2" height="6" fill="#E8E0C6"/>
+  
+  <rect x="24" y="14" width="2" height="10" fill="#E8E0C6"/>
+  <rect x="26" y="18" width="2" height="8" fill="#E8E0C6"/>
+  <rect x="28" y="22" width="2" height="6" fill="#E8E0C6"/>
+  
+  <!-- Bottom Thruster Nozzle -->
+  <rect x="10" y="20" width="12" height="4" fill="#E8E0C6"/>
+  <rect x="12" y="24" width="8" height="2" fill="#E8E0C6"/>
+  
+  <!-- Exhaust Flame & Smoke Particles -->
+  <rect x="14" y="26" width="4" height="4" fill="#474744"/>
+  <rect x="12" y="30" width="8" height="2" fill="#474744"/>
+  <rect x="10" y="32" width="4" height="2" fill="#474744"/>
+  <rect x="18" y="32" width="4" height="2" fill="#474744"/>
+  <rect x="8" y="34" width="4" height="2" fill="#383835"/>
+  <rect x="20" y="34" width="4" height="2" fill="#383835"/>
+  <rect x="14" y="36" width="4" height="2" fill="#383835"/>
+</svg>
