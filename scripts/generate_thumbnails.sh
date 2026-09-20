@@ -30,6 +30,10 @@ find_browser() {
     "/Applications/Chromium.app/Contents/MacOS/Chromium"
     "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge"
     "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
+    "/usr/bin/google-chrome"
+    "/usr/bin/google-chrome-stable"
+    "/usr/bin/chromium-browser"
+    "/usr/bin/chromium"
   )
   for c in "${candidates[@]}"; do
     [[ -x "$c" ]] && { echo "$c"; return; }
