@@ -16,7 +16,6 @@ let lastFocusedElement = null;
 
 // ---------------------------------------------------------------- elements
 const grid = document.getElementById('extension-grid');
-const ribbonButtons = document.querySelectorAll('.ribbon-icon-btn');
 const toastEl = document.getElementById('toast');
 const searchInput = document.getElementById('search-input');
 const searchClear = document.getElementById('search-clear');
@@ -49,7 +48,6 @@ const installPaneCli = document.getElementById('install-pane-cli');
 
 const submitModal = document.getElementById('submit-modal');
 const openSubmitModalBtn = document.getElementById('open-submit-modal-btn');
-const heroBecomeAuthorBtn = document.getElementById('hero-become-author-btn');
 const footerSubmitBtn = document.getElementById('footer-submit-btn');
 const closeSubmitBtn = document.getElementById('close-submit-btn');
 
@@ -186,7 +184,7 @@ function renderGrid(list) {
         <p class="ext-card-author">by @${escapeHTML(ext.author || 'community')}</p>
         <p class="ext-card-desc">${escapeHTML(ext.description || '')}</p>
         <div class="ext-card-tags">
-          ${(ext.tags || []).map(t => `<span class="ext-tag">#${escapeHTML(t)}</span>`).join('')}
+          ${(ext.tags || []).map(t => `<button type="button" class="ext-tag" data-tag="${escapeHTML(t)}" title="Filter by #${escapeHTML(t)}">#${escapeHTML(t)}</button>`).join('')}
         </div>
       </div>
       <div class="ext-card-foot">
@@ -207,6 +205,26 @@ function renderGrid(list) {
       }
     });
   });
+
+  grid.querySelectorAll('.ext-tag').forEach(tagBtn => {
+    tagBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const tag = tagBtn.getAttribute('data-tag');
+      if (tag) applyTagFilter(tag);
+    });
+  });
+}
+
+function applyTagFilter(tag) {
+  if (!searchInput) return;
+  searchInput.value = tag;
+  searchQuery = tag.toLowerCase();
+  if (searchClear) searchClear.classList.remove('hidden');
+  const searchKbd = document.querySelector('.search-kbd');
+  if (searchKbd) searchKbd.classList.add('hidden');
+  render();
+  const galleryEl = document.getElementById('gallery');
+  if (galleryEl) galleryEl.scrollIntoView({ behavior: 'smooth' });
 }
 
 function renderLoadError(err) {
@@ -233,11 +251,6 @@ function resetFilters() {
   if (searchClear) searchClear.classList.add('hidden');
   const searchKbd = document.querySelector('.search-kbd');
   if (searchKbd) searchKbd.classList.remove('hidden');
-  ribbonButtons.forEach(b => {
-    const isAll = b.getAttribute('data-filter') === 'all';
-    b.classList.toggle('active', isAll);
-    b.setAttribute('aria-pressed', String(isAll));
-  });
   render();
 }
 
@@ -351,23 +364,20 @@ function trapFocus(e, modal) {
 
 // ---------------------------------------------------------------- events
 function setupEventListeners() {
-  ribbonButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      ribbonButtons.forEach(b => {
-        b.classList.remove('active');
-        b.setAttribute('aria-pressed', 'false');
-      });
-      btn.classList.add('active');
-      btn.setAttribute('aria-pressed', 'true');
-      activeCategory = (btn.getAttribute('data-filter') || 'all').toLowerCase();
-      render();
-    });
-  });
-
   if (sortSelect) {
     sortSelect.addEventListener('change', () => {
       sortMode = sortSelect.value;
       render();
+    });
+  }
+
+  if (modalCategory) {
+    modalCategory.style.cursor = 'pointer';
+    modalCategory.title = 'Filter by category';
+    modalCategory.addEventListener('click', () => {
+      const cat = modalCategory.textContent.trim().toLowerCase();
+      closeModal(inspectorModal);
+      applyTagFilter(cat);
     });
   }
 
@@ -425,7 +435,7 @@ function setupEventListeners() {
   }
 
   const openSubmit = () => openModal(submitModal);
-  [openSubmitModalBtn, heroBecomeAuthorBtn, footerSubmitBtn].forEach(btn => {
+  [openSubmitModalBtn, footerSubmitBtn].forEach(btn => {
     if (btn) btn.addEventListener('click', openSubmit);
   });
   if (closeSubmitBtn) closeSubmitBtn.addEventListener('click', () => closeModal(submitModal));
@@ -680,7 +690,8 @@ function setupDropzone() {
     document.getElementById('preview-icon').textContent = symbol ? '🪄' : '📦';
     const safeName = name.replace(/[^a-zA-Z0-9_-]/g, '_') || 'Extension';
     const filename = `${safeName}.magicext`;
-    document.getElementById('preview-filename').textContent = filename;
+    const previewFilename = document.getElementById('preview-filename');
+    if (previewFilename) previewFilename.textContent = filename;
     document.getElementById('submit-github-btn').href = ghUrl;
 
     preview.classList.remove('hidden');

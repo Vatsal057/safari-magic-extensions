@@ -88,6 +88,9 @@ body {
    ========================================================================= */
 
 .capsule-nav {
+  position: sticky;
+  top: 14px;
+  z-index: 90;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -97,9 +100,10 @@ body {
   padding: 8px 24px;
   border: 1px solid var(--cream-border);
   border-radius: 9999px;
-  background: rgba(37, 37, 37, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(37, 37, 37, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .nav-rocket-link {
@@ -424,237 +428,14 @@ body {
 }
 
 /* =========================================================================
-   Bento Gallery Container
+   Keyboard Focus & Grid Utilities
    ========================================================================= */
 
-.bento-gallery-container {
-  display: grid;
-  grid-template-columns: 1.15fr 1.85fr;
-  gap: 20px;
-  margin-bottom: 24px;
-}
-
-@media (max-width: 860px) {
-  .bento-gallery-container {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* =========================================================================
-   Featured Large Card (Left)
-   ========================================================================= */
-
-.bento-featured-card {
-  background: var(--bg-card);
-  border: 1px solid var(--cream-border);
-  border-radius: 14px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-  transition: border-color var(--transition-fast), transform var(--transition-fast);
-}
-
-.bento-featured-card:hover {
-  border-color: var(--cream-accent);
-  transform: translateY(-2px);
-}
-
-.featured-media-wrapper {
-  position: relative;
-  width: 100%;
-  height: 280px;
-  overflow: hidden;
-  background: #111;
-}
-
-.featured-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.5s ease;
-}
-
-.bento-featured-card:hover .featured-img {
-  transform: scale(1.03);
-}
-
-.featured-badge-overlay {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 2;
-}
-
-.badge-featured-star {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  background: rgba(37, 37, 37, 0.85);
-  color: var(--cream-accent);
-  border: 1px solid var(--cream-border);
-  padding: 4px 10px;
-  border-radius: 9999px;
-  backdrop-filter: blur(6px);
-}
-
-.heart-btn {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  z-index: 2;
-  background: rgba(37, 37, 37, 0.75);
-  border: 1px solid var(--cream-border);
-  color: var(--cream-accent);
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  backdrop-filter: blur(4px);
-}
-
-.heart-btn:hover, .heart-btn.liked {
-  color: #ff5e7e;
-  border-color: #ff5e7e;
-  transform: scale(1.1);
-}
-
-.heart-btn.liked svg {
-  fill: #ff5e7e;
-}
-
-.featured-card-footer {
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.creator-identity-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.creator-avatar-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background-color: var(--cream-accent);
-  border: 2px solid var(--bg-card);
-  box-shadow: 0 0 6px rgba(232, 224, 198, 0.5);
-}
-
-.creator-meta {
-  display: flex;
-  flex-direction: column;
-}
-
-.creator-name {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--cream-accent);
-}
-
-.creator-title {
-  font-family: var(--font-sans);
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.featured-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn-card-action {
-  background: none;
-  border: 1px solid var(--cream-border);
-  color: var(--cream-accent);
-  border-radius: 9999px;
-  padding: 4px 12px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.btn-card-action:hover {
-  background-color: var(--cream-dim);
-  border-color: var(--cream-accent);
-}
-
-.btn-card-save {
-  background: var(--cream-accent);
-  border: 1px solid var(--cream-accent);
-  color: var(--charcoal);
-  border-radius: 9999px;
-  padding: 4px 14px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.btn-card-save:hover {
-  background-color: #fff;
-  transform: translateY(-1px);
-}
-
-/* =========================================================================
-   Right 2x3 Grid Cards
-   ========================================================================= */
-
-.bento-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-
-@media (max-width: 600px) {
-  .bento-cards-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.grid-card-item {
-  background: var(--bg-card);
-  border: 1px solid var(--cream-border);
-  border-radius: 10px;
-  overflow: hidden;
-  position: relative;
-  cursor: pointer;
-  aspect-ratio: 1.25 / 1;
-  display: flex;
-  flex-direction: column;
-  transition: all var(--transition-fast);
-}
-
-.grid-card-item:hover {
-  border-color: var(--cream-accent);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
-}
-
-/* Keyboard focus must be as obvious as hover. */
-.grid-card-item:focus-visible,
-.ribbon-icon-btn:focus-visible,
-.btn-card-action:focus-visible,
-.btn-card-save:focus-visible,
+.ext-card:focus-visible,
 .btn-mini-copy:focus-visible,
 .modal-pixel-close:focus-visible,
-.terminal-copy-btn:focus-visible {
+.terminal-copy-btn:focus-visible,
+.ext-tag:focus-visible {
   outline: 2px solid var(--cream-accent);
   outline-offset: 2px;
 }
@@ -681,59 +462,6 @@ body {
   border-radius: 5px;
   font-size: 0.78rem;
   color: var(--cream-accent);
-}
-
-.grid-card-thumb {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.4s ease;
-}
-
-.grid-card-item:hover .grid-card-thumb {
-  transform: scale(1.05);
-}
-
-/* Card Hover Info Overlay */
-.grid-card-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(20, 20, 20, 0.92) 0%,
-    rgba(20, 20, 20, 0.4) 60%,
-    transparent 100%
-  );
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 10px;
-  opacity: 0.9;
-  transition: opacity var(--transition-fast);
-}
-
-.grid-card-item:hover .grid-card-overlay {
-  opacity: 1;
-}
-
-.grid-card-title {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--cream-accent);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-bottom: 2px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95);
-}
-
-.grid-card-author {
-  font-family: var(--font-sans);
-  font-size: 9px;
-  color: var(--cream-muted);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
 }
 
 /* =========================================================================
@@ -1692,23 +1420,12 @@ body.modal-open {
   flex-wrap: wrap;
 }
 
-/* The grid now shows the full catalog, so give it room to wrap. */
-.bento-cards-grid {
-  align-content: start;
-}
-
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-/* The card grid can now be taller than the featured card (the catalog grows),
-   so let both keep their natural height instead of stretching to match. */
-.bento-gallery-container {
-  align-items: start;
 }
 
 /* .modal-info-stack had no rule at all, so the sections inside the inspector
@@ -2045,6 +1762,14 @@ body.modal-open {
   border: 1px solid var(--cream-border);
   border-radius: 9999px;
   padding: 2px 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.ext-tag:hover {
+  background: var(--cream-accent);
+  color: var(--charcoal);
+  border-color: var(--cream-accent);
 }
 
 .ext-card-foot {
@@ -2234,9 +1959,9 @@ body.modal-open {
 .submit-preview {
   margin-top: 16px;
   padding: 14px;
-  border: 1px solid var(--cream-border, #ddd);
+  border: 1px solid var(--cream-border);
   border-radius: 8px;
-  background: var(--cream-dim, #f9f6f0);
+  background: var(--bg-card);
 }
 
 .submit-preview-header {
@@ -2254,7 +1979,7 @@ body.modal-open {
 .submit-preview-meta {
   font-family: var(--font-mono, monospace);
   font-size: 11px;
-  color: var(--cream-muted, #888);
+  color: var(--text-muted);
   margin-top: 3px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2268,8 +1993,9 @@ kbd {
   padding: 1px 6px;
   font-family: var(--font-mono, monospace);
   font-size: 11px;
-  border: 1px solid var(--cream-border, #ccc);
+  border: 1px solid var(--cream-border);
   border-bottom-width: 2px;
   border-radius: 4px;
-  background: var(--cream-dim, #f5f0e8);
+  background: var(--bg-card);
+  color: var(--cream-accent);
 }
