@@ -1,0 +1,66 @@
+name: 🐞 Bug Report
+description: Something in the CLI, the native app, or the gallery is not working.
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: component
+    attributes:
+      label: Which part is affected?
+      options:
+        - CLI (safari-magic-ext)
+        - Native app (SafariMagicHub.app)
+        - Web gallery
+        - Packaging / registry tooling
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Include the exact command you ran.
+      placeholder: |
+        1. safari-magic-ext install night-meadow-new-tab
+        2. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Full output
+      description: Paste the complete terminal output or error message.
+      render: shell
+
+  - type: input
+    id: macos_version
+    attributes:
+      label: macOS version
+      placeholder: "15.1"
+    validations:
+      required: true
+
+  - type: input
+    id: versions
+    attributes:
+      label: CLI / app version
+      description: Output of `safari-magic-ext --version`, or the app version.
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Checks
+      options:
+        - label: Safari has been launched at least once on this Mac.
+          required: true
+        - label: I granted Full Disk Access if the problem involves listing or installing extensions.
+          required: false

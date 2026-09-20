@@ -7,7 +7,8 @@ Thank you for contributing to the Safari Magic Extensions Community Hub!
 - **Extension Name:**
 - **Author:**
 - **SF Symbol & Tint:**
-- **Package Added to `packages/`:** `packages/<Name>.magicext`
+- **Package added to `web/packages/`:** `web/packages/<Name>.magicext`
+- **Registry ID** (the slug `scripts/build_registry.py` prints, e.g. `night-meadow-new-tab`):
 
 ### Original AI Prompt
 ```text
@@ -18,8 +19,15 @@ Thank you for contributing to the Safari Magic Extensions Community Hub!
 <1-2 sentence description>
 
 ### Submission Checklist
-- [ ] Added `.magicext` package into the `packages/` directory.
-- [ ] Tested packaging with `python3 safari-magic-ext.py pack <name>`.
-- [ ] Tested installation with `python3 safari-magic-ext.py install packages/<Name>.magicext`.
+- [ ] Added the `.magicext` package to the `web/packages/` directory.
+- [ ] Ran `python3 scripts/verify_packages.py` and it passed.
+- [ ] Ran `python3 scripts/build_registry.py` and committed the updated `web/community_registry.json`.
+- [ ] Tested installation with `python3 safari-magic-ext.py install web/packages/<Name>.magicext`.
 - [ ] Verified `manifest.json` and `magic.json` are present and valid.
 - [ ] Verified no malicious scripts or external tracking dependencies are present.
+
+<!--
+Optional: to control how the extension appears in the gallery (tags, preview
+image, featured slot), add an entry for your registry ID to
+web/registry_curation.json and re-run scripts/build_registry.py.
+-->
