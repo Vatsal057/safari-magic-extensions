@@ -84,11 +84,13 @@ chmod +x "${MACOS_DIR}/${APP_NAME}"
 
 # Prefer a real Developer ID / Apple Development identity; fall back to ad-hoc.
 # Ad-hoc signed builds run locally but Gatekeeper will warn other users.
+# `|| true` matters: with no identity installed (CI, fresh machines) grep
+# exits 1, which would abort the script under `set -e`/`pipefail`.
 SIGN_IDENTITY="$(
   security find-identity -v -p codesigning 2>/dev/null \
     | grep -E "Developer ID Application|Apple Development" \
     | head -n 1 \
-    | awk -F '"' '{print $2}'
+    | awk -F '"' '{print $2}' || true
 )"
 
 if [[ -z "${SIGN_IDENTITY}" ]]; then
