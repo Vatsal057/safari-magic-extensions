@@ -17,8 +17,9 @@ Three clients read the same catalog:
 
 > **Requirements:** macOS with Safari. The app needs nothing else installed. The CLI
 > runs on the Python that ships with macOS (3.9.6+).
-> Either way, reading Safari's extension database requires **Full Disk Access**
+> Both the CLI and the app need **Full Disk Access** to read Safari's extension database
 > (see [Troubleshooting](#7-troubleshooting)).
+
 
 ---
 
@@ -38,28 +39,43 @@ Three clients read the same catalog:
 
 ## 1. Install an extension
 
+### Fastest — one paste into Terminal
+
+```bash
+# Install + run in a single line. Installs the CLI, then installs the extension.
+curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash -s -- install hacker-news-minimal
+```
+
+No setup required. Works on any Mac with Safari. Swap `hacker-news-minimal` for any
+extension ID from `safari-magic-ext explore` or the [web gallery][gallery].
+
 ### Option A — the Mac app (no Terminal, nothing to install first)
 
 1. Download the `.dmg` from the [latest release](https://github.com/Vatsal057/safari-magic-extensions/releases/latest).
 2. Drag **SafariMagicHub** onto **Applications**.
 3. Right-click the app and choose **Open**. This is only needed the first time; macOS
    warns because the app is not notarized (that requires a paid Apple Developer account).
-4. Grant **Full Disk Access** when prompted, then reopen the app.
-5. Open the **Community Hub** tab and click Install.
+4. Open the **Community Hub** tab and click Install.
 
 The app also handles `.magicext` files, so once it is installed you can download a package
 from the gallery and double-click it.
 
-### Option B — the command line
+### Option B — install the CLI permanently
 
 ```bash
+# Install the CLI once…
 curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash
+
+# …then install anything by ID:
 safari-magic-ext install hacker-news-minimal
 ```
 
-This installs `safari-magic-ext` into `~/.local/bin`. Pin a release with `REF=v1.1.1` if you
-prefer. It runs on the Python that ships with macOS, so there is nothing else to install.
-Your Terminal needs Full Disk Access.
+Installs `safari-magic-ext` into `~/.local/bin` and adds it to your PATH automatically.
+Runs on the Python that ships with macOS — nothing else needed. Pin a release with `REF=v1.1.1`.
+
+> **One-time setup:** grant **Full Disk Access** to your terminal app in
+> **System Settings → Privacy & Security → Full Disk Access**.
+> macOS blocks any process that isn't the app itself from reading Safari's sandbox.
 
 From a clone you can skip the installer entirely:
 
@@ -90,12 +106,16 @@ safari-magic-ext install https://example.com/package.magicext
 safari-magic-ext list
 
 # Package an installed extension for sharing
+# (interactive picker if you omit the name)
+safari-magic-ext pack
 safari-magic-ext pack "Night Meadow New Tab" --author "vatsal"
 
 # Turn any local web folder into a .magicext bundle (no Safari required)
 safari-magic-ext convert ./my-extension-folder
 
 # Submit to the GitHub catalog
+# (interactive picker — no need to know the exact name)
+safari-magic-ext submit
 safari-magic-ext submit "Night Meadow New Tab"
 
 # Export / back up to ~/Downloads
@@ -177,12 +197,24 @@ GitHub Actions**.
 
 ### For creators
 
+**If you have the CLI installed:**
 ```bash
+# Interactive — picks from your installed extensions, no name needed.
+safari-magic-ext submit
+
+# Or name it explicitly:
 safari-magic-ext submit "Nightlife in the Wild"
 ```
 
-This packages the extension with its prompt metadata, reveals the `.magicext` file in Finder,
-and opens a pre-filled GitHub issue form. Drag the file into the form and submit.
+**No CLI yet? One paste does everything:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash -s -- submit
+```
+Installs the CLI, shows an interactive picker, packages the chosen extension, and opens the
+submission form — all in one step.
+
+In all cases the `.magicext` file is revealed in Finder and a pre-filled GitHub issue form
+opens in your browser. Drag the file into the form and click Submit.
 
 ### For maintainers
 
@@ -242,11 +274,13 @@ A `.magicext` file is a ZIP archive of a standard WebExtension plus a root-level
 
 **"Extensions.db not found"** — Launch Safari at least once so it creates the database.
 
-**"authorization denied" / empty extension list** — The database lives inside Safari's
-sandboxed container, which macOS protects with TCC. Grant Full Disk Access to your terminal
-(for the CLI) or to `SafariMagicHub.app`:
+**"Cannot open Safari's extension database" / `OperationalError`** — macOS is blocking
+access via TCC. Grant **Full Disk Access** to your terminal app:
 
-**System Settings → Privacy & Security → Full Disk Access**, then restart the app.
+**System Settings → Privacy & Security → Full Disk Access** → toggle ON your terminal
+(Terminal.app, iTerm2, etc.), then close and reopen it.
+
+**App shows an empty list** — same fix, but toggle ON `SafariMagicHub.app` instead.
 
 **Safari restarts when I install something** — Safari only reloads its extension list at
 launch, so installs relaunch it by default. Pass `--no-restart` to skip that.
@@ -304,3 +338,5 @@ Each target is a one-line wrapper, so you can always call the script directly in
 ## License
 
 [MIT](LICENSE)
+
+[gallery]: https://vatsal057.github.io/safari-magic-extensions/
