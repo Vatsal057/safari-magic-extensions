@@ -2076,3 +2076,172 @@ body.modal-open {
     grid-template-columns: 1fr;
   }
 }
+
+/* ================================================================
+   Install & Submit Modal — Tab Switcher
+   ================================================================ */
+
+.install-tab-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 14px;
+  background: var(--cream-dim, #f5f0e8);
+  border: 1px solid var(--cream-border, #ccc);
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.install-tab {
+  flex: 1;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  color: var(--cream-muted, #888);
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.install-tab.active {
+  background: var(--charcoal, #252525);
+  color: var(--cream, #e8e0c6);
+}
+
+.install-tab:hover:not(.active) {
+  background: rgba(0,0,0,0.06);
+  color: var(--charcoal, #252525);
+}
+
+.install-pane {
+  margin-top: 4px;
+}
+
+.install-pane.hidden,
+.submit-pane.hidden {
+  display: none;
+}
+
+/* Download option below tabs */
+.install-route-download {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--cream-border, #ddd);
+}
+
+.install-route-or {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  color: var(--cream-muted, #888);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ================================================================
+   Submit Modal — Dropzone
+   ================================================================ */
+
+.submit-tab-bar {
+  margin-top: 12px;
+}
+
+.submit-dropzone {
+  border: 2px dashed var(--cream-border, #ccc);
+  border-radius: 10px;
+  padding: 24px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  margin-top: 12px;
+  user-select: none;
+}
+
+.submit-dropzone.dropzone-over {
+  border-color: var(--charcoal, #252525);
+  background: rgba(0,0,0,0.04);
+}
+
+.submit-dropzone.dropzone-done {
+  border-color: #4ade80;
+  background: rgba(74,222,128,0.06);
+}
+
+.dropzone-inner { pointer-events: none; }
+
+.dropzone-icon {
+  font-size: 28px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.dropzone-label {
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.dropzone-sub {
+  font-size: 12px;
+  color: var(--cream-muted, #888);
+  margin: 0;
+  pointer-events: auto;
+}
+
+.dropzone-browse-link {
+  color: var(--cream-accent, #555);
+  text-decoration: underline;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+/* Submit preview card */
+.submit-preview {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--cream-border, #ddd);
+  border-radius: 8px;
+  background: var(--cream-dim, #f9f6f0);
+}
+
+.submit-preview-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.submit-preview-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.submit-preview-meta {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  color: var(--cream-muted, #888);
+  margin-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 260px;
+}
+
+/* kbd tag */
+kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  border: 1px solid var(--cream-border, #ccc);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--cream-dim, #f5f0e8);
+}

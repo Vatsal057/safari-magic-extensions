@@ -277,6 +277,74 @@ IGNORE_NAMES = (
 )
 
 
+def _detect_author() -> str:
+    """Best-effort author detection: git config > $USER > 'Anonymous'."""
+    try:
+        result = subprocess.run(
+            ["git", "config", "user.name"],
+            capture_output=True,
+            text=True,
+            timeout=3,
+        )
+        name = result.stdout.strip()
+        if name:
+            return name
+    except Exception:
+        pass
+    return os.getenv("USER") or "Anonymous"
+
+
+def interactive_select_extension(
+    conn: sqlite3.Connection | None = None,
+    prompt_text: str = "Select an extension",
+) -> dict:
+    """Display a numbered list of installed extensions and return the chosen one.
+
+    Raises SystemExit if no extensions are found or the user cancels.
+    Auto-selects when only one extension is installed.
+    """
+    extensions = get_installed_extensions(conn)
+    if not extensions:
+        print("[Error] No Safari Magic Extensions found on this Mac.")
+        print("  Open Safari, use 'Describe an Extension', and create one first.")
+        sys.exit(1)
+
+    if len(extensions) == 1:
+        ext = extensions[0]
+        print(f"\n🪄 Found 1 extension: '{ext['name']}'")
+        short = (ext["prompt"] or "")[:70]
+        if short:
+            print(f"   Prompt: \"{short}{'...' if len(ext['prompt']) > 70 else ''}\"")
+        answer = input("Use this extension? [Y/n]: ").strip().lower()
+        if answer in ("", "y", "yes"):
+            return ext
+        print("Cancelled.")
+        sys.exit(0)
+
+    print(f"\n🪄 Found {len(extensions)} Safari Magic Extensions:\n")
+    for i, ext in enumerate(extensions, 1):
+        short = (ext["prompt"] or "")[:60]
+        if len(ext["prompt"] or "") > 60:
+            short += "..."
+        print(f"  [{i}] {ext['name']}")
+        if short:
+            print(f"       {short}")
+
+    print()
+    while True:
+        raw = input(f"{prompt_text} [1-{len(extensions)}] (or 'q' to quit): ").strip()
+        if raw.lower() in ("q", "quit", "exit"):
+            print("Cancelled.")
+            sys.exit(0)
+        try:
+            idx = int(raw)
+            if 1 <= idx <= len(extensions):
+                return extensions[idx - 1]
+        except ValueError:
+            pass
+        print(f"  Please enter a number between 1 and {len(extensions)}.")
+
+
 def find_installed_extension(
     target_identifier: str, conn: sqlite3.Connection | None = None
 ) -> dict | None:
@@ -392,7 +460,7 @@ def pack_extension(
             "magic_format_version": 1,
             "id": matched["id"],
             "name": matched["name"],
-            "author": author or os.getenv("USER") or "Anonymous",
+            "author": author or _detect_author(),
             "version": "1.0",
             "description": matched["description"],
             "prompt": matched["prompt"],
@@ -1810,8 +1878,10 @@ def main() -> None:
     )
     pack_parser.add_argument(
         "target",
+        nargs="?",
+        default=None,
         type=str,
-        help="Name, directory name, or ID of extension to pack",
+        help="Name, directory name, or ID of extension to pack (interactive picker if omitted)",
     )
     pack_parser.add_argument(
         "--to",
@@ -1824,7 +1894,7 @@ def main() -> None:
         "--author",
         type=str,
         default=None,
-        help="Creator name/handle to embed in package",
+        help="Creator name/handle to embed in package (auto-detected if omitted)",
     )
 
     # Command: convert
@@ -1856,8 +1926,10 @@ def main() -> None:
     )
     submit_parser.add_argument(
         "target",
+        nargs="?",
+        default=None,
         type=str,
-        help="Name, directory name, or ID of extension to submit",
+        help="Name, directory name, or ID of extension to submit (interactive picker if omitted)",
     )
     submit_parser.add_argument(
         "--repo",
@@ -1869,7 +1941,7 @@ def main() -> None:
         "--author",
         type=str,
         default=None,
-        help="Creator name/handle to embed in package",
+        help="Creator name/handle to embed in package (auto-detected if omitted)",
     )
     submit_parser.add_argument(
         "--dry-run",
@@ -2013,8 +2085,12 @@ def main() -> None:
     elif args.command == "pack":
         conn = get_db_connection(DB_PATH)
         try:
+            target = args.target
+            if not target:
+                ext = interactive_select_extension(conn, prompt_text="Select extension to pack")
+                target = ext["id"]
             pack_extension(
-                target_identifier=args.target,
+                target_identifier=target,
                 output_dir=args.output_dir,
                 author=args.author,
                 conn=conn,
@@ -2037,9 +2113,14 @@ def main() -> None:
     elif args.command == "submit":
         conn = get_db_connection(DB_PATH)
         try:
+            target = args.target
+            if not target:
+                ext = interactive_select_extension(conn, prompt_text="Select extension to submit")
+                target = ext["id"]
+            author = args.author or _detect_author()
             pkg_path = pack_extension(
-                target_identifier=args.target,
-                author=args.author,
+                target_identifier=target,
+                author=author,
                 conn=conn,
             )
             with zipfile.ZipFile(pkg_path, "r") as zf:

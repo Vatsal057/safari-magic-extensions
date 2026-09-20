@@ -2,8 +2,12 @@
 # Safari Magic Extension CLI installer.
 #
 # Usage:
-#   ./install-cli.sh              # install from main
+#   ./install-cli.sh              # install only, update PATH
 #   REF=v1.2.0 ./install-cli.sh   # install a tagged release
+#
+# Pass-through usage (run a command immediately after installing):
+#   curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash -s -- install hacker-news-minimal
+#   curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash -s -- submit
 set -euo pipefail
 
 REPO="${REPO:-Vatsal057/safari-magic-extensions}"
@@ -69,9 +73,26 @@ install -m 0755 "$TMP_FILE" "$TARGET"
 
 echo "✓ Installed ${VERSION_OUTPUT}"
 
+# Auto-configure PATH in ~/.zshrc if needed.
+SHELL_RC="$HOME/.zshrc"
 if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
+  EXPORT_LINE="export PATH=\"${INSTALL_DIR}:\$PATH\""
+  if ! grep -qF "$EXPORT_LINE" "$SHELL_RC" 2>/dev/null; then
+    echo "" >> "$SHELL_RC"
+    echo "# Added by safari-magic-ext installer" >> "$SHELL_RC"
+    echo "$EXPORT_LINE" >> "$SHELL_RC"
+    echo ""
+    echo "✓ Added $INSTALL_DIR to PATH in $SHELL_RC"
+  fi
+  # Make it available in the current shell session immediately.
+  export PATH="${INSTALL_DIR}:$PATH"
+fi
+
+# If arguments were passed (e.g. `bash -s -- install nightlife`), run them now.
+# This means the single curl | bash one-liner fully installs AND runs the command.
+if [[ $# -gt 0 ]]; then
   echo ""
-  echo "Notice: add $INSTALL_DIR to your PATH to run it from anywhere:"
-  echo "  echo 'export PATH=\"${INSTALL_DIR}:\$PATH\"' >> ~/.zshrc"
-  echo "  source ~/.zshrc"
+  echo "Running: safari-magic-ext $*"
+  echo ""
+  exec python3 "$TARGET" "$@"
 fi

@@ -32,12 +32,20 @@ const modalImg = document.getElementById('modal-img');
 const modalDescription = document.getElementById('modal-description');
 const modalPrompt = document.getElementById('modal-prompt');
 const modalCliCmd = document.getElementById('modal-cli-cmd');
+const modalOnelinerCmd = document.getElementById('modal-oneliner-cmd');
+const copyModalOnelinerBtn = document.getElementById('copy-modal-oneliner-btn');
 const modalDownloadPkgBtn = document.getElementById('modal-download-pkg-btn');
 const modalDownloadLabel = document.getElementById('modal-download-label');
 const modalMetaRow = document.getElementById('modal-meta-row');
 const modalSetupLink = document.getElementById('modal-setup-link');
 const copyModalPromptBtn = document.getElementById('copy-modal-prompt-btn');
 const copyModalCliBtn = document.getElementById('copy-modal-cli-btn');
+
+// Install tab switcher elements
+const installTabOneliner = document.getElementById('tab-oneliner');
+const installTabCli = document.getElementById('tab-cli');
+const installPaneOneliner = document.getElementById('install-pane-oneliner');
+const installPaneCli = document.getElementById('install-pane-cli');
 
 const submitModal = document.getElementById('submit-modal');
 const openSubmitModalBtn = document.getElementById('open-submit-modal-btn');
@@ -92,6 +100,13 @@ function artFor(ext) {
 
 function installCommandFor(ext) {
   return `safari-magic-ext install ${ext.id}`;
+}
+
+const CLI_INSTALLER_URL =
+  'https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh';
+
+function oneLineInstallFor(ext) {
+  return `curl -fsSL ${CLI_INSTALLER_URL} | bash -s -- install ${ext.id}`;
 }
 
 function matchesSearch(ext, query) {
@@ -235,7 +250,9 @@ function openInspector(ext, { updateHash = true } = {}) {
   modalPrompt.textContent = ext.prompt ? `"${ext.prompt}"` : 'No prompt was recorded for this one.';
 
   const cliCommand = installCommandFor(ext);
-  modalCliCmd.textContent = cliCommand;
+  const oneliner = oneLineInstallFor(ext);
+  if (modalCliCmd) modalCliCmd.textContent = cliCommand;
+  if (modalOnelinerCmd) modalOnelinerCmd.textContent = oneliner;
 
   const download = safeUrl(ext.download_url);
   const filename = download.split('/').pop() || `${ext.name}.magicext`;
@@ -250,7 +267,18 @@ function openInspector(ext, { updateHash = true } = {}) {
 
   copyModalPromptBtn.onclick = () =>
     copyText(ext.prompt, 'Prompt copied. Paste it into Safari to remix.');
-  copyModalCliBtn.onclick = () => copyText(cliCommand, 'Install command copied.');
+  if (copyModalCliBtn) copyModalCliBtn.onclick = () => copyText(cliCommand, 'Install command copied.');
+  if (copyModalOnelinerBtn) copyModalOnelinerBtn.onclick = () => copyText(oneliner, 'One-liner copied!');
+
+  // Reset install tabs to default (one-liner)
+  if (installTabOneliner && installTabCli) {
+    installTabOneliner.classList.add('active');
+    installTabOneliner.setAttribute('aria-selected', 'true');
+    installTabCli.classList.remove('active');
+    installTabCli.setAttribute('aria-selected', 'false');
+    installPaneOneliner.classList.remove('hidden');
+    installPaneCli.classList.add('hidden');
+  }
 
   if (updateHash) history.replaceState(null, '', `#ext=${encodeURIComponent(ext.id)}`);
   openModal(inspectorModal);
@@ -366,10 +394,21 @@ function setupEventListeners() {
     if (e.target === inspectorModal) closeModal(inspectorModal);
   });
   inspectorModal.addEventListener('keydown', e => trapFocus(e, inspectorModal));
-  // Both "set up" links jump to the setup section, so close the modal first.
-  [modalSetupLink, document.getElementById('modal-cli-setup-link')].forEach(link => {
-    if (link) link.addEventListener('click', () => closeModal(inspectorModal));
-  });
+  if (modalSetupLink) modalSetupLink.addEventListener('click', () => closeModal(inspectorModal));
+
+  // Install modal tab switcher
+  if (installTabOneliner && installTabCli) {
+    function switchInstallTab(toOneliner) {
+      installTabOneliner.classList.toggle('active', toOneliner);
+      installTabOneliner.setAttribute('aria-selected', String(toOneliner));
+      installTabCli.classList.toggle('active', !toOneliner);
+      installTabCli.setAttribute('aria-selected', String(!toOneliner));
+      installPaneOneliner.classList.toggle('hidden', !toOneliner);
+      installPaneCli.classList.toggle('hidden', toOneliner);
+    }
+    installTabOneliner.addEventListener('click', () => switchInstallTab(true));
+    installTabCli.addEventListener('click', () => switchInstallTab(false));
+  }
 
   const openSubmit = () => openModal(submitModal);
   [openSubmitModalBtn, heroBecomeAuthorBtn, footerSubmitBtn].forEach(btn => {
@@ -381,10 +420,42 @@ function setupEventListeners() {
   });
   submitModal.addEventListener('keydown', e => trapFocus(e, submitModal));
 
+  // Submit modal tab switcher
+  const submitTabs = [
+    { btn: document.getElementById('stab-nonterminal'), pane: document.getElementById('submit-pane-nonterminal') },
+    { btn: document.getElementById('stab-oneliner'),    pane: document.getElementById('submit-pane-oneliner') },
+    { btn: document.getElementById('stab-cli'),         pane: document.getElementById('submit-pane-cli') },
+  ];
+  submitTabs.forEach(({ btn, pane }) => {
+    if (!btn || !pane) return;
+    btn.addEventListener('click', () => {
+      submitTabs.forEach(({ btn: b, pane: p }) => {
+        if (!b || !p) return;
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+        p.classList.add('hidden');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      pane.classList.remove('hidden');
+    });
+  });
+
+  // Submit dropzone logic
+  setupDropzone();
+
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     if (!inspectorModal.classList.contains('hidden')) closeModal(inspectorModal);
     if (!submitModal.classList.contains('hidden')) closeModal(submitModal);
+  });
+
+  // Generic mini-copy buttons (data-copy-target)
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.btn-mini-copy[data-copy-target]');
+    if (!btn) return;
+    const targetEl = document.getElementById(btn.dataset.copyTarget);
+    if (targetEl) copyText(targetEl.textContent, btn.dataset.copyLabel || 'Copied!');
   });
 }
 
@@ -434,4 +505,115 @@ function escapeHTML(str) {
     .replace(/'/g, '&#39;');
 }
 
+// ---------------------------------------------------------------- dropzone
+const GITHUB_REPO = 'Vatsal057/safari-magic-extensions';
+
+function setupDropzone() {
+  const dropzone = document.getElementById('submit-dropzone');
+  const folderInput = document.getElementById('submit-folder-input');
+  const preview = document.getElementById('submit-preview');
+  if (!dropzone || !folderInput || !preview) return;
+
+  dropzone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropzone.classList.add('dropzone-over');
+  });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dropzone-over'));
+  dropzone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropzone.classList.remove('dropzone-over');
+    const items = [...(e.dataTransfer.items || [])];
+    const entries = items.map(i => i.webkitGetAsEntry && i.webkitGetAsEntry()).filter(Boolean);
+    if (entries.length) {
+      processDroppedEntries(entries);
+    } else if (e.dataTransfer.files.length) {
+      processFileList(e.dataTransfer.files);
+    }
+  });
+  dropzone.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') folderInput.click();
+  });
+
+  folderInput.addEventListener('change', () => {
+    if (folderInput.files.length) processFileList(folderInput.files);
+  });
+
+  async function processDroppedEntries(entries) {
+    const allFiles = [];
+    for (const entry of entries) {
+      await collectFiles(entry, allFiles);
+    }
+    await buildPreviewFromFiles(allFiles);
+  }
+
+  function processFileList(fileList) {
+    buildPreviewFromFiles([...fileList]);
+  }
+
+  function collectFiles(entry, collector) {
+    return new Promise(resolve => {
+      if (entry.isFile) {
+        entry.getFile(f => { collector.push(f); resolve(); });
+      } else if (entry.isDirectory) {
+        const reader = entry.createReader();
+        reader.readEntries(async subEntries => {
+          for (const sub of subEntries) await collectFiles(sub, collector);
+          resolve();
+        });
+      } else {
+        resolve();
+      }
+    });
+  }
+
+  async function buildPreviewFromFiles(files) {
+    // Find manifest.json anywhere in the dropped set.
+    const manifestFile = files.find(f => f.name === 'manifest.json');
+    if (!manifestFile) {
+      showToast('Could not find manifest.json in that folder. Is this a Safari extension?');
+      return;
+    }
+
+    let manifest;
+    try {
+      const text = await manifestFile.text();
+      manifest = JSON.parse(text);
+    } catch {
+      showToast('manifest.json is not valid JSON.');
+      return;
+    }
+
+    const name = manifest.name || 'My Extension';
+    const prompt = manifest.browser_specific_settings?.safari?.prompt || manifest.description || '';
+    const iconStr = manifest.icon_variants?.[0]?.any || '';
+    const symbol = iconStr.startsWith('symbol:') ? iconStr.slice(7) : iconStr;
+    const description = manifest.description || '';
+
+    // Build GitHub pre-filled issue URL.
+    const params = new URLSearchParams({
+      template: 'extension_submission.yml',
+      title: `[Extension Submission]: ${name}`,
+      extension_name: name,
+      ai_prompt: prompt,
+      description,
+      selected_symbol: symbol,
+    });
+    const ghUrl = `https://github.com/${GITHUB_REPO}/issues/new?${params.toString()}`;
+
+    // Show preview.
+    document.getElementById('preview-name').textContent = name;
+    document.getElementById('preview-prompt').textContent = prompt ? `"${prompt}"` : '';
+    document.getElementById('preview-icon').textContent = symbol ? '🪄' : '📦';
+    const safeName = name.replace(/[^a-zA-Z0-9_-]/g, '_') || 'Extension';
+    const filename = `${safeName}.magicext`;
+    document.getElementById('preview-filename').textContent = filename;
+    document.getElementById('submit-github-btn').href = ghUrl;
+
+    preview.classList.remove('hidden');
+    dropzone.classList.add('dropzone-done');
+    showToast(`Found "${name}". Click Submit to GitHub to open the form.`);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', initGallery);
+

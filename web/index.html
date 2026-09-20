@@ -166,18 +166,8 @@
             <li>
               <span class="setup-step">3</span>
               <div>
-                <h4>Allow Full Disk Access when asked</h4>
-                <p>
-                  System Settings → Privacy &amp; Security → Full Disk Access. Safari keeps
-                  its extension list in a protected folder, so macOS requires this.
-                </p>
-              </div>
-            </li>
-            <li>
-              <span class="setup-step">4</span>
-              <div>
                 <h4>Open the Community tab and click Install</h4>
-                <p>Safari restarts and your new tab page is live.</p>
+                <p>Safari restarts and your new extension is live.</p>
               </div>
             </li>
           </ol>
@@ -196,7 +186,6 @@
           </details>
         </article>
 
-        <!-- Secondary route: the CLI, for people who prefer a terminal. -->
         <details class="setup-secondary">
           <summary>
             <span class="setup-tag">optional</span>
@@ -205,23 +194,19 @@
           <div class="setup-secondary-body">
             <p class="setup-desc">
               One command installs <code>safari-magic-ext</code>. It runs on the Python that
-              macOS already includes, so there is nothing else to set up.
+              macOS already includes — nothing else to set up, no permissions required.
             </p>
             <div class="code-row">
               <code id="setup-cli-cmd">curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash</code>
               <button class="btn-mini-copy" data-copy-target="setup-cli-cmd" data-copy-label="Install command copied">copy</button>
             </div>
             <p class="setup-desc">
-              Then install anything by its ID, for example:
+              Or install <em>and</em> run in a single paste — no shell restart needed:
             </p>
             <div class="code-row">
-              <code id="setup-cli-example">safari-magic-ext install hacker-news-minimal</code>
+              <code id="setup-cli-example">curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash -s -- install hacker-news-minimal</code>
               <button class="btn-mini-copy" data-copy-target="setup-cli-example" data-copy-label="Command copied">copy</button>
             </div>
-            <p class="install-route-footnote">
-              The installer writes a single file to <code>~/.local/bin</code>, verifies it runs,
-              and does nothing else. Your Terminal also needs Full Disk Access.
-            </p>
           </div>
         </details>
       </section>
@@ -349,39 +334,54 @@
             <p class="modal-desc-text" id="modal-description"></p>
           </div>
 
-          <!-- Install: two concrete routes -->
+          <!-- Install: instant 1-liner first, CLI toggle second -->
           <div class="modal-section-block">
             <div class="modal-section-label">INSTALL IT</div>
 
-            <div class="install-route">
-              <div class="install-route-head">
-                <span class="install-route-num">1</span>
-                <span class="install-route-title">Easiest — download and double-click</span>
-              </div>
-              <p class="install-route-hint">
-                Needs the free Mac app. Safari restarts to pick up the new extension.
-              </p>
-              <a href="#" id="modal-download-pkg-btn" class="btn-pill-cream btn-full-width" download>
-                <span id="modal-download-label">Download package</span>
-              </a>
-              <p class="install-route-footnote">
-                Don't have the app? <a href="#setup" id="modal-setup-link">Get it here →</a>
-              </p>
+            <!-- Tab switcher -->
+            <div class="install-tab-bar" role="tablist">
+              <button class="install-tab active" id="tab-oneliner" role="tab"
+                      aria-selected="true" aria-controls="install-pane-oneliner">
+                ⚡ One command
+              </button>
+              <button class="install-tab" id="tab-cli" role="tab"
+                      aria-selected="false" aria-controls="install-pane-cli">
+                CLI (already installed)
+              </button>
             </div>
 
-            <details class="install-route install-route-alt">
-              <summary>
-                <span class="install-route-num">2</span>
-                <span class="install-route-title">Or paste one line into Terminal</span>
-              </summary>
+            <!-- Pane 1: instant curl one-liner -->
+            <div class="install-pane" id="install-pane-oneliner" role="tabpanel"
+                 aria-labelledby="tab-oneliner">
+              <p class="install-route-hint">
+                Paste into Terminal. Installs the CLI <em>and</em> the extension in one go.
+                No setup required.
+              </p>
+              <div class="code-row">
+                <code id="modal-oneliner-cmd"></code>
+                <button id="copy-modal-oneliner-btn" class="btn-mini-copy">copy</button>
+              </div>
+            </div>
+
+            <!-- Pane 2: short CLI command (existing users) -->
+            <div class="install-pane hidden" id="install-pane-cli" role="tabpanel"
+                 aria-labelledby="tab-cli">
               <div class="code-row">
                 <code id="modal-cli-cmd"></code>
                 <button id="copy-modal-cli-btn" class="btn-mini-copy">copy</button>
               </div>
+            </div>
+
+            <!-- Download option (separate from the tab layout) -->
+            <div class="install-route-download">
+              <span class="install-route-or">or</span>
+              <a href="#" id="modal-download-pkg-btn" class="btn-pill-cream btn-full-width" download>
+                <span id="modal-download-label">Download .magicext</span>
+              </a>
               <p class="install-route-footnote">
-                First time? <a href="#setup" id="modal-cli-setup-link">Install the CLI &rarr;</a>
+                Requires the <a href="#setup" id="modal-setup-link">Mac app →</a>
               </p>
-            </details>
+            </div>
           </div>
 
           <div class="modal-section-block">
@@ -419,49 +419,93 @@
           submission, then it appears in this gallery.
         </p>
 
-        <!-- Fastest path -->
-        <div class="submit-primary">
-          <div class="submit-primary-head">
-            <span class="setup-tag">one command</span>
-            <h3 class="option-heading">If you have the CLI</h3>
-          </div>
-          <p class="option-desc">
-            This packages your extension, reveals the file in Finder, and opens a
-            pre-filled submission form in your browser. Drag the file in and submit.
-          </p>
-          <div class="code-row">
-            <code id="submit-cmd">safari-magic-ext submit "Your Extension Name"</code>
-            <button class="btn-mini-copy" data-copy-target="submit-cmd" data-copy-label="Submit command copied">copy</button>
-          </div>
+        <!-- Tab switcher -->
+        <div class="install-tab-bar submit-tab-bar" role="tablist">
+          <button class="install-tab active" id="stab-nonterminal" role="tab"
+                  aria-selected="true" aria-controls="submit-pane-nonterminal">
+            🖱 No Terminal
+          </button>
+          <button class="install-tab" id="stab-oneliner" role="tab"
+                  aria-selected="false" aria-controls="submit-pane-oneliner">
+            ⚡ One-liner
+          </button>
+          <button class="install-tab" id="stab-cli" role="tab"
+                  aria-selected="false" aria-controls="submit-pane-cli">
+            CLI
+          </button>
         </div>
 
-        <div class="submit-divider"><span>or do it by hand</span></div>
+        <!-- Pane 1: No Terminal — drag folder -->
+        <div class="install-pane submit-pane" id="submit-pane-nonterminal" role="tabpanel"
+             aria-labelledby="stab-nonterminal">
+          <p class="option-desc">
+            In Finder, press <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd> and paste this path:
+          </p>
+          <div class="code-row">
+            <code id="magic-ext-path">~/Library/Containers/com.apple.Safari/Data/Library/Safari/MagicExtensions</code>
+            <button class="btn-mini-copy" data-copy-target="magic-ext-path"
+                    data-copy-label="Path copied — now press Cmd+Shift+G in Finder">copy path</button>
+          </div>
+          <p class="option-desc" style="margin-top:12px">
+            Then drag your extension folder (e.g. <code>nightlife-24B7</code>) into the dropzone below.
+            We'll read the metadata and package it in your browser.
+          </p>
 
-        <div class="submit-options-grid">
-          <div class="submit-option-box">
-            <div class="option-num">01</div>
-            <h3 class="option-heading">Package it</h3>
-            <p class="option-desc">
-              Turn an installed extension into a shareable <code>.magicext</code> file.
-              It lands in your Downloads folder.
-            </p>
-            <div class="code-row code-row-tight">
-              <code id="pack-cmd">safari-magic-ext pack "Your Extension Name"</code>
-              <button class="btn-mini-copy" data-copy-target="pack-cmd" data-copy-label="Pack command copied">copy</button>
+          <div id="submit-dropzone" class="submit-dropzone" role="button" tabindex="0"
+               aria-label="Drop extension folder here">
+            <div class="dropzone-inner">
+              <span class="dropzone-icon" aria-hidden="true">📂</span>
+              <p class="dropzone-label">Drop your extension folder here</p>
+              <p class="dropzone-sub">or <label for="submit-folder-input" class="dropzone-browse-link">browse for it</label></p>
+              <input type="file" id="submit-folder-input" webkitdirectory multiple
+                     style="display:none" aria-label="Select extension folder">
             </div>
           </div>
 
-          <div class="submit-option-box">
-            <div class="option-num">02</div>
-            <h3 class="option-heading">Attach it</h3>
-            <p class="option-desc">
-              Open the submission form, fill in your name and the prompt you used, and
-              attach the file. No git required.
-            </p>
-            <a href="https://github.com/Vatsal057/safari-magic-extensions/issues/new?template=extension_submission.yml"
-               target="_blank" rel="noopener" class="btn-pill-cream">
-              Open the form ↗
+          <div id="submit-preview" class="submit-preview hidden">
+            <div class="submit-preview-header">
+              <span class="submit-preview-icon" id="preview-icon">🪄</span>
+              <div>
+                <strong id="preview-name"></strong>
+                <div class="submit-preview-meta" id="preview-prompt"></div>
+              </div>
+            </div>
+            <a id="submit-github-btn" href="#" target="_blank" rel="noopener"
+               class="btn-pill-cream" style="margin-top:12px;display:block;text-align:center">
+              Submit to GitHub ↗
             </a>
+            <p class="install-route-footnote">
+              This opens a pre-filled issue form. Attach the downloaded
+              <code id="preview-filename"></code> and click Submit.
+            </p>
+          </div>
+        </div>
+
+        <!-- Pane 2: One-liner -->
+        <div class="install-pane submit-pane hidden" id="submit-pane-oneliner" role="tabpanel"
+             aria-labelledby="stab-oneliner">
+          <p class="option-desc">
+            Paste this into Terminal. Installs the CLI, shows an interactive picker of your
+            extensions, packages the chosen one, and opens the submission form — all in one step.
+          </p>
+          <div class="code-row">
+            <code id="submit-oneliner-cmd">curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash -s -- submit</code>
+            <button class="btn-mini-copy" data-copy-target="submit-oneliner-cmd"
+                    data-copy-label="Command copied">copy</button>
+          </div>
+        </div>
+
+        <!-- Pane 3: CLI (already installed) -->
+        <div class="install-pane submit-pane hidden" id="submit-pane-cli" role="tabpanel"
+             aria-labelledby="stab-cli">
+          <p class="option-desc">
+            Packages your extension, reveals the file in Finder, and opens a
+            pre-filled submission form. The name picker is interactive if you omit the name.
+          </p>
+          <div class="code-row">
+            <code id="submit-cmd">safari-magic-ext submit</code>
+            <button class="btn-mini-copy" data-copy-target="submit-cmd"
+                    data-copy-label="Submit command copied">copy</button>
           </div>
         </div>
 
