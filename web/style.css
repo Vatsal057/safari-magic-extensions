@@ -2133,6 +2133,38 @@ body.modal-open {
   letter-spacing: 0.08em;
 }
 
+.download-instruction-box {
+  width: 100%;
+  margin-top: 10px;
+  background: #141414;
+  border: 1px solid var(--cream-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.download-instruction-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--cream-muted);
+  margin-bottom: 6px;
+}
+
+.download-instruction-note {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+.download-instruction-note a {
+  color: var(--cream-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 /* ================================================================
    Submit Modal: Dropzone
    ================================================================ */

@@ -291,15 +291,22 @@
               </div>
             </div>
 
-            <!-- Download option (separate from the tab layout) -->
+            <!-- Download option with clear usage instructions -->
             <div class="install-route-download">
               <span class="install-route-or">or</span>
               <a href="#" id="modal-download-pkg-btn" class="btn-pill-cream btn-full-width" download>
                 <span id="modal-download-label">Download .magicext</span>
               </a>
-              <p class="install-route-footnote">
-                Install locally via <a href="#setup" id="modal-setup-link">CLI →</a>
-              </p>
+              <div class="download-instruction-box">
+                <p class="download-instruction-label">After downloading, install via Terminal:</p>
+                <div class="code-row code-row-tight">
+                  <code id="modal-download-install-cmd">safari-magic-ext install ~/Downloads/package.magicext</code>
+                  <button class="btn-mini-copy" data-copy-target="modal-download-install-cmd" data-copy-label="Install command copied">copy</button>
+                </div>
+                <p class="download-instruction-note">
+                  Need the CLI? Run the 1-command installer above or check the <a href="#setup" id="modal-setup-link">setup guide</a>. You can also unzip the file to inspect source code and prompts.
+                </p>
+              </div>
             </div>
           </div>
 

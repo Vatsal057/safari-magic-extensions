@@ -261,6 +261,10 @@ function openInspector(ext, { updateHash = true } = {}) {
   modalDownloadPkgBtn.href = download;
   modalDownloadPkgBtn.download = filename;
   if (modalDownloadLabel) modalDownloadLabel.textContent = `Download ${filename}`;
+  const modalDownloadInstallCmd = document.getElementById('modal-download-install-cmd');
+  if (modalDownloadInstallCmd) {
+    modalDownloadInstallCmd.textContent = `safari-magic-ext install ~/Downloads/${filename}`;
+  }
 
   const bits = [`id: ${ext.id}`];
   if (ext.version) bits.push(`v${ext.version}`);
