@@ -82,12 +82,16 @@ public final class PackageManager {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
         process.arguments = ["-x", "-k", sourceURL.path, tempDir.path]
+        let errPipe = Pipe()
+        process.standardError = errPipe
         try process.run()
         process.waitUntilExit()
 
         guard process.terminationStatus == 0 else {
+            let errData = errPipe.fileHandleForReading.readDataToEndOfFile()
+            let errMsg = String(data: errData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             throw NSError(domain: "PackageManager", code: Int(process.terminationStatus), userInfo: [
-                NSLocalizedDescriptionKey: "Invalid package archive or extraction error."
+                NSLocalizedDescriptionKey: "Extraction error: \(errMsg.isEmpty ? "Invalid package archive" : errMsg)"
             ])
         }
 

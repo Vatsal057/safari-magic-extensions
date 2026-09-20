@@ -1,8 +1,23 @@
 {
   "version": 1,
   "registry_name": "Safari Magic Extensions Community Hub",
-  "updated_at": "2026-09-20T06:39:00Z",
+  "updated_at": "2026-09-20T06:41:34Z",
   "extensions": [
+    {
+      "id": "80A670DF-18EB-48F4-9B83-6A3B79B77892",
+      "name": "Hacker News Minimal",
+      "author": "community",
+      "version": "1.0",
+      "description": "Clean, ultra-fast Hacker News top stories reader directly in your Safari new tab.",
+      "prompt": "Create a modern minimalist Hacker News top stories reader for new tab with dark mode, score badges, and direct discussion links.",
+      "selected_symbol": "newspaper.fill",
+      "symbol_color_name": "blue",
+      "tags": [
+        "ambient",
+        "newtab"
+      ],
+      "download_url": "packages/Hacker_News_Minimal.magicext"
+    },
     {
       "id": "72E1FD51-CE82-4291-936A-EEC01FBE9CE7",
       "name": "Night Garden Tab",
@@ -49,36 +64,19 @@
       "download_url": "packages/Nightlife_in_the_Wild.magicext"
     },
     {
-      "id": "hackernews-minimal",
-      "name": "Hacker News Minimal",
-      "author": "community",
-      "version": "1.0",
-      "description": "Clean, ultra-fast Hacker News top stories reader directly in your Safari new tab.",
-      "prompt": "Create a modern minimalist Hacker News top stories reader for new tab with dark mode, score badges, and direct discussion links.",
-      "selected_symbol": "newspaper.fill",
-      "symbol_color_name": "orange",
-      "tags": [
-        "news",
-        "tech",
-        "minimalist"
-      ],
-      "download_url": "https://raw.githubusercontent.com/vatsal/safari-magic-extensions-hub/main/packages/hackernews-minimal.magicext"
-    },
-    {
-      "id": "zen-focus-tab",
+      "id": "F89D3197-64F5-486B-9E53-28210F6B6D3C",
       "name": "Zen Focus & Timer",
       "author": "community",
-      "version": "1.1",
+      "version": "1.0",
       "description": "Distraction-free Pomodoro timer and daily intentions board with ambient lo-fi soundscapes.",
       "prompt": "Create a peaceful Zen focus new tab page with a customizable 25-minute Pomodoro timer, minimal daily intention list, and calming background gradients.",
       "selected_symbol": "sparkles",
       "symbol_color_name": "blue",
       "tags": [
-        "focus",
-        "pomodoro",
-        "productivity"
+        "ambient",
+        "newtab"
       ],
-      "download_url": "https://raw.githubusercontent.com/vatsal/safari-magic-extensions-hub/main/packages/zen-focus-tab.magicext"
+      "download_url": "packages/Zen_Focus_Timer.magicext"
     }
   ]
 }

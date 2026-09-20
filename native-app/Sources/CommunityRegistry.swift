@@ -40,6 +40,22 @@ public final class CommunityRegistryClient: ObservableObject {
             throw NSError(domain: "CommunityRegistry", code: 404, userInfo: [NSLocalizedDescriptionKey: "No download URL available"])
         }
 
+        // 1. Check local file paths first (for fast local execution)
+        let filename = URL(string: downloadStr)?.lastPathComponent ?? downloadStr
+        let localCandidates = [
+            URL(fileURLWithPath: downloadStr),
+            URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent(downloadStr),
+            URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("packages").appendingPathComponent(filename),
+            Bundle.main.bundleURL.deletingLastPathComponent().appendingPathComponent("packages").appendingPathComponent(filename),
+            FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop/MagikExtension/packages").appendingPathComponent(filename)
+        ]
+        for candidate in localCandidates {
+            if FileManager.default.fileExists(atPath: candidate.path) {
+                return try PackageManager.shared.installPackage(from: candidate, relaunchSafari: true)
+            }
+        }
+
+        // 2. Resolve remote URL
         var targetURL: URL
         if downloadStr.hasPrefix("http://") || downloadStr.hasPrefix("https://") {
             guard let u = URL(string: downloadStr) else { throw NSError(domain: "CommunityRegistry", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"]) }
@@ -49,7 +65,14 @@ public final class CommunityRegistryClient: ObservableObject {
             targetURL = URL(string: "https://vatsal057.github.io/safari-magic-extensions/\(downloadStr)")!
         }
 
-        let (tempDownloadedURL, _) = try await URLSession.shared.download(from: targetURL)
+        let (tempDownloadedURL, response) = try await URLSession.shared.download(from: targetURL)
+        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+            let status = (response as? HTTPURLResponse)?.statusCode ?? -1
+            throw NSError(domain: "CommunityRegistry", code: status, userInfo: [
+                NSLocalizedDescriptionKey: "Download failed with HTTP \(status) from \(targetURL.lastPathComponent)"
+            ])
+        }
+
         let packageURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(item.id).magicext")
         if FileManager.default.fileExists(atPath: packageURL.path) {
             try? FileManager.default.removeItem(at: packageURL)

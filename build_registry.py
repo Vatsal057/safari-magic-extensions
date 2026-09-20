@@ -79,10 +79,7 @@ def build():
         except Exception as err:
             print(f"  [Error] Failed to process {pkg.name}: {err}")
 
-    # If registry has remote items not in local packages folder (e.g. external links), preserve them
-    for ext_id, ext in existing_meta.items():
-        if ext.get("download_url", "").startswith("http") and not any(b["id"] == ext_id for b in built_extensions):
-            built_extensions.append(ext)
+
 
     registry_payload = {
         "version": 1,
