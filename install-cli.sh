@@ -63,8 +63,7 @@ if ! VERSION_OUTPUT="$(python3 "$TMP_FILE" --version 2>&1)"; then
   echo "  $(python3 -V 2>&1)  ($(command -v python3))" >&2
   echo "$VERSION_OUTPUT" | tail -3 | sed 's/^/  /' >&2
   echo "" >&2
-  echo "No Python? Use the Mac app instead, no Python required:" >&2
-  echo "  https://github.com/${REPO}/releases/latest" >&2
+  echo "Please install Python 3.9+ or run: xcode-select --install" >&2
   exit 1
 fi
 

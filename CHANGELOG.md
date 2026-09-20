@@ -24,17 +24,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **A drag-to-Applications `.dmg`**, built by `scripts/package_release.sh` alongside
-  the zip and a `SHA256SUMS.txt`. The DMG includes first-run instructions, since
-  releases are signed but not notarized.
 - CI runs the Python suite on a 3.9 / 3.13 matrix so the stock-macOS interpreter
   cannot regress.
 
 ### Changed
 
-- The website and README now lead with the Mac app, which requires no Python or
-  Terminal, and treat the CLI as an optional route. The setup section is a numbered
-  walkthrough, and the install panel leads with download-and-double-click.
+- The website leads with the 1-line CLI installer and interactive web gallery.
 
 ## [1.1.0] - 2026-09-20
 
@@ -66,7 +61,7 @@ CLI previously could not reach the catalog at all) and hardened archive extracti
 - The pull request template pointed at `packages/` rather than `web/packages/`, so
   submissions opened as PRs never triggered the verification workflow.
 - Relative `download_url` values in the catalog are now resolved against the catalog's
-  own base URL in both the CLI and the native app.
+  own base URL.
 
 ### Security
 
@@ -74,20 +69,18 @@ CLI previously could not reach the catalog at all) and hardened archive extracti
   before extracting. The previous check used a string prefix comparison, which
   accepted a sibling path such as `/tmp/dest-evil` for destination `/tmp/dest`, and
   screened no symlinks.
-- The native macOS app had no extraction validation at all; it now performs the same
-  checks as the CLI before unpacking and refuses packages containing symlinks.
 - `scripts/verify_packages.py` runs these checks in CI for every submitted package and
   publishes the results to the workflow job summary.
 
 ### Added
 
-- `Makefile` with `make test`, `registry`, `verify`, `app`, `serve`, and `lint`.
+- `Makefile` with `make test`, `registry`, `verify`, `serve`, and `lint`.
 - `scripts/verify_packages.py`, replacing an inline heredoc in the workflow so package
   validation can be run locally.
 - `web/registry_curation.json` as the input for gallery presentation data (tags,
   preview art, featured slot).
 - CI workflow that byte-compiles the CLI, validates packages, checks the registry,
-  runs ShellCheck, and builds the native app for both architectures.
+  and runs ShellCheck.
 - `LICENSE` (MIT), `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, a bug report
   template, and this changelog.
 - `safari-magic-ext --version`.
@@ -96,11 +89,9 @@ CLI previously could not reach the catalog at all) and hardened archive extracti
 
 ### Changed
 
-- Repository layout: the site moved to `web/`, the Swift sources to `app/`, and
-  maintainer tooling to `scripts/`. `safari-magic-ext.py` and `install-cli.sh` remain at
-  the root because they are fetched by fixed URLs.
-- The native app now builds as a universal binary (`arm64` + `x86_64`) and no longer
-  uses the deprecated `codesign --deep`.
+- Repository layout: the site moved to `web/` and maintainer tooling to `scripts/`.
+  `safari-magic-ext.py` and `install-cli.sh` remain at the root because they are
+  fetched by fixed URLs.
 - Catalog presentation data is read from the registry instead of being re-derived in
   the browser from extension names.
 - Registry generation is idempotent: `updated_at` only advances when the catalog
@@ -108,17 +99,14 @@ CLI previously could not reach the catalog at all) and hardened archive extracti
 
 ### Removed
 
-- Hardcoded developer paths (`~/Desktop/MagikExtension/...`) from the native app.
 - A stale 124-line duplicate of the catalog embedded in `web/app.js`, one entry of
   which pointed at the wrong package.
 - Fabricated `likes` counts, which no interface displayed.
-- Committed build artifacts (`dist/SafariMagicHub.zip`, `docs/downloads/SafariMagicHub.zip`).
-  Builds are produced by `scripts/build_native_app.sh` and distributed via Releases.
 
 ## [1.0.0] - 2026-09-19
 
-Initial release: the `.magicext` package format, the CLI and tkinter GUI, the native
-SwiftUI app, the web gallery, and the GitHub submission workflow.
+Initial release: the `.magicext` package format, the CLI and tkinter GUI, the web
+gallery, and the GitHub submission workflow.
 
 [1.1.1]: https://github.com/Vatsal057/safari-magic-extensions/releases/tag/v1.1.1
 [1.1.0]: https://github.com/Vatsal057/safari-magic-extensions/releases/tag/v1.1.0

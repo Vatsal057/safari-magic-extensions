@@ -47,8 +47,7 @@ MAGIC_EXTENSIONS_DIR = (
 DB_PATH = MAGIC_EXTENSIONS_DIR / "Extensions.db"
 MAC_ABSOLUTE_TIME_OFFSET = 978307200.0  # 2001-01-01 00:00:00 UTC
 
-# Published community catalog. Kept in sync with the native app
-# (app/Sources/CommunityRegistry.swift) and the web gallery.
+# Published community catalog, shared with the web gallery.
 DEFAULT_REGISTRY_URL = (
     "https://vatsal057.github.io/safari-magic-extensions/community_registry.json"
 )

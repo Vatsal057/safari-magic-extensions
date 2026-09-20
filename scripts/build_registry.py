@@ -4,10 +4,9 @@
 Scans `web/packages/*.magicext`, validates each archive, merges maintainer
 curation from `web/registry_curation.json`, and writes `web/community_registry.json`.
 
-The generated registry is consumed by three clients, so its shape matters:
+The generated registry is consumed by:
   * the web gallery              (web/app.js)
   * the Python CLI               (safari-magic-ext.py, `explore` / `install <id>`)
-  * the native macOS app         (app/Sources/CommunityRegistry.swift)
 
 Extension IDs are human-readable slugs derived from the package name, so that
 `safari-magic-ext install night-meadow-new-tab` is memorable. Never hand-edit

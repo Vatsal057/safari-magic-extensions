@@ -58,33 +58,5 @@ jobs:
       - name: ShellCheck
         run: |
           shellcheck --severity=warning \
-            scripts/build_native_app.sh \
             install-cli.sh \
-            "Launch Safari Magic Hub.command"
-
-  macos-app:
-    name: Build native app
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: actions/setup-python@v7
-        with:
-          python-version: '3.11'
-
-      # No signing identity on CI, so the script falls back to an ad-hoc
-      # signature. This verifies the sources compile for both architectures.
-      - name: Build SafariMagicHub.app
-        run: ./scripts/build_native_app.sh
-
-      - name: Confirm the binary is universal
-        run: |
-          set -euo pipefail
-          archs="$(lipo -archs SafariMagicHub.app/Contents/MacOS/SafariMagicHub)"
-          echo "architectures: $archs"
-          for required in arm64 x86_64; do
-            case "$archs" in
-              *"$required"*) ;;
-              *) echo "missing $required slice" >&2; exit 1 ;;
-            esac
-          done
+            scripts/generate_thumbnails.sh

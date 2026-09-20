@@ -76,11 +76,9 @@ include obfuscated code, analytics, or external tracking.
 | --- | --- |
 | `safari-magic-ext.py` | CLI + tkinter GUI. Single file, standard library only. |
 | `install-cli.sh` | Bootstrap installer for the CLI. |
-| `app/Sources/` | SwiftUI app sources. |
 | `web/` | Static gallery. No build step, no dependencies. |
 | `scripts/build_registry.py` | Generates `web/community_registry.json`. |
 | `scripts/verify_packages.py` | Package validation, shared by contributors and CI. |
-| `scripts/build_native_app.sh` | Builds the universal `SafariMagicHub.app`. |
 
 Maintainer tooling belongs in `scripts/`. `safari-magic-ext.py` and `install-cli.sh` stay
 at the repository root because they are fetched by fixed `raw.githubusercontent.com`
@@ -90,14 +88,13 @@ URLs — moving them breaks the published install command.
 
 ```bash
 make test                        # lint + package validation + registry check
-./scripts/build_native_app.sh    # only if you touched app/Sources
 ```
 
 `make test` expands to exactly what CI runs:
 
 ```bash
 python3 -m compileall -q safari-magic-ext.py scripts/
-shellcheck --severity=warning scripts/build_native_app.sh install-cli.sh "Launch Safari Magic Hub.command"
+shellcheck --severity=warning install-cli.sh scripts/generate_thumbnails.sh
 python3 scripts/verify_packages.py
 python3 scripts/build_registry.py --check
 ```
@@ -115,9 +112,9 @@ Run `make` with no arguments to see every target.
 - **Don't hardcode machine-specific paths.** Resolve locations from the bundle, the working
   directory, or `Path.home()`.
 - **Archive extraction is security-sensitive.** If you touch it, keep the traversal and
-  symlink checks in both the Python and Swift paths.
-- **Three clients share one catalog format.** A field added to the registry may need handling
-  in `web/app.js`, `safari-magic-ext.py`, and `app/Sources/Models.swift`.
+  symlink checks in the Python path.
+- **Shared catalog format.** A field added to the registry may need handling
+  in `web/app.js` and `safari-magic-ext.py`.
 
 ### Things that need root access to test
 

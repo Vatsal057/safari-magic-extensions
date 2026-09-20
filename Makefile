@@ -4,7 +4,7 @@
 # so you can always run the underlying command directly instead.
 
 .DEFAULT_GOAL := help
-.PHONY: help registry check verify app release thumbnails serve lint test clean
+.PHONY: help registry check verify thumbnails serve lint test clean
 
 PYTHON ?= python3
 
@@ -24,12 +24,6 @@ check: ## Verify the committed registry matches the packages (no writes)
 verify: ## Validate every .magicext package (security + metadata)
 	$(PYTHON) scripts/verify_packages.py
 
-app: ## Build the universal SafariMagicHub.app
-	./scripts/build_native_app.sh
-
-release: ## Build the app and package dist/ (.dmg + .zip + checksums)
-	./scripts/package_release.sh
-
 thumbnails: ## Render real screenshots of each extension into web/assets/thumbnails/
 	./scripts/generate_thumbnails.sh
 	$(PYTHON) scripts/build_registry.py
@@ -41,9 +35,8 @@ lint: ## Byte-compile Python and shellcheck the shell scripts
 	$(PYTHON) -m compileall -q safari-magic-ext.py scripts/
 	@command -v shellcheck >/dev/null 2>&1 \
 		&& shellcheck --severity=warning \
-			scripts/build_native_app.sh \
 			install-cli.sh \
-			"Launch Safari Magic Hub.command" \
+			scripts/generate_thumbnails.sh \
 		|| echo "shellcheck not installed; skipping (brew install shellcheck)"
 
 # What CI runs. Run this before opening a pull request.
@@ -53,6 +46,6 @@ test: lint verify check ## Run all checks (lint + verify + registry check)
 	@echo "✓ All checks passed"
 
 clean: ## Remove build output and caches
-	rm -rf build SafariMagicHub.app
+	rm -rf build dist
 	find . -name '__pycache__' -type d -not -path './.git/*' -prune -exec rm -rf {} +
 	find . -name '.DS_Store' -not -path './.git/*' -delete
