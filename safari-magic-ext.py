@@ -79,51 +79,37 @@ def get_db_connection(db_path: Path = DB_PATH) -> sqlite3.Connection:
     try:
         conn = sqlite3.connect(db_path)
     except sqlite3.OperationalError as exc:
-        _prompt_for_full_disk_access(db_path, original_error=exc)
-        # Retry once after the user grants access.
-        try:
-            conn = sqlite3.connect(db_path)
-        except sqlite3.OperationalError as exc2:
-            raise PermissionError(
-                "Still cannot open the database after granting Full Disk Access.\n"
-                "Make sure you closed and reopened Terminal, then try again."
-            ) from exc2
-    conn.row_factory = sqlite3.Row
-    return conn
+        _prompt_for_full_disk_access(db_path)
 
 
-def _prompt_for_full_disk_access(db_path: Path, original_error: Exception) -> None:
-    """Interactively guide the user to grant Full Disk Access, then open the pane."""
+def _prompt_for_full_disk_access(db_path: Path) -> None:
+    """Open FDA settings and print exact fix steps, then exit."""
+    # $TERM_PROGRAM is set by Terminal.app, iTerm2, Warp, Hyper, etc.
     terminal_name = Path(os.getenv("TERM_PROGRAM", "Terminal")).stem or "Terminal"
 
     print()
     print("╔══════════════════════════════════════════════════════════════╗")
-    print("║          Full Disk Access required                          ║")
+    print("║         Full Disk Access required — opening settings…       ║")
     print("╚══════════════════════════════════════════════════════════════╝")
     print()
-    print(f"macOS is blocking access to Safari's extension database.")
+    print("macOS is blocking access to Safari's extension database.")
     print(f"  {db_path}")
     print()
-    print(f"Fix (one-time, 30 seconds):")
-    print(f"  1. System Settings will open to Full Disk Access — opening now…")
-    print(f"  2. Click the '+' button and add '{terminal_name}'")
-    print(f"       (or toggle its switch ON if it's already listed)")
-    print(f"  3. Close and reopen Terminal, then run this command again.")
+    print(f"Fix (one-time, ~30 seconds):")
+    print(f"  1. In System Settings (opening now) → find '{terminal_name}'")
+    print( "       If it's listed but OFF, toggle it ON.")
+    print( "       If it's not listed, click '+' and select your terminal app.")
+    print( "  2. Quit and reopen Terminal.")
+    print( "  3. Run the same command again — it will work.")
     print()
 
-    # Open System Settings directly to the Full Disk Access pane.
-    try:
-        subprocess.run(
-            ["open", "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles"],
-            check=False,
-        )
-    except Exception:
-        print("  Could not open System Settings automatically.")
-        print("  Go to: System Settings → Privacy & Security → Full Disk Access")
+    # Open directly to the Full Disk Access pane. Works without FDA.
+    subprocess.run(
+        ["open", "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles"],
+        check=False,
+    )
 
-    print()
-    input("Press Enter once you've granted access and reopened Terminal… ")
-    print()
+    sys.exit(1)
 
 
 def invocation_name() -> str:
