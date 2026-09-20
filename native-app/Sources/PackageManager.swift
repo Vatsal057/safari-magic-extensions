@@ -139,11 +139,17 @@ public final class PackageManager {
         let destFolderName = cleanTargetFolderName(for: extName)
         let destFolderURL = ExtensionDatabase.magicExtensionsDir.appendingPathComponent(destFolderName)
 
-        if FileManager.default.fileExists(atPath: destFolderURL.path) {
-            try? FileManager.default.removeItem(at: destFolderURL)
+        let copyProcess = Process()
+        copyProcess.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
+        copyProcess.arguments = [tempDir.path, destFolderURL.path]
+        try copyProcess.run()
+        copyProcess.waitUntilExit()
+
+        guard copyProcess.terminationStatus == 0 else {
+            throw NSError(domain: "PackageManager", code: Int(copyProcess.terminationStatus), userInfo: [
+                NSLocalizedDescriptionKey: "Failed to copy extension files into Safari directory."
+            ])
         }
-        try FileManager.default.createDirectory(at: ExtensionDatabase.magicExtensionsDir, withIntermediateDirectories: true)
-        try FileManager.default.copyItem(at: tempDir, to: destFolderURL)
 
         // Register in SQLite
         let extId = try ExtensionDatabase.shared.registerExtension(
