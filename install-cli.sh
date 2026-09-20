@@ -94,5 +94,10 @@ if [[ $# -gt 0 ]]; then
   echo ""
   echo "Running: safari-magic-ext $*"
   echo ""
+  # When run via `curl | bash`, stdin is the pipe. Reconnect it to the terminal
+  # so that interactive prompts (like the extension picker) work properly.
+  if [[ -t 1 ]] && [[ -e /dev/tty ]]; then
+    exec < /dev/tty
+  fi
   exec python3 "$TARGET" "$@"
 fi
