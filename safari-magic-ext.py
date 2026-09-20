@@ -10,7 +10,14 @@ Features:
   5. Export/Backup extensions to Downloads as folder or ZIP.
   6. Update existing extensions and sync source modifications.
   7. Dual-tab native macOS GUI (My Extensions + Community Hub) via tkinter.
+
+Runs on the Python that ships with macOS (3.9.6). The `from __future__` import
+below keeps the `X | None` annotations lazy so they do not need Python 3.10.
 """
+
+# Must precede every other statement. Without it, the PEP 604 annotations in
+# this file are evaluated at import time and raise TypeError on Python 3.9.
+from __future__ import annotations
 
 __version__ = "1.1.0"
 

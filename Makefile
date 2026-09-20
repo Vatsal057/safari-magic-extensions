@@ -4,7 +4,7 @@
 # so you can always run the underlying command directly instead.
 
 .DEFAULT_GOAL := help
-.PHONY: help registry check verify app serve lint test clean
+.PHONY: help registry check verify app release serve lint test clean
 
 PYTHON ?= python3
 
@@ -26,6 +26,9 @@ verify: ## Validate every .magicext package (security + metadata)
 
 app: ## Build the universal SafariMagicHub.app
 	./scripts/build_native_app.sh
+
+release: ## Build the app and package dist/ (.dmg + .zip + checksums)
+	./scripts/package_release.sh
 
 serve: ## Serve the web gallery at http://localhost:8000
 	$(PYTHON) -m http.server 8000 --directory web

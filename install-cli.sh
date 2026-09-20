@@ -52,10 +52,22 @@ if ! python3 -m py_compile "$TMP_FILE" 2>/dev/null; then
 fi
 rm -rf "$(dirname "$TMP_FILE")/__pycache__"
 
+# py_compile only checks syntax. Actually execute the tool so an incompatible
+# interpreter is caught here rather than the first time the user runs it.
+if ! VERSION_OUTPUT="$(python3 "$TMP_FILE" --version 2>&1)"; then
+  echo "Error: the CLI does not run with this Python:" >&2
+  echo "  $(python3 -V 2>&1)  ($(command -v python3))" >&2
+  echo "$VERSION_OUTPUT" | tail -3 | sed 's/^/  /' >&2
+  echo "" >&2
+  echo "No Python? Use the Mac app instead, no Python required:" >&2
+  echo "  https://github.com/${REPO}/releases/latest" >&2
+  exit 1
+fi
+
 echo "📦 Installing to $TARGET..."
 install -m 0755 "$TMP_FILE" "$TARGET"
 
-echo "✓ Installed safari-magic-ext ($("$TARGET" --version 2>/dev/null || echo "$REF"))"
+echo "✓ Installed ${VERSION_OUTPUT}"
 
 if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
   echo ""

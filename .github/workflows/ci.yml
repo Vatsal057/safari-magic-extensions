@@ -12,14 +12,20 @@ permissions:
 
 jobs:
   python:
-    name: Python & registry
+    name: Python ${{ matrix.python-version }} & registry
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.9 is what macOS ships as /usr/bin/python3, so the CLI must run on
+        # it: a non-technical user will not install a newer Python.
+        python-version: ['3.9', '3.13']
     steps:
       - uses: actions/checkout@v7
 
       - uses: actions/setup-python@v7
         with:
-          python-version: '3.11'
+          python-version: ${{ matrix.python-version }}
 
       # The CLI is stdlib-only, so a syntax check is a meaningful smoke test.
       - name: Byte-compile all Python

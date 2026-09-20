@@ -17,6 +17,8 @@ safety check. It ships as a single standalone file (install-cli.sh downloads
 only that file), so it cannot import from this repository.
 """
 
+from __future__ import annotations
+
 import json
 import os
 from pathlib import Path

@@ -16,7 +16,12 @@ the generated registry; edit the curation file or the packages instead.
 Usage (from the repository root):
   python3 scripts/build_registry.py            # regenerate the registry
   python3 scripts/build_registry.py --check    # verify it is up to date, exit 1 if not
+
+Runs on the Python that ships with macOS (3.9.6); the __future__ import keeps the
+`X | None` annotations lazy.
 """
+
+from __future__ import annotations
 
 import argparse
 import json

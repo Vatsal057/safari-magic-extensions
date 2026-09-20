@@ -15,8 +15,10 @@ Three clients read the same catalog:
 | Native macOS app | [`app/`](app/) | SwiftUI app (`SafariMagicHub.app`) |
 | Web gallery | [`web/`](web/) | Static GitHub Pages site |
 
-> **Requirements:** macOS with Safari, and Python 3.10+ for the CLI.
-> Reading Safari's extension database requires **Full Disk Access** (see [Troubleshooting](#7-troubleshooting)).
+> **Requirements:** macOS with Safari. The app needs nothing else installed. The CLI
+> runs on the Python that ships with macOS (3.9.6+).
+> Either way, reading Safari's extension database requires **Full Disk Access**
+> (see [Troubleshooting](#7-troubleshooting)).
 
 ---
 
@@ -34,14 +36,32 @@ Three clients read the same catalog:
 
 ---
 
-## 1. Install the CLI
+## 1. Install an extension
+
+### Option A — the Mac app (no Terminal, nothing to install first)
+
+1. Download the `.dmg` from the [latest release](https://github.com/Vatsal057/safari-magic-extensions/releases/latest).
+2. Drag **SafariMagicHub** onto **Applications**.
+3. Right-click the app and choose **Open**. This is only needed the first time; macOS
+   warns because the app is not notarized (that requires a paid Apple Developer account).
+4. Grant **Full Disk Access** when prompted, then reopen the app.
+5. Open the **Community Hub** tab and click Install.
+
+The app also handles `.magicext` files, so once it is installed you can download a package
+from the gallery and double-click it.
+
+### Option B — the command line
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash
+safari-magic-ext install hacker-news-minimal
 ```
 
-This installs `safari-magic-ext` into `~/.local/bin`. Pin a release with `REF=v1.2.0` if you
-prefer. Or just run the script directly from a clone:
+This installs `safari-magic-ext` into `~/.local/bin`. Pin a release with `REF=v1.1.0` if you
+prefer. It runs on the Python that ships with macOS, so there is nothing else to install.
+Your Terminal needs Full Disk Access.
+
+From a clone you can skip the installer entirely:
 
 ```bash
 python3 safari-magic-ext.py --help
@@ -94,11 +114,15 @@ so `explore` and `install` keep working offline. Point the CLI at your own fork 
 
 ---
 
-## 3. Native macOS App
+## 3. Building the Mac App Yourself
+
+Most people should just download the release. To build from source:
 
 ```bash
-./scripts/build_native_app.sh      # builds a universal SafariMagicHub.app
+./scripts/build_native_app.sh   # universal SafariMagicHub.app
 open SafariMagicHub.app
+
+./scripts/package_release.sh    # also produces dist/*.dmg, *.zip, SHA256SUMS.txt
 ```
 
 The build compiles `app/Sources/*.swift` with `swiftc` (no Xcode project needed), merges the
@@ -106,9 +130,16 @@ The build compiles `app/Sources/*.swift` with `swiftc` (no Xcode project needed)
 code-signs with your Apple Development identity if you have one (ad-hoc otherwise). Build a
 single slice with `ARCHS="arm64" ./scripts/build_native_app.sh`.
 
-The app registers itself as the handler for `.magicext` files, so double-clicking a package
-installs it. `Launch Safari Magic Hub.command` is a double-clickable launcher for
-non-terminal users.
+The app is pure Swift and links only system frameworks, so **it needs no Python and no other
+runtime** on the user's machine. It registers itself as the handler for `.magicext` files, so
+double-clicking a package installs it.
+
+### A note on notarization
+
+Releases are code-signed but **not notarized**, because notarization requires a paid Apple
+Developer account. That is why first launch needs right-click → Open. If you have a
+Developer ID certificate installed, `build_native_app.sh` picks it up automatically; to remove
+the warning for end users entirely you would additionally need to notarize and staple the app.
 
 ---
 

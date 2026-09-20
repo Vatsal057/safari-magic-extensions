@@ -119,69 +119,111 @@
       <section class="setup-section" id="setup" aria-labelledby="setup-heading">
         <div class="section-tab-wrapper">
           <div class="section-tab-pill">
-            <span id="setup-heading">first time? pick one</span>
+            <span id="setup-heading">start here</span>
           </div>
           <div class="section-tab-line"></div>
         </div>
 
         <p class="setup-lead">
-          You need one of these to install an extension. Both are free, macOS only, and take a minute.
+          Install the app once. After that, adding an extension is two clicks.
+          <strong>No Terminal, no Python, nothing to configure.</strong>
         </p>
 
-        <div class="setup-grid">
-          <!-- Mac app -->
-          <article class="setup-card">
-            <div class="setup-card-head">
-              <span class="setup-step">A</span>
-              <h3 class="setup-title">The Mac app</h3>
-              <span class="setup-tag">easiest</span>
+        <!-- Primary route: the app. No developer tooling required. -->
+        <article class="setup-primary">
+          <div class="setup-primary-top">
+            <div>
+              <h3 class="setup-primary-title">Safari Magic Hub</h3>
+              <p class="setup-primary-sub">
+                A small Mac app that browses this gallery and installs extensions for you.
+                Free, and about 500&nbsp;KB.
+              </p>
             </div>
-            <p class="setup-desc">
-              A small menu-style app that installs packages when you double-click them,
-              and lists what you already have.
-            </p>
             <a href="https://github.com/Vatsal057/safari-magic-extensions/releases/latest"
-               target="_blank" rel="noopener" class="btn-pill-cream btn-full-width">
-              Download Safari Magic Hub ↗
+               target="_blank" rel="noopener" class="btn-pill-cream setup-primary-cta">
+              Download for Mac ↗
             </a>
-            <details class="setup-note">
-              <summary>First launch shows a warning?</summary>
-              <p>
-                The app is signed with a development certificate but not notarized, so macOS
-                asks first. Right-click the app and choose <strong>Open</strong>, then confirm.
-              </p>
-              <p>
-                It also needs <strong>Full Disk Access</strong> (System Settings → Privacy
-                &amp; Security) to read Safari's extension list.
-              </p>
-            </details>
-          </article>
+          </div>
 
-          <!-- CLI -->
-          <article class="setup-card">
-            <div class="setup-card-head">
-              <span class="setup-step">B</span>
-              <h3 class="setup-title">The command line</h3>
-              <span class="setup-tag">for terminal folks</span>
-            </div>
+          <ol class="setup-steps">
+            <li>
+              <span class="setup-step">1</span>
+              <div>
+                <h4>Open the <code>.dmg</code> and drag the app to Applications</h4>
+                <p>The window shows you exactly where to drop it.</p>
+              </div>
+            </li>
+            <li>
+              <span class="setup-step">2</span>
+              <div>
+                <h4>Right-click the app and choose <strong>Open</strong></h4>
+                <p>
+                  Only needed the first time. macOS warns because the app isn't notarized
+                  by Apple — see the note below.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="setup-step">3</span>
+              <div>
+                <h4>Allow Full Disk Access when asked</h4>
+                <p>
+                  System Settings → Privacy &amp; Security → Full Disk Access. Safari keeps
+                  its extension list in a protected folder, so macOS requires this.
+                </p>
+              </div>
+            </li>
+            <li>
+              <span class="setup-step">4</span>
+              <div>
+                <h4>Open the Community tab and click Install</h4>
+                <p>Safari restarts and your new tab page is live.</p>
+              </div>
+            </li>
+          </ol>
+
+          <details class="setup-note">
+            <summary>Why does macOS warn me about this app?</summary>
+            <p>
+              Notarizing an app requires a paid Apple Developer account, which this
+              project doesn't have. The app <em>is</em> code-signed, and the full source
+              plus the exact build script are in the repository, so you can inspect or
+              rebuild it yourself.
+            </p>
+            <p>
+              Every release lists a SHA-256 checksum if you'd like to verify your download.
+            </p>
+          </details>
+        </article>
+
+        <!-- Secondary route: the CLI, for people who prefer a terminal. -->
+        <details class="setup-secondary">
+          <summary>
+            <span class="setup-tag">optional</span>
+            Prefer the Terminal? There's a command line tool too
+          </summary>
+          <div class="setup-secondary-body">
             <p class="setup-desc">
-              One command installs the <code>safari-magic-ext</code> tool. Needs Python 3.10+,
-              which macOS already has.
+              One command installs <code>safari-magic-ext</code>. It runs on the Python that
+              macOS already includes, so there is nothing else to set up.
             </p>
             <div class="code-row">
               <code id="setup-cli-cmd">curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash</code>
               <button class="btn-mini-copy" data-copy-target="setup-cli-cmd" data-copy-label="Install command copied">copy</button>
             </div>
-            <details class="setup-note">
-              <summary>What it does</summary>
-              <p>
-                Downloads a single Python file to <code>~/.local/bin/safari-magic-ext</code>,
-                checks it is valid before making it executable, and nothing else. No
-                dependencies, no background processes.
-              </p>
-            </details>
-          </article>
-        </div>
+            <p class="setup-desc">
+              Then install anything by its ID, for example:
+            </p>
+            <div class="code-row">
+              <code id="setup-cli-example">safari-magic-ext install hacker-news-minimal</code>
+              <button class="btn-mini-copy" data-copy-target="setup-cli-example" data-copy-label="Command copied">copy</button>
+            </div>
+            <p class="install-route-footnote">
+              The installer writes a single file to <code>~/.local/bin</code>, verifies it runs,
+              and does nothing else. Your Terminal also needs Full Disk Access.
+            </p>
+          </div>
+        </details>
       </section>
 
       <!-- ============ GALLERY ============ -->
@@ -333,30 +375,29 @@
             <div class="install-route">
               <div class="install-route-head">
                 <span class="install-route-num">1</span>
-                <span class="install-route-title">With the command line</span>
-              </div>
-              <div class="code-row">
-                <code id="modal-cli-cmd"></code>
-                <button id="copy-modal-cli-btn" class="btn-mini-copy">copy</button>
-              </div>
-            </div>
-
-            <div class="install-route">
-              <div class="install-route-head">
-                <span class="install-route-num">2</span>
-                <span class="install-route-title">With the Mac app</span>
+                <span class="install-route-title">Easiest — download and double-click</span>
               </div>
               <p class="install-route-hint">
-                Download the package, then double-click it. Safari restarts to pick it up.
+                Needs the free Mac app. Safari restarts to pick up the new extension.
               </p>
               <a href="#" id="modal-download-pkg-btn" class="btn-pill-cream btn-full-width" download>
                 <span id="modal-download-label">Download package</span>
               </a>
+              <p class="install-route-footnote">
+                Don't have the app? <a href="#setup" id="modal-setup-link">Get it here →</a>
+              </p>
             </div>
 
-            <p class="install-route-footnote">
-              Have neither yet? <a href="#setup" id="modal-setup-link">Set up in a minute →</a>
-            </p>
+            <details class="install-route install-route-alt">
+              <summary>
+                <span class="install-route-num">2</span>
+                <span class="install-route-title">Or paste one line into Terminal</span>
+              </summary>
+              <div class="code-row">
+                <code id="modal-cli-cmd"></code>
+                <button id="copy-modal-cli-btn" class="btn-mini-copy">copy</button>
+              </div>
+            </details>
           </div>
 
           <div class="modal-section-block">
