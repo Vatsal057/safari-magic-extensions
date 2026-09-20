@@ -1840,41 +1840,7 @@ def launch_gui() -> None:
 {b64_payload}
 <!-- MAGICEXT_BASE64_END -->
 """
-            if upload_url:
-                issue_body += f"\nTemporary Download Link: {upload_url}\n"
-
-            # Check if gh CLI is available for 1-click submit
-            can_direct_submit = False
-            try:
-                gh_check = subprocess.run(["gh", "auth", "status"], capture_output=True, text=True)
-                if gh_check.returncode == 0:
-                    can_direct_submit = True
-            except Exception:
-                pass
-
-            if can_direct_submit and messagebox.askyesno(
-                "Submit Extension",
-                f"Submit '{name}' directly to the Community Gallery via GitHub CLI?\n\n(No browser or form required!)"
-            ):
-                status_var.set("Submitting to GitHub...")
-                root.update()
-                gh_res = subprocess.run([
-                    "gh", "issue", "create",
-                    "--repo", repo,
-                    "--title", f"[Extension Submission]: {name}",
-                    "--label", "extension-submission,needs-review",
-                    "--body", issue_body,
-                ], capture_output=True, text=True)
-                if gh_res.returncode == 0:
-                    created_url = gh_res.stdout.strip()
-                    status_var.set("Submission successful!")
-                    messagebox.showinfo(
-                        "Submitted Successfully!",
-                        f"Extension '{name}' has been submitted to the gallery!\n\nIssue: {created_url}\n\nGitHub Actions is automatically ingesting it and creating a PR."
-                    )
-                    return
-
-            # Fallback to browser
+            # Prepare pre-filled browser form
             pkg_field = ""
             if upload_url:
                 pkg_field = f"Download link: {upload_url}\n\n"
@@ -2080,11 +2046,6 @@ def main() -> None:
         action="store_true",
         help="Generate package and URL without opening browser",
     )
-    submit_parser.add_argument(
-        "--web",
-        action="store_true",
-        help="Force opening browser submission form instead of direct GitHub CLI submission",
-    )
 
     # Command: install
     install_parser = subparsers.add_parser(
@@ -2275,16 +2236,6 @@ def main() -> None:
                 pkg_bytes = f.read()
             b64_payload = base64.b64encode(pkg_bytes).decode("utf-8")
 
-            # Check if GitHub CLI (gh) is installed and authenticated
-            can_submit_directly = False
-            if not args.web:
-                try:
-                    gh_auth = subprocess.run(["gh", "auth", "status"], capture_output=True, text=True)
-                    if gh_auth.returncode == 0:
-                        can_submit_directly = True
-                except Exception:
-                    pass
-
             def upload_tmpfiles(filepath, name_slug):
                 import urllib.request, json, os, uuid
                 boundary = uuid.uuid4().hex
@@ -2310,59 +2261,6 @@ def main() -> None:
                     return None
 
             upload_url = upload_tmpfiles(pkg_path, slug)
-
-            issue_body = f"""### Extension Name
-{name}
-
-### Author Name / GitHub Handle
-{author}
-
-### Original AI Generation Prompt
-{prompt}
-
-### Extension Description
-{desc}
-
-### SF Symbol Tint Color
-{color}
-
-### SF Symbol Name
-{symbol}
-
-### Automated Package Data
-<!-- MAGICEXT_BASE64_START -->
-{b64_payload}
-<!-- MAGICEXT_BASE64_END -->
-"""
-            if upload_url:
-                issue_body += f"\nTemporary Download Link: {upload_url}\n"
-
-            if can_submit_directly and not args.dry_run:
-                print(f"\n🚀 Submitting '{name}' directly via GitHub CLI...")
-                gh_proc = subprocess.run([
-                    "gh", "issue", "create",
-                    "--repo", args.repo,
-                    "--title", f"[Extension Submission]: {name}",
-                    "--label", "extension-submission,needs-review",
-                    "--body", issue_body,
-                ], capture_output=True, text=True)
-                if gh_proc.returncode == 0:
-                    created_url = gh_proc.stdout.strip()
-                    print(f"\n==========================================")
-                    print(f"   ✓ Extension Submitted Successfully!    ")
-                    print(f"==========================================")
-                    print(f"Extension: {name}")
-                    print(f"Author:    {author}")
-                    print(f"Issue:     {created_url}")
-                    print(f"Package:   {pkg_path}")
-                    print(f"\n🪄 GitHub Actions has started processing your submission!")
-                    print(f"   Thumbnails, gallery registry, and Pull Request will be created automatically.")
-                    return
-                else:
-                    print(f"Notice: gh submission exited with: {gh_proc.stderr.strip()}")
-                    print("Falling back to web browser submission...")
-
-            # Fallback to browser
             pkg_field = ""
             if upload_url:
                 pkg_field = f"Download link: {upload_url}\n\n"
