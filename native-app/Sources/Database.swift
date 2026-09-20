@@ -4,9 +4,15 @@ import SQLite3
 public final class ExtensionDatabase {
     public static let shared = ExtensionDatabase()
 
+    public static let realHomeDir: URL = {
+        if let pw = getpwuid(getuid()), let dir = pw.pointee.pw_dir {
+            return URL(fileURLWithPath: String(cString: dir))
+        }
+        return FileManager.default.homeDirectoryForCurrentUser
+    }()
+
     public static let magicExtensionsDir: URL = {
-        FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/Containers/com.apple.Safari/Data/Library/Safari/MagicExtensions")
+        realHomeDir.appendingPathComponent("Library/Containers/com.apple.Safari/Data/Library/Safari/MagicExtensions")
     }()
 
     public static let dbPath: URL = {
@@ -17,27 +23,56 @@ public final class ExtensionDatabase {
 
     private init() {}
 
-    private func openDatabase() throws -> OpaquePointer? {
+    private func openDatabase(readOnly: Bool = false) throws -> OpaquePointer? {
         var db: OpaquePointer?
         let path = Self.dbPath.path
         if !FileManager.default.fileExists(atPath: path) {
             throw NSError(domain: "ExtensionDatabase", code: 404, userInfo: [
-                NSLocalizedDescriptionKey: "Safari Magic Extensions database not found at \(path). Launch Safari first."
+                NSLocalizedDescriptionKey: "Extensions.db not found at \(path). Please launch Safari at least once."
             ])
         }
-        if sqlite3_open(path, &db) != SQLITE_OK {
-            let errmsg = String(cString: sqlite3_errmsg(db))
-            sqlite3_close(db)
-            throw NSError(domain: "ExtensionDatabase", code: 500, userInfo: [
+
+        let flags = readOnly
+            ? (SQLITE_OPEN_READONLY | SQLITE_OPEN_FULLMUTEX)
+            : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX)
+
+        let rc = sqlite3_open_v2(path, &db, flags, nil)
+        if rc != SQLITE_OK {
+            let errmsg = db != nil ? String(cString: sqlite3_errmsg(db)) : "Code \(rc)"
+            if let db = db { sqlite3_close(db) }
+
+            // If readwrite failed, try readonly fallback
+            if !readOnly {
+                return try openDatabase(readOnly: true)
+            }
+
+            throw NSError(domain: "ExtensionDatabase", code: Int(rc), userInfo: [
                 NSLocalizedDescriptionKey: "Failed to open SQLite database: \(errmsg)"
             ])
         }
+
+        sqlite3_busy_timeout(db, 3000)
         return db
     }
 
-    public func fetchInstalledExtensions() -> [InstalledExtension] {
-        guard let db = try? openDatabase() else { return [] }
-        defer { sqlite3_close(db) }
+public struct ExtensionFetchResult {
+    public let extensions: [InstalledExtension]
+    public let error: String?
+    public let isPermissionDenied: Bool
+}
+
+    public func fetchInstalledExtensionsWithStatus() -> ExtensionFetchResult {
+        var db: OpaquePointer?
+        do {
+            db = try openDatabase(readOnly: true)
+        } catch {
+            let desc = error.localizedDescription
+            let isPerm = desc.localizedCaseInsensitiveContains("authorization denied") ||
+                         desc.localizedCaseInsensitiveContains("operation not permitted") ||
+                         desc.localizedCaseInsensitiveContains("permission")
+            return ExtensionFetchResult(extensions: [], error: desc, isPermissionDenied: isPerm)
+        }
+        defer { if let db = db { sqlite3_close(db) } }
 
         let query = """
         SELECT id, name, directory_name, selected_symbol, symbol_color_name,
@@ -79,9 +114,19 @@ public final class ExtensionDatabase {
                     modifiedDate: Date(timeIntervalSince1970: modifiedSecs)
                 ))
             }
+        } else {
+            let err = String(cString: sqlite3_errmsg(db))
+            sqlite3_finalize(stmt)
+            let isPerm = err.localizedCaseInsensitiveContains("authorization denied") ||
+                         err.localizedCaseInsensitiveContains("operation not permitted")
+            return ExtensionFetchResult(extensions: [], error: "Query prepare failed: \(err)", isPermissionDenied: isPerm)
         }
         sqlite3_finalize(stmt)
-        return results
+        return ExtensionFetchResult(extensions: results, error: nil, isPermissionDenied: false)
+    }
+
+    public func fetchInstalledExtensions() -> [InstalledExtension] {
+        return fetchInstalledExtensionsWithStatus().extensions
     }
 
     public func registerExtension(
@@ -92,8 +137,8 @@ public final class ExtensionDatabase {
         prompt: String,
         description: String
     ) throws -> String {
-        guard let db = try openDatabase() else {
-            throw NSError(domain: "ExtensionDatabase", code: 500, userInfo: [NSLocalizedDescriptionKey: "Cannot open DB"])
+        guard let db = try openDatabase(readOnly: false) else {
+            throw NSError(domain: "ExtensionDatabase", code: 500, userInfo: [NSLocalizedDescriptionKey: "Cannot open DB for writing"])
         }
         defer { sqlite3_close(db) }
 

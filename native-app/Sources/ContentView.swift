@@ -8,6 +8,7 @@ public struct ContentView: View {
     @State private var installedSearch: String = ""
     @State private var communitySearch: String = ""
     @State private var statusMessage: String = "Ready"
+    @State private var isPermissionDenied: Bool = false
     @State private var isDropTargeted: Bool = false
     @State private var selectedInstalled: InstalledExtension? = nil
     @State private var selectedCommunity: CommunityExtension? = nil
@@ -136,7 +137,64 @@ public struct ContentView: View {
                 $0.prompt.localizedCaseInsensitiveContains(installedSearch)
             }
 
-            if filtered.isEmpty {
+            if isPermissionDenied && installed.isEmpty {
+                VStack(spacing: 16) {
+                    Spacer()
+                    Image(systemName: "lock.shield.fill")
+                        .font(.system(size: 52))
+                        .foregroundColor(.orange)
+
+                    Text("Full Disk Access Required")
+                        .font(.title2.bold())
+
+                    Text("macOS restricts apps from accessing Safari's internal data container (`~/Library/Containers/com.apple.Safari`).\n\nTo view and manage your installed extensions, grant Safari Magic Hub Full Disk Access in macOS System Settings.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 500)
+
+                    HStack(spacing: 12) {
+                        Button {
+                            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles") {
+                                NSWorkspace.shared.open(url)
+                            }
+                        } label: {
+                            Label("Open Full Disk Access Settings", systemImage: "gearshape.fill")
+                                .font(.system(size: 12, weight: .semibold))
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+
+                        Button {
+                            refreshInstalled()
+                        } label: {
+                            Label("Check Again", systemImage: "arrow.clockwise")
+                                .font(.system(size: 12))
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                    }
+                    .padding(.top, 4)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("💡 Or launch directly via Terminal (No settings required):")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(.secondary)
+                        Text("./SafariMagicHub.app/Contents/MacOS/SafariMagicHub")
+                            .font(.system(size: 11, design: .monospaced))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color(NSColor.controlBackgroundColor))
+                            .cornerRadius(6)
+                    }
+                    .padding(12)
+                    .background(Color(NSColor.windowBackgroundColor).opacity(0.5))
+                    .cornerRadius(8)
+
+                    Spacer()
+                }
+                .padding(24)
+            } else if filtered.isEmpty {
                 VStack(spacing: 12) {
                     Spacer()
                     Image(systemName: "puzzlepiece.extension")
@@ -232,8 +290,14 @@ public struct ContentView: View {
     //  Actions
     // =====================================================================
     private func refreshInstalled() {
-        installed = ExtensionDatabase.shared.fetchInstalledExtensions()
-        statusMessage = "Loaded \(installed.count) active Safari extensions."
+        let res = ExtensionDatabase.shared.fetchInstalledExtensionsWithStatus()
+        installed = res.extensions
+        isPermissionDenied = res.isPermissionDenied
+        if let err = res.error {
+            statusMessage = "DB Notice: \(err)"
+        } else {
+            statusMessage = "Loaded \(installed.count) active Safari extensions."
+        }
     }
 
     private func chooseAndInstallPackage() {
