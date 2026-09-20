@@ -513,9 +513,12 @@ class CommunityRegistry:
         matches = []
         for item in extensions:
             tags = " ".join(item.get("tags", []))
+            # `id` is included so that searching for the slug shown on the
+            # website and in `install <id>` finds the extension.
             haystack = (
-                f"{item.get('name', '')} {item.get('description', '')} "
-                f"{item.get('prompt', '')} {item.get('author', '')} {tags}"
+                f"{item.get('id', '')} {item.get('name', '')} "
+                f"{item.get('description', '')} {item.get('prompt', '')} "
+                f"{item.get('author', '')} {tags} {item.get('category', '')}"
             ).lower()
             if q in haystack:
                 matches.append(item)
