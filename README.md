@@ -279,6 +279,7 @@ app/                           SwiftUI sources + Info.plist
 web/                           GitHub Pages gallery, packages, and the catalog
 scripts/build_registry.py      Generates web/community_registry.json
 scripts/verify_packages.py     Package validation (used locally and by CI)
+scripts/generate_thumbnails.sh Renders real screenshots of each extension
 scripts/build_native_app.sh    Builds the universal SafariMagicHub.app
 .github/workflows/             CI, submission verification, Pages deploy
 ```

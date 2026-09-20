@@ -43,6 +43,7 @@ REGISTRY_VERSION = 1
 # Must stay in sync with the ribbon buttons in web/index.html (data-filter).
 VALID_TAGS = {"ambient", "focus", "newtab", "tech"}
 DEFAULT_TAGS = ["newtab"]
+EPOCH_FALLBACK = "1970-01-01T00:00:00Z"
 DEFAULT_ART = "assets/hero_cyberpunk.jpg"
 DEFAULT_SYMBOL = "puzzlepiece.extension"
 DEFAULT_COLOR = "blue"
@@ -100,12 +101,23 @@ def read_package_metadata(pkg: Path) -> dict:
 
 
 def resolve_art_image(slug: str, curated: dict) -> str:
-    """Pick a preview image: curated override, then a slug-named asset, then default."""
+    """Pick a preview image, in order of honesty and intent:
+
+      1. A curated `art_image` — an explicit maintainer choice always wins.
+      2. A real screenshot from scripts/generate_thumbnails.sh — the default,
+         because it shows what the extension actually looks like.
+      3. A slug-named asset dropped into web/assets/ by hand.
+      4. The generic fallback image.
+    """
     override = curated.get("art_image")
     if override:
         if not (WEB_DIR / override).exists():
             print(f"  [Warning] {slug}: curated art_image '{override}' not found on disk")
         return override
+
+    thumbnail = Path("assets/thumbnails") / f"{slug}.png"
+    if (WEB_DIR / thumbnail).exists():
+        return thumbnail.as_posix()
 
     for suffix in (".jpg", ".jpeg", ".png", ".svg"):
         candidate = Path("assets") / f"{slug}{suffix}"
@@ -147,7 +159,6 @@ def build_extensions() -> tuple[list[dict], list[str]]:
     entries: list[dict] = []
     errors: list[str] = []
     seen_slugs: dict[str, str] = {}
-    featured_slugs: list[str] = []
 
     for pkg in packages:
         try:
@@ -171,8 +182,13 @@ def build_extensions() -> tuple[list[dict], list[str]]:
 
         curated = curation.get(slug, {}) or {}
         tags = normalize_tags(slug, curated)
-        if curated.get("featured"):
-            featured_slugs.append(slug)
+
+        # `packaged_at` is written by the packaging step, so it is a real date
+        # rather than something invented here. It drives the "newest" sort.
+        added_at = str(meta.get("packaged_at") or "").strip()
+        if not added_at:
+            print(f"  [Notice] {slug}: no packaged_at in magic.json; sorts last by date")
+            added_at = EPOCH_FALLBACK
 
         entries.append(
             {
@@ -191,20 +207,14 @@ def build_extensions() -> tuple[list[dict], list[str]]:
                 "tags": tags,
                 "category": str(curated.get("category") or tags[0]),
                 "art_image": resolve_art_image(slug, curated),
-                "featured": bool(curated.get("featured", False)),
+                "added_at": added_at,
                 "download_url": f"packages/{pkg.name}",
             }
         )
         print(f"  ✓ {name}  →  id: {slug}")
 
-    if len(featured_slugs) > 1:
-        errors.append(
-            "More than one extension is marked 'featured' in "
-            f"{CURATION_FILE.name}: {', '.join(featured_slugs)}"
-        )
-    elif entries and not featured_slugs:
-        # Not fatal: the gallery falls back to the first entry.
-        print(f"  [Notice] No extension marked 'featured' in {CURATION_FILE.name}")
+    # Every extension is presented equally in the gallery, so there is no
+    # featured flag to validate.
 
     # Flag curation entries that no longer match a package, so the file
     # does not silently accumulate stale slugs.

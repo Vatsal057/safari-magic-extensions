@@ -1,7 +1,7 @@
 {
   "version": 1,
   "registry_name": "Safari Magic Extensions Community Hub",
-  "updated_at": "2026-09-20T08:40:40Z",
+  "updated_at": "2026-09-20T12:52:37Z",
   "extensions": [
     {
       "id": "hacker-news-minimal",
@@ -17,8 +17,8 @@
         "newtab"
       ],
       "category": "tech",
-      "art_image": "assets/art_hackernews.svg",
-      "featured": false,
+      "art_image": "assets/thumbnails/hacker-news-minimal.png",
+      "added_at": "2026-09-20T06:40:40Z",
       "download_url": "packages/Hacker_News_Minimal.magicext"
     },
     {
@@ -35,8 +35,8 @@
         "newtab"
       ],
       "category": "ambient",
-      "art_image": "assets/art_night_garden.svg",
-      "featured": false,
+      "art_image": "assets/thumbnails/night-garden-tab.png",
+      "added_at": "2026-09-20T06:22:43Z",
       "download_url": "packages/Night_Garden_Tab.magicext"
     },
     {
@@ -53,8 +53,8 @@
         "newtab"
       ],
       "category": "ambient",
-      "art_image": "assets/night_meadow.jpg",
-      "featured": true,
+      "art_image": "assets/thumbnails/night-meadow-new-tab.png",
+      "added_at": "2026-09-20T06:22:43Z",
       "download_url": "packages/Night_Meadow_New_Tab.magicext"
     },
     {
@@ -71,8 +71,8 @@
         "newtab"
       ],
       "category": "ambient",
-      "art_image": "assets/hero_cyberpunk.jpg",
-      "featured": false,
+      "art_image": "assets/thumbnails/nightlife-in-the-wild.png",
+      "added_at": "2026-09-20T06:22:18Z",
       "download_url": "packages/Nightlife_in_the_Wild.magicext"
     },
     {
@@ -89,8 +89,8 @@
         "newtab"
       ],
       "category": "focus",
-      "art_image": "assets/zen_pagoda.jpg",
-      "featured": false,
+      "art_image": "assets/thumbnails/zen-focus-timer.png",
+      "added_at": "2026-09-20T06:40:40Z",
       "download_url": "packages/Zen_Focus_Timer.magicext"
     }
   ]

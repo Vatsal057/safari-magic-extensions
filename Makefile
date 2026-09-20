@@ -4,7 +4,7 @@
 # so you can always run the underlying command directly instead.
 
 .DEFAULT_GOAL := help
-.PHONY: help registry check verify app release serve lint test clean
+.PHONY: help registry check verify app release thumbnails serve lint test clean
 
 PYTHON ?= python3
 
@@ -29,6 +29,10 @@ app: ## Build the universal SafariMagicHub.app
 
 release: ## Build the app and package dist/ (.dmg + .zip + checksums)
 	./scripts/package_release.sh
+
+thumbnails: ## Render real screenshots of each extension into web/assets/thumbnails/
+	./scripts/generate_thumbnails.sh
+	$(PYTHON) scripts/build_registry.py
 
 serve: ## Serve the web gallery at http://localhost:8000
 	$(PYTHON) -m http.server 8000 --directory web
