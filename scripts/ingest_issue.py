@@ -11,37 +11,65 @@ def main():
         print("Error: ISSUE_BODY environment variable is empty.")
         exit(1)
         
-    # Check for tmpfiles.org URL first
-    tmpfiles_match = re.search(r'(https://tmpfiles\.org/[a-zA-Z0-9]+/[a-zA-Z0-9_.-]+)', body)
-    if tmpfiles_match:
-        view_url = tmpfiles_match.group(1)
-        # Convert view URL to direct download URL
-        url = view_url.replace('tmpfiles.org/', 'tmpfiles.org/dl/', 1)
-        print(f"Found tmpfiles URL: {url}")
-    else:
-        # Fallback to GitHub attachments
-        match = re.search(r'(https://github\.com/user-attachments/assets/[a-zA-Z0-9-]+)', body)
-        if not match:
-            print("Error: Could not find a .magicext attachment URL (tmpfiles or github) in the issue body.")
-            exit(1)
-        url = match.group(1)
-        print(f"Found GitHub attachment URL: {url}")
-    
     packages_dir = Path("web/packages")
     packages_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Download to a temporary file first
     temp_path = packages_dir / "temp_download.zip"
-    
-    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-    try:
-        with urllib.request.urlopen(req) as response, open(temp_path, 'wb') as out_file:
-            out_file.write(response.read())
-    except Exception as e:
-        print(f"Error downloading attachment: {e}")
-        exit(1)
-        
-    print("Download successful.")
+
+    # 1. Check for embedded Base64 payload first (fastest & most reliable)
+    b64_match = re.search(r'<!-- MAGICEXT_BASE64_START -->\s*([A-Za-z0-9+/=\s]+)\s*<!-- MAGICEXT_BASE64_END -->', body)
+    if b64_match:
+        import base64
+        print("Found embedded Base64 package data. Decoding...")
+        raw_b64 = re.sub(r'\s+', '', b64_match.group(1))
+        file_bytes = base64.b64decode(raw_b64)
+        with open(temp_path, 'wb') as f:
+            f.write(file_bytes)
+        print("✓ Successfully decoded package from issue body.")
+    else:
+        # 2. Check for tmpfiles.org URL
+        tmpfiles_match = re.search(r'(https://tmpfiles\.org/(?:dl/)?[a-zA-Z0-9]+/[a-zA-Z0-9_.-]+)', body)
+        # 3. Check for GitHub attachments
+        gh_match = re.search(r'(https://github\.com/user-attachments/assets/[a-zA-Z0-9-]+)', body)
+
+        if tmpfiles_match:
+            view_url = tmpfiles_match.group(1)
+            print(f"Fetching from tmpfiles: {view_url}")
+            req = urllib.request.Request(view_url, headers={'User-Agent': 'Mozilla/5.0'})
+            try:
+                page_content = urllib.request.urlopen(req).read()
+                # Check if it was direct binary or HTML landing page
+                if page_content.startswith(b'PK\x03\x04'):
+                    with open(temp_path, 'wb') as f:
+                        f.write(page_content)
+                else:
+                    html_text = page_content.decode('utf-8', errors='ignore')
+                    dl_links = re.findall(r'href=[\"\'](https://tmpfiles\.org/dl/[^\"\']+)[\"\']', html_text)
+                    if not dl_links:
+                        print("Error: Could not extract download link from tmpfiles page.")
+                        exit(1)
+                    real_dl_url = dl_links[0]
+                    print(f"Downloading from tmpfiles link: {real_dl_url}")
+                    dl_req = urllib.request.Request(real_dl_url, headers={'User-Agent': 'Mozilla/5.0'})
+                    with urllib.request.urlopen(dl_req) as resp, open(temp_path, 'wb') as f:
+                        f.write(resp.read())
+            except Exception as e:
+                print(f"Error downloading from tmpfiles: {e}")
+                exit(1)
+        elif gh_match:
+            url = gh_match.group(1)
+            print(f"Downloading GitHub attachment: {url}")
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            try:
+                with urllib.request.urlopen(req) as response, open(temp_path, 'wb') as out_file:
+                    out_file.write(response.read())
+            except Exception as e:
+                print(f"Error downloading attachment: {e}")
+                exit(1)
+        else:
+            print("Error: Could not find any package data or attachment URL in the issue body.")
+            exit(1)
+
+    print("Package downloaded / extracted successfully.")
     
     # Extract the name from the magic.json to rename the file properly
     extension_name = "Extension"

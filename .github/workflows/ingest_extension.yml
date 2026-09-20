@@ -2,7 +2,7 @@ name: Ingest Extension Submission
 
 on:
   issues:
-    types: [labeled]
+    types: [opened, labeled]
 
 permissions:
   contents: write
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   ingest:
-    if: github.event.label.name == 'extension-submission'
+    if: contains(github.event.issue.labels.*.name, 'extension-submission') || (github.event.label && github.event.label.name == 'extension-submission')
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository

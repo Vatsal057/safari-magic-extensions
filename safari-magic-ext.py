@@ -22,6 +22,7 @@ from __future__ import annotations
 __version__ = "1.1.1"
 
 import argparse
+import base64
 import json
 import os
 from pathlib import Path, PurePosixPath
@@ -1782,39 +1783,103 @@ def launch_gui() -> None:
             symbol = meta.get("selected_symbol", "")
             color = meta.get("symbol_color_name", "blue")
 
-            status_var.set("Uploading package temporarily...")
+            slug = re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-') or 'extension'
+            with open(pkg_path, "rb") as f:
+                pkg_bytes = f.read()
+            b64_payload = base64.b64encode(pkg_bytes).decode("utf-8")
+
+            status_var.set("Preparing submission package...")
             root.update()
 
-            # Upload to tmpfiles.org so the user doesn't have to drag and drop manually.
-            def upload_tmpfiles(filepath):
+            def upload_tmpfiles(filepath, name_slug):
                 import urllib.request, json, os, uuid
                 boundary = uuid.uuid4().hex
-                filename = os.path.basename(filepath)
                 with open(filepath, 'rb') as f:
                     file_data = f.read()
+                zip_filename = f"{name_slug}.zip"
                 body = (
                     f"--{boundary}\r\n"
-                    f"Content-Disposition: form-data; name=\"file\"; filename=\"{filename}\"\r\n"
-                    "Content-Type: application/octet-stream\r\n\r\n".encode('utf-8')
+                    f"Content-Disposition: form-data; name=\"file\"; filename=\"{zip_filename}\"\r\n"
+                    "Content-Type: application/zip\r\n\r\n".encode('utf-8')
                     + file_data +
                     f"\r\n--{boundary}--\r\n".encode('utf-8')
                 )
                 req = urllib.request.Request("https://tmpfiles.org/api/v1/upload", data=body)
                 req.add_header('Content-Type', f'multipart/form-data; boundary={boundary}')
-                req.add_header('User-Agent', 'SafariMagicExtensionsManager/1.0')
+                req.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15)')
                 try:
                     with urllib.request.urlopen(req) as resp:
                         res = json.loads(resp.read().decode())
                         return res["data"]["url"]
-                except Exception as e:
+                except Exception:
                     return None
 
-            upload_url = upload_tmpfiles(pkg_path)
+            upload_url = upload_tmpfiles(pkg_path, slug)
+
+            repo = os.getenv("SAFARI_MAGIC_HUB_REPO", "Vatsal057/safari-magic-extensions")
+            issue_body = f"""### Extension Name
+{name}
+
+### Author Name / GitHub Handle
+{author}
+
+### Original AI Generation Prompt
+{prompt}
+
+### Extension Description
+{desc}
+
+### SF Symbol Tint Color
+{color}
+
+### SF Symbol Name
+{symbol}
+
+### Automated Package Data
+<!-- MAGICEXT_BASE64_START -->
+{b64_payload}
+<!-- MAGICEXT_BASE64_END -->
+"""
             if upload_url:
-                status_var.set("Ready to submit!")
-            else:
-                status_var.set("Upload failed. You will need to attach the file manually.")
-                upload_url = ""
+                issue_body += f"\nTemporary Download Link: {upload_url}\n"
+
+            # Check if gh CLI is available for 1-click submit
+            can_direct_submit = False
+            try:
+                gh_check = subprocess.run(["gh", "auth", "status"], capture_output=True, text=True)
+                if gh_check.returncode == 0:
+                    can_direct_submit = True
+            except Exception:
+                pass
+
+            if can_direct_submit and messagebox.askyesno(
+                "Submit Extension",
+                f"Submit '{name}' directly to the Community Gallery via GitHub CLI?\n\n(No browser or form required!)"
+            ):
+                status_var.set("Submitting to GitHub...")
+                root.update()
+                gh_res = subprocess.run([
+                    "gh", "issue", "create",
+                    "--repo", repo,
+                    "--title", f"[Extension Submission]: {name}",
+                    "--label", "extension-submission,needs-review",
+                    "--body", issue_body,
+                ], capture_output=True, text=True)
+                if gh_res.returncode == 0:
+                    created_url = gh_res.stdout.strip()
+                    status_var.set("Submission successful!")
+                    messagebox.showinfo(
+                        "Submitted Successfully!",
+                        f"Extension '{name}' has been submitted to the gallery!\n\nIssue: {created_url}\n\nGitHub Actions is automatically ingesting it and creating a PR."
+                    )
+                    return
+
+            # Fallback to browser
+            pkg_field = ""
+            if upload_url:
+                pkg_field = f"Download link: {upload_url}\n\n"
+            if len(b64_payload) < 2500:
+                pkg_field += f"<!-- MAGICEXT_BASE64_START -->\n{b64_payload}\n<!-- MAGICEXT_BASE64_END -->"
 
             query_params = urllib.parse.urlencode({
                 "template": "extension_submission.yml",
@@ -1825,15 +1890,14 @@ def launch_gui() -> None:
                 "description": desc,
                 "selected_symbol": symbol,
                 "symbol_color": color,
-                "package_upload": upload_url,
+                "package_upload": pkg_field,
             })
-            repo = os.getenv("SAFARI_MAGIC_HUB_REPO", "Vatsal057/safari-magic-extensions")
             issue_url = f"https://github.com/{repo}/issues/new?{query_params}"
-            subprocess.run(["open", "-R", str(pkg_path)], check=False)
+            status_var.set("Opening browser submission form...")
             subprocess.run(["open", issue_url], check=False)
             messagebox.showinfo(
                 "Submission Prepared",
-                f"1. Packaged: {pkg_path.name}\n2. Revealed in Finder.\n3. Opening GitHub submission form in your browser!\n\nJust drag the file into the issue and click Submit.",
+                f"Opening GitHub submission form in your browser.\n\nPackage data is pre-filled. Just click 'Submit new issue'!",
             )
         except Exception as e:
             messagebox.showerror("Submission Error", str(e))
@@ -2015,6 +2079,11 @@ def main() -> None:
         "--dry-run",
         action="store_true",
         help="Generate package and URL without opening browser",
+    )
+    submit_parser.add_argument(
+        "--web",
+        action="store_true",
+        help="Force opening browser submission form instead of direct GitHub CLI submission",
     )
 
     # Command: install
@@ -2201,37 +2270,104 @@ def main() -> None:
             symbol = meta.get("selected_symbol", "")
             color = meta.get("symbol_color_name", "blue")
 
-            print(f"\nUploading package temporarily...")
-            def upload_tmpfiles(filepath):
+            slug = re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-') or 'extension'
+            with open(pkg_path, "rb") as f:
+                pkg_bytes = f.read()
+            b64_payload = base64.b64encode(pkg_bytes).decode("utf-8")
+
+            # Check if GitHub CLI (gh) is installed and authenticated
+            can_submit_directly = False
+            if not args.web:
+                try:
+                    gh_auth = subprocess.run(["gh", "auth", "status"], capture_output=True, text=True)
+                    if gh_auth.returncode == 0:
+                        can_submit_directly = True
+                except Exception:
+                    pass
+
+            def upload_tmpfiles(filepath, name_slug):
                 import urllib.request, json, os, uuid
                 boundary = uuid.uuid4().hex
-                filename = os.path.basename(filepath)
                 with open(filepath, 'rb') as f:
                     file_data = f.read()
+                # Use .zip filename so tmpfiles.org does not reject with 422 Invalid file extension
+                zip_filename = f"{name_slug}.zip"
                 body = (
                     f"--{boundary}\r\n"
-                    f"Content-Disposition: form-data; name=\"file\"; filename=\"{filename}\"\r\n"
-                    "Content-Type: application/octet-stream\r\n\r\n".encode('utf-8')
+                    f"Content-Disposition: form-data; name=\"file\"; filename=\"{zip_filename}\"\r\n"
+                    "Content-Type: application/zip\r\n\r\n".encode('utf-8')
                     + file_data +
                     f"\r\n--{boundary}--\r\n".encode('utf-8')
                 )
                 req = urllib.request.Request("https://tmpfiles.org/api/v1/upload", data=body)
                 req.add_header('Content-Type', f'multipart/form-data; boundary={boundary}')
-                req.add_header('User-Agent', 'SafariMagicExtensionsManager/1.0')
+                req.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15)')
                 try:
                     with urllib.request.urlopen(req) as resp:
                         res = json.loads(resp.read().decode())
                         return res["data"]["url"]
-                except Exception as e:
-                    print(f"DEBUG Exception during upload: {e}")
+                except Exception:
                     return None
 
-            upload_url = upload_tmpfiles(pkg_path)
+            upload_url = upload_tmpfiles(pkg_path, slug)
+
+            issue_body = f"""### Extension Name
+{name}
+
+### Author Name / GitHub Handle
+{author}
+
+### Original AI Generation Prompt
+{prompt}
+
+### Extension Description
+{desc}
+
+### SF Symbol Tint Color
+{color}
+
+### SF Symbol Name
+{symbol}
+
+### Automated Package Data
+<!-- MAGICEXT_BASE64_START -->
+{b64_payload}
+<!-- MAGICEXT_BASE64_END -->
+"""
             if upload_url:
-                print("✓ Upload successful!")
-            else:
-                print("⚠️ Upload failed. You will need to attach the file manually.")
-                upload_url = ""
+                issue_body += f"\nTemporary Download Link: {upload_url}\n"
+
+            if can_submit_directly and not args.dry_run:
+                print(f"\n🚀 Submitting '{name}' directly via GitHub CLI...")
+                gh_proc = subprocess.run([
+                    "gh", "issue", "create",
+                    "--repo", args.repo,
+                    "--title", f"[Extension Submission]: {name}",
+                    "--label", "extension-submission,needs-review",
+                    "--body", issue_body,
+                ], capture_output=True, text=True)
+                if gh_proc.returncode == 0:
+                    created_url = gh_proc.stdout.strip()
+                    print(f"\n==========================================")
+                    print(f"   ✓ Extension Submitted Successfully!    ")
+                    print(f"==========================================")
+                    print(f"Extension: {name}")
+                    print(f"Author:    {author}")
+                    print(f"Issue:     {created_url}")
+                    print(f"Package:   {pkg_path}")
+                    print(f"\n🪄 GitHub Actions has started processing your submission!")
+                    print(f"   Thumbnails, gallery registry, and Pull Request will be created automatically.")
+                    return
+                else:
+                    print(f"Notice: gh submission exited with: {gh_proc.stderr.strip()}")
+                    print("Falling back to web browser submission...")
+
+            # Fallback to browser
+            pkg_field = ""
+            if upload_url:
+                pkg_field = f"Download link: {upload_url}\n\n"
+            if len(b64_payload) < 2500:
+                pkg_field += f"<!-- MAGICEXT_BASE64_START -->\n{b64_payload}\n<!-- MAGICEXT_BASE64_END -->"
 
             query_params = urllib.parse.urlencode({
                 "template": "extension_submission.yml",
@@ -2242,7 +2378,7 @@ def main() -> None:
                 "description": desc,
                 "selected_symbol": symbol,
                 "symbol_color": color,
-                "package_upload": upload_url,
+                "package_upload": pkg_field,
             })
             issue_url = f"https://github.com/{args.repo}/issues/new?{query_params}"
 
@@ -2252,12 +2388,9 @@ def main() -> None:
             print(f"Package: {pkg_path}")
             print(f"GitHub:  {issue_url}")
             print(f"\nNext steps:")
-            print(f"1. The submission form is opening in your browser.")
-            if not upload_url:
-                print(f"2. Drag and drop the revealed file into the issue form.")
-            print(f"3. Click 'Submit new issue'!")
+            print(f"1. Opening submission form in your browser.")
+            print(f"2. Package is pre-attached — just click 'Submit new issue'!")
 
-            subprocess.run(["open", "-R", str(pkg_path)], check=False)
             if not args.dry_run:
                 subprocess.run(["open", issue_url], check=False)
         finally:

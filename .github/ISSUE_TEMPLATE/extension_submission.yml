@@ -59,7 +59,7 @@ body:
         - pink
         - gray
     validations:
-      required: true
+      required: false
 
   - type: input
     id: selected_symbol
@@ -81,11 +81,11 @@ body:
   - type: textarea
     id: package_upload
     attributes:
-      label: Attach .magicext File
-      description: Drag and drop your `.magicext` package file into this box (or provide a public download link).
-      placeholder: "Attach your .magicext file here..."
+      label: Attach .magicext / .zip File or Automated Data
+      description: Automated submissions pre-fill this section. If manual, drag and drop your package as `.zip` (rename `.magicext` to `.zip` if uploading manually).
+      placeholder: "Auto-generated package data or link..."
     validations:
-      required: true
+      required: false
 
   - type: checkboxes
     id: checklist
@@ -93,8 +93,5 @@ body:
       label: Submission Verification
       options:
         - label: "I generated this extension with Safari AI or wrote the WebExtension code myself."
-          required: true
         - label: "This extension contains no malicious scripts, trackers, or obfuscated code."
-          required: true
         - label: "I tested this extension and verified it loads properly in Safari."
-          required: true
