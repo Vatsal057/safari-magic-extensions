@@ -114,15 +114,28 @@ non-terminal users.
 
 ## 4. Web Gallery
 
-The static gallery lives in [`web/`](web/). To view it locally:
+**[Browse the gallery →](https://vatsal057.github.io/safari-magic-extensions/)**
+
+The static gallery lives in [`web/`](web/). It has no build step and no dependencies:
+
+- A **setup section** with both ways to get started — download the Mac app, or copy the
+  one-line CLI installer. This is the prerequisite most people need first.
+- **Search** across name, prompt, author, tag, and ID, plus the category ribbon. Every
+  term in a multi-word query has to match.
+- Each extension opens an **install panel** with the exact `install <id>` command, a
+  direct package download, and the original prompt to copy and remix.
+- **Shareable links**: `#ext=<id>` opens a specific extension, `#submit` opens the
+  contribution instructions.
+
+To view it locally:
 
 ```bash
-python3 -m http.server 8000 --directory web
+make serve
 # open http://localhost:8000
 ```
 
-It must be served over HTTP; opening `index.html` directly with `file://` blocks the
-`fetch` of the catalog.
+It must be served over HTTP. Opening `index.html` with `file://` blocks the `fetch` of the
+catalog, and the page will say so rather than appearing empty.
 
 To deploy: push to `main`, then set **Settings → Pages → Build and deployment → Source:
 GitHub Actions**.

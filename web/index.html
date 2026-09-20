@@ -3,14 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Safari Magic Gallery — Community AI Extensions</title>
-  <meta name="description" content="A curated pixel art gallery of community-crafted Apple Safari AI Magic Extensions, natural language prompts, and 1-click install packages.">
+  <title>Safari Magic Gallery — Community AI Extensions for Safari</title>
+  <meta name="description" content="Browse and install community-made Safari AI Magic Extensions. Every package ships with the original AI prompt so you can remix it. Install with one command or one double-click.">
+  <meta name="theme-color" content="#252525">
+
+  <meta property="og:title" content="Safari Magic Gallery">
+  <meta property="og:description" content="Browse and install community-made Safari AI Magic Extensions. Every package ships with the original AI prompt.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/hero_cyberpunk.jpg">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&family=Pixelify+Sans:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+  <a href="#gallery" class="skip-link">Skip to gallery</a>
 
   <!-- Outer Page Frame Wrapper -->
   <div class="outer-page-wrapper">
@@ -19,12 +28,12 @@
     <header class="top-meta-header">
       <div class="top-meta-left">
         <a href="#" class="top-rocket-link" title="Safari Magic Gallery">
-          <img src="assets/pixel_rocket.svg" alt="Pixel Rocket" class="pixel-rocket-img">
+          <img src="assets/pixel_rocket.svg" alt="" class="pixel-rocket-img">
         </a>
       </div>
       <div class="top-meta-right">
         <div class="top-tagline">
-          focus on creators' works, using neutral and calm colors • ai magic gallery
+          community AI extensions for safari • every package ships its original prompt
         </div>
         <div class="color-palette-bar">
           <div class="swatch-pill swatch-cream">E8E0C6</div>
@@ -38,16 +47,16 @@
     <main class="main-canvas-frame">
 
       <!-- Pill Capsule Navigation -->
-      <nav class="capsule-nav" aria-label="Main Navigation">
-        <a href="#gallery" class="nav-item active">home</a>
-        <a href="#gallery" class="nav-item">gallery</a>
-        <div class="nav-center-icon">
+      <nav class="capsule-nav" aria-label="Main navigation">
+        <a href="#gallery" class="nav-item">browse</a>
+        <a href="#setup" class="nav-item">setup</a>
+        <div class="nav-center-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
             <path d="M12 2L15 8L21 9L17 14L18 20L12 17L6 20L7 14L3 9L9 8L12 2Z"/>
           </svg>
         </div>
         <a href="https://github.com/Vatsal057/safari-magic-extensions" target="_blank" rel="noopener" class="nav-item">github</a>
-        <button id="open-submit-modal-btn" class="nav-item nav-btn">submit</button>
+        <button id="open-submit-modal-btn" class="nav-item nav-btn">share yours</button>
       </nav>
 
       <!-- Massive Retro Pixel Headline -->
@@ -61,121 +70,220 @@
       </header>
 
       <!-- Hero Cinematic Showcase Box -->
-      <section class="hero-showcase-box" id="hero-box">
-        <!-- Background Artwork -->
+      <section class="hero-showcase-box" id="hero-box" aria-label="Introduction">
         <div class="hero-art-layer" id="hero-art">
-          <img src="assets/hero_cyberpunk.jpg" alt="Featured Extension Artwork" class="hero-img">
+          <img src="assets/hero_cyberpunk.jpg" alt="" class="hero-img">
           <div class="hero-scanlines"></div>
         </div>
 
-        <!-- Top-Left Floating Info Card -->
         <div class="hero-floating-card">
           <p class="hero-card-desc">
-            A curated gallery with unique AI-crafted Safari extensions & interactive new tabs you can install with 1 click!
+            Safari can build an extension from a sentence. This is where people share the
+            ones they made — with the exact prompt included, so you can install it or remix it.
           </p>
           <p class="hero-card-sub">
-            Moreover, if you are a creator you can submit your prompt and share with the community.
+            Install with one command, or download a package and double-click it.
           </p>
         </div>
 
-        <!-- Top-Right Floating Actions -->
         <div class="hero-floating-actions">
-          <button id="hero-become-author-btn" class="btn-pill-cream">become an author</button>
-          <a href="https://github.com/Vatsal057/safari-magic-extensions" target="_blank" rel="noopener" class="btn-pill-outline">view on github</a>
+          <a href="#gallery" class="btn-pill-cream">browse extensions</a>
+          <button id="hero-become-author-btn" class="btn-pill-outline">share yours</button>
         </div>
 
-        <!-- Bottom Category Icon Ribbon -->
         <div class="hero-bottom-ribbon" role="group" aria-label="Filter extensions by category">
-          <button class="ribbon-icon-btn active" data-filter="all" title="All Extensions" aria-pressed="true">
+          <button class="ribbon-icon-btn active" data-filter="all" title="All extensions" aria-pressed="true">
             <span class="ribbon-icon" aria-hidden="true">☕</span>
             <span class="ribbon-label">all</span>
           </button>
-          <button class="ribbon-icon-btn" data-filter="ambient" title="Ambient &amp; Nature" aria-pressed="false">
+          <button class="ribbon-icon-btn" data-filter="ambient" title="Ambient &amp; nature" aria-pressed="false">
             <span class="ribbon-icon" aria-hidden="true">🌿</span>
             <span class="ribbon-label">nature</span>
           </button>
-          <button class="ribbon-icon-btn" data-filter="focus" title="Zen &amp; Focus" aria-pressed="false">
+          <button class="ribbon-icon-btn" data-filter="focus" title="Zen &amp; focus" aria-pressed="false">
             <span class="ribbon-icon" aria-hidden="true">⛩️</span>
             <span class="ribbon-label">zen</span>
           </button>
-          <button class="ribbon-icon-btn" data-filter="newtab" title="Interactive Tabs" aria-pressed="false">
+          <button class="ribbon-icon-btn" data-filter="newtab" title="Interactive new tabs" aria-pressed="false">
             <span class="ribbon-icon" aria-hidden="true">👾</span>
             <span class="ribbon-label">tabs</span>
           </button>
-          <button class="ribbon-icon-btn" data-filter="tech" title="Tech &amp; Minimal" aria-pressed="false">
+          <button class="ribbon-icon-btn" data-filter="tech" title="Tech &amp; minimal" aria-pressed="false">
             <span class="ribbon-icon" aria-hidden="true">🎯</span>
             <span class="ribbon-label">tech</span>
           </button>
         </div>
       </section>
 
-      <!-- Quick CLI Terminal Bar -->
-      <div class="quick-terminal-row">
-        <div class="terminal-prefix">terminal:</div>
-        <div class="terminal-code-pill">
-          <code>safari-magic-ext install &lt;extension-id&gt;</code>
-          <button id="copy-cli-command-btn" class="terminal-copy-btn" title="Copy CLI Command">
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-            <span>copy</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Section Tab Bar -->
-      <div class="section-tab-wrapper" id="gallery">
-        <div class="section-tab-pill">
-          <span>the best extensions this month</span>
-        </div>
-        <div class="section-tab-line"></div>
-      </div>
-
-      <!-- Bento Gallery Section -->
-      <div class="bento-gallery-container">
-
-        <!-- Featured Large Card (Left) -->
-        <div class="bento-featured-card" id="featured-card">
-          <div class="featured-media-wrapper">
-            <img src="assets/night_meadow.jpg" alt="Night Meadow New Tab" class="featured-img" id="featured-img">
-            <div class="featured-badge-overlay">
-              <span class="badge-featured-star">★ FEATURED</span>
-            </div>
-            <button class="heart-btn" id="featured-heart-btn" aria-label="Like this extension" aria-pressed="false">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-              </svg>
-            </button>
+      <!-- ============ SETUP: the one-time prerequisite ============ -->
+      <section class="setup-section" id="setup" aria-labelledby="setup-heading">
+        <div class="section-tab-wrapper">
+          <div class="section-tab-pill">
+            <span id="setup-heading">first time? pick one</span>
           </div>
-          <div class="featured-card-footer">
-            <div class="creator-identity-group">
-              <div class="creator-avatar-dot"></div>
-              <div class="creator-meta">
-                <div class="creator-name" id="featured-creator">Vatsal</div>
-                <div class="creator-title" id="featured-title">Night Meadow New Tab</div>
+          <div class="section-tab-line"></div>
+        </div>
+
+        <p class="setup-lead">
+          You need one of these to install an extension. Both are free, macOS only, and take a minute.
+        </p>
+
+        <div class="setup-grid">
+          <!-- Mac app -->
+          <article class="setup-card">
+            <div class="setup-card-head">
+              <span class="setup-step">A</span>
+              <h3 class="setup-title">The Mac app</h3>
+              <span class="setup-tag">easiest</span>
+            </div>
+            <p class="setup-desc">
+              A small menu-style app that installs packages when you double-click them,
+              and lists what you already have.
+            </p>
+            <a href="https://github.com/Vatsal057/safari-magic-extensions/releases/latest"
+               target="_blank" rel="noopener" class="btn-pill-cream btn-full-width">
+              Download Safari Magic Hub ↗
+            </a>
+            <details class="setup-note">
+              <summary>First launch shows a warning?</summary>
+              <p>
+                The app is signed with a development certificate but not notarized, so macOS
+                asks first. Right-click the app and choose <strong>Open</strong>, then confirm.
+              </p>
+              <p>
+                It also needs <strong>Full Disk Access</strong> (System Settings → Privacy
+                &amp; Security) to read Safari's extension list.
+              </p>
+            </details>
+          </article>
+
+          <!-- CLI -->
+          <article class="setup-card">
+            <div class="setup-card-head">
+              <span class="setup-step">B</span>
+              <h3 class="setup-title">The command line</h3>
+              <span class="setup-tag">for terminal folks</span>
+            </div>
+            <p class="setup-desc">
+              One command installs the <code>safari-magic-ext</code> tool. Needs Python 3.10+,
+              which macOS already has.
+            </p>
+            <div class="code-row">
+              <code id="setup-cli-cmd">curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash</code>
+              <button class="btn-mini-copy" data-copy-target="setup-cli-cmd" data-copy-label="Install command copied">copy</button>
+            </div>
+            <details class="setup-note">
+              <summary>What it does</summary>
+              <p>
+                Downloads a single Python file to <code>~/.local/bin/safari-magic-ext</code>,
+                checks it is valid before making it executable, and nothing else. No
+                dependencies, no background processes.
+              </p>
+            </details>
+          </article>
+        </div>
+      </section>
+
+      <!-- ============ GALLERY ============ -->
+      <section class="gallery-section" id="gallery" aria-labelledby="gallery-heading">
+        <div class="section-tab-wrapper">
+          <div class="section-tab-pill">
+            <span id="gallery-heading">browse extensions</span>
+          </div>
+          <div class="section-tab-line"></div>
+        </div>
+
+        <!-- Search + result count -->
+        <div class="browse-toolbar">
+          <div class="search-wrap">
+            <svg class="search-icon" viewBox="0 0 24 24" width="14" height="14" fill="none"
+                 stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="M21 21l-4.3-4.3"></path>
+            </svg>
+            <label class="visually-hidden" for="search-input">Search extensions</label>
+            <input type="search" id="search-input" class="search-input" autocomplete="off"
+                   placeholder="search by name, prompt, author, or tag…">
+            <button id="search-clear" class="search-clear hidden" aria-label="Clear search">&times;</button>
+          </div>
+          <div class="browse-count" id="result-count" role="status" aria-live="polite"></div>
+        </div>
+
+        <div class="bento-gallery-container">
+          <!-- Featured Large Card -->
+          <div class="bento-featured-card" id="featured-card">
+            <div class="featured-media-wrapper">
+              <img src="assets/night_meadow.jpg" alt="" class="featured-img" id="featured-img">
+              <div class="featured-badge-overlay">
+                <span class="badge-featured-star">★ FEATURED</span>
+              </div>
+              <button class="heart-btn" id="featured-heart-btn" aria-label="Save to your favourites" aria-pressed="false">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+              </button>
+            </div>
+            <div class="featured-card-footer">
+              <div class="creator-identity-group">
+                <div class="creator-avatar-dot" aria-hidden="true"></div>
+                <div class="creator-meta">
+                  <div class="creator-name" id="featured-creator">community</div>
+                  <div class="creator-title" id="featured-title">Loading…</div>
+                </div>
+              </div>
+              <div class="featured-actions">
+                <button class="btn-card-action" id="featured-inspect-btn">how to install</button>
+                <a href="#" class="btn-card-save" id="featured-save-btn" download>save</a>
               </div>
             </div>
-            <div class="featured-actions">
-              <button class="btn-card-action" id="featured-inspect-btn">inspect</button>
-              <a href="packages/Night_Meadow_New_Tab.magicext" class="btn-card-save" id="featured-save-btn" download>save</a>
-            </div>
+          </div>
+
+          <!-- Extension card grid -->
+          <div class="bento-cards-grid" id="bento-cards-grid">
+            <p class="grid-empty-note">Loading extensions…</p>
           </div>
         </div>
+      </section>
 
-        <!-- 2x3 Grid of Extension Cards (Right) -->
-        <div class="bento-cards-grid" id="bento-cards-grid">
-          <!-- Dynamic cards injected via JavaScript -->
+      <!-- ============ HOW IT WORKS ============ -->
+      <section class="how-section" aria-labelledby="how-heading">
+        <div class="section-tab-wrapper">
+          <div class="section-tab-pill">
+            <span id="how-heading">how it works</span>
+          </div>
+          <div class="section-tab-line"></div>
         </div>
-
-      </div>
+        <ol class="how-steps">
+          <li>
+            <span class="how-num">1</span>
+            <div>
+              <h3>Pick an extension</h3>
+              <p>Every card shows the exact prompt its author typed into Safari.</p>
+            </div>
+          </li>
+          <li>
+            <span class="how-num">2</span>
+            <div>
+              <h3>Install it</h3>
+              <p>Run one command, or download the <code>.magicext</code> file and double-click it.</p>
+            </div>
+          </li>
+          <li>
+            <span class="how-num">3</span>
+            <div>
+              <h3>Or remix it</h3>
+              <p>Copy the prompt, change a detail, and let Safari generate your own version.</p>
+            </div>
+          </li>
+        </ol>
+      </section>
 
       <!-- Gallery Footer Bar -->
       <div class="gallery-bottom-bar">
-        <a href="https://github.com/Vatsal057/safari-magic-extensions" target="_blank" rel="noopener" class="link-to-community">
-          <span>to the community hub</span>
-          <span class="arrow-glyph">⟶</span>
-        </a>
+        <button id="footer-submit-btn" class="link-to-community link-as-button">
+          <span>share your own extension</span>
+          <span class="arrow-glyph" aria-hidden="true">⟶</span>
+        </button>
       </div>
 
     </main>
@@ -183,112 +291,179 @@
     <!-- Page Outer Footer -->
     <footer class="outer-page-footer">
       <div class="footer-left">
-        Safari Magic Gallery • Open source repository for Apple Safari AI Extensions
+        Safari Magic Gallery • open source • MIT licensed
       </div>
       <div class="footer-right">
-        <a href="https://github.com/Vatsal057/safari-magic-extensions" target="_blank" rel="noopener">GitHub Repository</a>
+        <a href="https://github.com/Vatsal057/safari-magic-extensions" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/Vatsal057/safari-magic-extensions/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Contributing</a>
+        <a href="https://github.com/Vatsal057/safari-magic-extensions/releases/latest" target="_blank" rel="noopener">Releases</a>
       </div>
     </footer>
 
   </div>
 
-  <!-- Extension Inspector Drawer / Modal -->
+  <!-- ============ INSPECTOR / INSTALL MODAL ============ -->
   <div id="inspector-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true"
        aria-labelledby="modal-title" aria-hidden="true">
     <div class="modal-pixel-card">
       <div class="modal-pixel-header">
         <div class="modal-header-meta">
           <span class="modal-category-tag" id="modal-category">EXTENSION</span>
-          <h2 class="modal-title" id="modal-title">Night Meadow New Tab</h2>
-          <div class="modal-author-badge" id="modal-author">by @vatsal</div>
+          <h2 class="modal-title" id="modal-title"></h2>
+          <div class="modal-author-badge" id="modal-author"></div>
         </div>
-        <button id="close-inspector-btn" class="modal-pixel-close" aria-label="Close inspector">&times;</button>
+        <button id="close-inspector-btn" class="modal-pixel-close" aria-label="Close">&times;</button>
       </div>
 
       <div class="modal-pixel-body">
         <div class="modal-image-preview">
-          <img src="assets/night_meadow.jpg" alt="Preview" id="modal-img">
+          <img src="" alt="" id="modal-img">
         </div>
 
         <div class="modal-info-stack">
           <div class="modal-section-block">
-            <div class="modal-section-label">DESCRIPTION</div>
+            <div class="modal-section-label">WHAT IT DOES</div>
             <p class="modal-desc-text" id="modal-description"></p>
+          </div>
+
+          <!-- Install: two concrete routes -->
+          <div class="modal-section-block">
+            <div class="modal-section-label">INSTALL IT</div>
+
+            <div class="install-route">
+              <div class="install-route-head">
+                <span class="install-route-num">1</span>
+                <span class="install-route-title">With the command line</span>
+              </div>
+              <div class="code-row">
+                <code id="modal-cli-cmd"></code>
+                <button id="copy-modal-cli-btn" class="btn-mini-copy">copy</button>
+              </div>
+            </div>
+
+            <div class="install-route">
+              <div class="install-route-head">
+                <span class="install-route-num">2</span>
+                <span class="install-route-title">With the Mac app</span>
+              </div>
+              <p class="install-route-hint">
+                Download the package, then double-click it. Safari restarts to pick it up.
+              </p>
+              <a href="#" id="modal-download-pkg-btn" class="btn-pill-cream btn-full-width" download>
+                <span id="modal-download-label">Download package</span>
+              </a>
+            </div>
+
+            <p class="install-route-footnote">
+              Have neither yet? <a href="#setup" id="modal-setup-link">Set up in a minute →</a>
+            </p>
           </div>
 
           <div class="modal-section-block">
             <div class="modal-section-label-row">
-              <span class="modal-section-label">ORIGINAL AI PROMPT</span>
+              <span class="modal-section-label">THE PROMPT THAT MADE IT</span>
               <button id="copy-modal-prompt-btn" class="btn-mini-copy">copy prompt</button>
             </div>
             <blockquote class="modal-prompt-box" id="modal-prompt"></blockquote>
+            <p class="install-route-hint">
+              Paste this into Safari's extension creator to generate your own variation.
+            </p>
           </div>
 
-          <div class="modal-section-block">
-            <div class="modal-section-label">1-CLICK TERMINAL INSTALL</div>
-            <div class="modal-terminal-box">
-              <code id="modal-cli-cmd">safari-magic-ext install &lt;extension-id&gt;</code>
-              <button id="copy-modal-cli-btn" class="btn-mini-copy">copy</button>
-            </div>
-          </div>
-
-          <div class="modal-footer-actions">
-            <a href="#" id="modal-download-pkg-btn" class="btn-pill-cream btn-full-width" download>
-              <span>Download .magicext Package</span>
-            </a>
-          </div>
+          <div class="modal-meta-row" id="modal-meta-row"></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Submit Modal -->
+  <!-- ============ SUBMIT MODAL ============ -->
   <div id="submit-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true"
-       aria-hidden="true">
+       aria-labelledby="submit-modal-title" aria-hidden="true">
     <div class="modal-pixel-card submit-card">
       <div class="modal-pixel-header">
         <div>
           <span class="modal-category-tag">CONTRIBUTE</span>
-          <h2 class="modal-title">Submit Your Safari AI Extension</h2>
+          <h2 class="modal-title" id="submit-modal-title">Share your extension</h2>
         </div>
-        <button id="close-submit-btn" class="modal-pixel-close">&times;</button>
+        <button id="close-submit-btn" class="modal-pixel-close" aria-label="Close">&times;</button>
       </div>
 
       <div class="modal-pixel-body">
         <p class="submit-lead-text">
-          Share your custom AI prompt and Safari Magic Extension with users worldwide.
+          Made something in Safari? Package it and send it in. A maintainer reviews every
+          submission, then it appears in this gallery.
         </p>
+
+        <!-- Fastest path -->
+        <div class="submit-primary">
+          <div class="submit-primary-head">
+            <span class="setup-tag">one command</span>
+            <h3 class="option-heading">If you have the CLI</h3>
+          </div>
+          <p class="option-desc">
+            This packages your extension, reveals the file in Finder, and opens a
+            pre-filled submission form in your browser. Drag the file in and submit.
+          </p>
+          <div class="code-row">
+            <code id="submit-cmd">safari-magic-ext submit "Your Extension Name"</code>
+            <button class="btn-mini-copy" data-copy-target="submit-cmd" data-copy-label="Submit command copied">copy</button>
+          </div>
+        </div>
+
+        <div class="submit-divider"><span>or do it by hand</span></div>
 
         <div class="submit-options-grid">
           <div class="submit-option-box">
             <div class="option-num">01</div>
-            <h3 class="option-heading">GitHub Issue Form (Easiest)</h3>
-            <p class="option-desc">Drop your <code>.magicext</code> bundle or write your AI prompt directly into our automated GitHub submission template.</p>
-            <a href="https://github.com/Vatsal057/safari-magic-extensions/issues/new?template=extension_submission.yml" target="_blank" rel="noopener" class="btn-pill-cream">
-              Open Issue Form ↗
-            </a>
+            <h3 class="option-heading">Package it</h3>
+            <p class="option-desc">
+              Turn an installed extension into a shareable <code>.magicext</code> file.
+              It lands in your Downloads folder.
+            </p>
+            <div class="code-row code-row-tight">
+              <code id="pack-cmd">safari-magic-ext pack "Your Extension Name"</code>
+              <button class="btn-mini-copy" data-copy-target="pack-cmd" data-copy-label="Pack command copied">copy</button>
+            </div>
           </div>
 
           <div class="submit-option-box">
             <div class="option-num">02</div>
-            <h3 class="option-heading">Pull Request (Instant)</h3>
-            <p class="option-desc">Drop your package into <code>web/packages/</code>, run <code>python3 scripts/build_registry.py</code>, and open a PR. Automatically published on merge.</p>
-            <a href="https://github.com/Vatsal057/safari-magic-extensions" target="_blank" rel="noopener" class="btn-pill-outline">
-              Fork Repository ↗
+            <h3 class="option-heading">Attach it</h3>
+            <p class="option-desc">
+              Open the submission form, fill in your name and the prompt you used, and
+              attach the file. No git required.
+            </p>
+            <a href="https://github.com/Vatsal057/safari-magic-extensions/issues/new?template=extension_submission.yml"
+               target="_blank" rel="noopener" class="btn-pill-cream">
+              Open the form ↗
             </a>
           </div>
         </div>
 
-        <div class="submit-pack-helper">
-          <div class="helper-label">Quick pack from command line:</div>
-          <code class="helper-code">python3 safari-magic-ext.py pack "Your Extension Name"</code>
-        </div>
+        <details class="setup-note submit-advanced">
+          <summary>Prefer a pull request?</summary>
+          <p>
+            Drop the package into <code>web/packages/</code>, run
+            <code>python3 scripts/build_registry.py</code>, and commit both the package and the
+            regenerated catalog. CI validates the archive and checks the catalog is current.
+          </p>
+          <p>
+            Full details in the
+            <a href="https://github.com/Vatsal057/safari-magic-extensions/blob/main/CONTRIBUTING.md"
+               target="_blank" rel="noopener">contributing guide ↗</a>.
+          </p>
+        </details>
+
+        <p class="submit-fineprint">
+          Packages are checked automatically for unsafe archive paths and required metadata.
+          Please don't submit anything with tracking or obfuscated code.
+        </p>
       </div>
     </div>
   </div>
 
   <!-- Toast Notification -->
-  <div id="toast" class="pixel-toast hidden">Prompt copied to clipboard!</div>
+  <div id="toast" class="pixel-toast hidden" role="status" aria-live="polite"></div>
 
   <script src="app.js"></script>
 </body>

@@ -1190,3 +1190,551 @@ body {
   transform: translateY(12px);
   pointer-events: none;
 }
+
+/* =========================================================================
+   Setup, search, install routes, and how-it-works
+   Added for the browse/install/submit flows.
+   ========================================================================= */
+
+/* --- Accessibility helpers --- */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 12px;
+  z-index: 200;
+  padding: 10px 16px;
+  background: var(--cream-accent);
+  color: var(--charcoal);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 0 0 8px 8px;
+  text-decoration: none;
+  transition: top var(--transition-fast);
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+/* --- Shared: copyable command row --- */
+.code-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #141414;
+  border: 1px solid var(--cream-border);
+  border-radius: 8px;
+  padding: 9px 10px 9px 12px;
+}
+
+.code-row code {
+  flex: 1;
+  min-width: 0; /* allows the pre-formatted command to scroll instead of stretching */
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--cream-accent);
+  overflow-x: auto;
+  white-space: pre;
+  scrollbar-width: thin;
+}
+
+.code-row .btn-mini-copy {
+  flex-shrink: 0;
+}
+
+.code-row-tight code {
+  font-size: 10px;
+}
+
+/* --- Setup section --- */
+.setup-section,
+.gallery-section,
+.how-section {
+  margin-top: 46px;
+}
+
+.setup-lead {
+  margin: 0 0 20px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 62ch;
+}
+
+/* minmax(0, 1fr) rather than 1fr: the long curl command has a wide
+   min-content size and would otherwise stretch its own column. */
+.setup-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+@media (max-width: 760px) {
+  .setup-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.setup-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--cream-border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.setup-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.setup-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  background: var(--cream-accent);
+  color: var(--charcoal);
+  border-radius: 6px;
+  font-family: var(--font-pixel);
+  font-size: 11px;
+}
+
+.setup-title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cream-accent);
+}
+
+.setup-tag {
+  padding: 3px 8px;
+  background: var(--cream-dim);
+  border: 1px solid var(--cream-border);
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--cream-muted);
+}
+
+.setup-desc {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+
+.setup-desc code,
+.setup-note code,
+.option-desc code,
+.how-steps code {
+  padding: 1px 5px;
+  background: #141414;
+  border: 1px solid var(--cream-border);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--cream-accent);
+}
+
+.btn-full-width {
+  width: 100%;
+}
+
+/* Collapsible notes keep caveats available without cluttering the card.
+   margin-top:auto pins the note to the bottom so cards of differing
+   content length still line up. */
+.setup-note {
+  border-top: 1px solid var(--cream-dim);
+  padding-top: 10px;
+  margin-top: auto;
+}
+
+.setup-note summary {
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--cream-muted);
+  list-style: none;
+}
+
+.setup-note summary::-webkit-details-marker {
+  display: none;
+}
+
+.setup-note summary::before {
+  content: '+ ';
+  color: var(--cream-accent);
+}
+
+.setup-note[open] summary::before {
+  content: '− ';
+}
+
+.setup-note summary:focus-visible {
+  outline: 2px solid var(--cream-accent);
+  outline-offset: 2px;
+}
+
+.setup-note p {
+  margin: 10px 0 0;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+
+.setup-note a {
+  color: var(--cream-accent);
+}
+
+/* --- Browse toolbar (search + count) --- */
+.browse-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 240px;
+  max-width: 420px;
+  background: var(--bg-card);
+  border: 1px solid var(--cream-border);
+  border-radius: 9999px;
+  padding: 0 12px;
+}
+
+.search-wrap:focus-within {
+  border-color: var(--cream-border-strong);
+}
+
+.search-icon {
+  flex-shrink: 0;
+  color: var(--text-dim);
+}
+
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--cream-accent);
+}
+
+.search-input::placeholder {
+  color: var(--text-dim);
+}
+
+/* Hide the native clear control; we provide our own. */
+.search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-clear {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 2px;
+  color: var(--text-muted);
+}
+
+.search-clear:hover {
+  color: var(--cream-accent);
+}
+
+.browse-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.link-inline {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--cream-accent);
+  text-decoration: underline;
+}
+
+/* --- Install routes inside the inspector --- */
+.install-route {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--cream-dim);
+}
+
+.install-route:last-of-type {
+  border-bottom: none;
+}
+
+.install-route-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.install-route-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  background: var(--cream-dim);
+  border: 1px solid var(--cream-border);
+  border-radius: 5px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--cream-accent);
+}
+
+.install-route-title {
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--cream-accent);
+}
+
+.install-route-hint {
+  margin: 8px 0 10px;
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.install-route-footnote {
+  margin: 12px 0 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.install-route-footnote a {
+  color: var(--cream-accent);
+}
+
+.modal-meta-row {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--cream-dim);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  word-break: break-word;
+}
+
+/* --- Submit modal --- */
+.submit-primary {
+  background: var(--bg-card);
+  border: 1px solid var(--cream-border-strong);
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 4px;
+}
+
+.submit-primary-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.submit-primary .option-heading {
+  margin: 0;
+}
+
+.submit-primary .option-desc {
+  margin-bottom: 12px;
+}
+
+.submit-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0 16px;
+}
+
+.submit-divider::before,
+.submit-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--cream-dim);
+}
+
+.submit-divider span {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+}
+
+.submit-advanced {
+  margin-top: 18px;
+}
+
+.submit-fineprint {
+  margin: 16px 0 0;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+/* --- How it works --- */
+.how-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (max-width: 760px) {
+  .how-steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+.how-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.how-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  background: var(--cream-dim);
+  border: 1px solid var(--cream-border);
+  border-radius: 8px;
+  font-family: var(--font-pixel);
+  font-size: 12px;
+  color: var(--cream-accent);
+}
+
+.how-steps h3 {
+  margin: 0 0 4px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cream-accent);
+}
+
+.how-steps p {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* --- Footer / misc --- */
+.link-as-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+.outer-page-footer .footer-right {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* The grid now shows the full catalog, so give it room to wrap. */
+.bento-cards-grid {
+  align-content: start;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* The card grid can now be taller than the featured card (the catalog grows),
+   so let both keep their natural height instead of stretching to match. */
+.bento-gallery-container {
+  align-items: start;
+}
+
+/* .modal-info-stack had no rule at all, so the sections inside the inspector
+   ran together. It holds the description, install routes, prompt, and meta row. */
+.modal-info-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modal-info-stack > .modal-section-block:not(:first-child) {
+  padding-top: 18px;
+  border-top: 1px solid var(--cream-dim);
+}
+
+.modal-desc-text {
+  margin: 0;
+}
