@@ -14,7 +14,7 @@ REPO="${REPO:-Vatsal057/safari-magic-extensions}"
 REF="${REF:-main}"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 TARGET="$INSTALL_DIR/safari-magic-ext"
-SOURCE_URL="https://raw.githubusercontent.com/${REPO}/${REF}/safari-magic-ext.py"
+SOURCE_URL="https://raw.githubusercontent.com/${REPO}/${REF}/safari-magic-ext.py?v=$(date +%s)"
 
 if [[ "$(uname -s)" != "Darwin" ]]; then
   echo "Error: Safari Magic Extensions only runs on macOS." >&2
