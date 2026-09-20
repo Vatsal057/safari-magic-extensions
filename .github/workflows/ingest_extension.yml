@@ -43,18 +43,23 @@ jobs:
       - name: Build Registry
         run: python3 scripts/build_registry.py
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          commit-message: "feat: ingest extension from issue #${{ github.event.issue.number }}"
-          title: "Ingest Extension from Issue #${{ github.event.issue.number }}"
-          body: "Automated PR to ingest extension submission from issue #${{ github.event.issue.number }}."
-          branch: "ingest-issue-${{ github.event.issue.number }}"
-          labels: "automated-pr, extension-submission"
+      - name: Commit and Push to Main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add web/packages/ web/assets/thumbnails/ web/community_registry.json
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "feat(registry): publish extension from issue #${{ github.event.issue.number }}"
+            git push origin main
+          fi
+
+      - name: Close Issue with Success Message
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue comment ${{ github.event.issue.number }} --body "🎉 **Extension Published!**
           
-      - name: Comment on Issue
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          issue-number: ${{ github.event.issue.number }}
-          body: |
-            I've processed this submission and opened a PR! Maintainers will review it shortly.
+          Your extension has been verified, screenshots generated, and it is now live in the Community Gallery and available for 1-click install via the CLI! 🪄"
+          gh issue close ${{ github.event.issue.number }} --reason completed
