@@ -1782,6 +1782,40 @@ def launch_gui() -> None:
             symbol = meta.get("selected_symbol", "")
             color = meta.get("symbol_color_name", "blue")
 
+            status_var.set("Uploading package temporarily...")
+            root.update()
+
+            # Upload to tmpfiles.org so the user doesn't have to drag and drop manually.
+            def upload_tmpfiles(filepath):
+                import urllib.request, json, os, uuid
+                boundary = uuid.uuid4().hex
+                filename = os.path.basename(filepath)
+                with open(filepath, 'rb') as f:
+                    file_data = f.read()
+                body = (
+                    f"--{boundary}\r\n"
+                    f"Content-Disposition: form-data; name=\"file\"; filename=\"{filename}\"\r\n"
+                    "Content-Type: application/octet-stream\r\n\r\n".encode('utf-8')
+                    + file_data +
+                    f"\r\n--{boundary}--\r\n".encode('utf-8')
+                )
+                req = urllib.request.Request("https://tmpfiles.org/api/v1/upload", data=body)
+                req.add_header('Content-Type', f'multipart/form-data; boundary={boundary}')
+                req.add_header('User-Agent', 'SafariMagicExtensionsManager/1.0')
+                try:
+                    with urllib.request.urlopen(req) as resp:
+                        res = json.loads(resp.read().decode())
+                        return res["data"]["url"]
+                except Exception as e:
+                    return None
+
+            upload_url = upload_tmpfiles(pkg_path)
+            if upload_url:
+                status_var.set("Ready to submit!")
+            else:
+                status_var.set("Upload failed. You will need to attach the file manually.")
+                upload_url = ""
+
             query_params = urllib.parse.urlencode({
                 "template": "extension_submission.yml",
                 "title": f"[Extension Submission]: {name}",
@@ -1791,6 +1825,7 @@ def launch_gui() -> None:
                 "description": desc,
                 "selected_symbol": symbol,
                 "symbol_color": color,
+                "package_upload": upload_url,
             })
             repo = os.getenv("SAFARI_MAGIC_HUB_REPO", "Vatsal057/safari-magic-extensions")
             issue_url = f"https://github.com/{repo}/issues/new?{query_params}"
@@ -2166,6 +2201,37 @@ def main() -> None:
             symbol = meta.get("selected_symbol", "")
             color = meta.get("symbol_color_name", "blue")
 
+            print(f"\nUploading package temporarily...")
+            def upload_tmpfiles(filepath):
+                import urllib.request, json, os, uuid
+                boundary = uuid.uuid4().hex
+                filename = os.path.basename(filepath)
+                with open(filepath, 'rb') as f:
+                    file_data = f.read()
+                body = (
+                    f"--{boundary}\r\n"
+                    f"Content-Disposition: form-data; name=\"file\"; filename=\"{filename}\"\r\n"
+                    "Content-Type: application/octet-stream\r\n\r\n".encode('utf-8')
+                    + file_data +
+                    f"\r\n--{boundary}--\r\n".encode('utf-8')
+                )
+                req = urllib.request.Request("https://tmpfiles.org/api/v1/upload", data=body)
+                req.add_header('Content-Type', f'multipart/form-data; boundary={boundary}')
+                req.add_header('User-Agent', 'SafariMagicExtensionsManager/1.0')
+                try:
+                    with urllib.request.urlopen(req) as resp:
+                        res = json.loads(resp.read().decode())
+                        return res["data"]["url"]
+                except Exception as e:
+                    return None
+
+            upload_url = upload_tmpfiles(pkg_path)
+            if upload_url:
+                print("✓ Upload successful!")
+            else:
+                print("⚠️ Upload failed. You will need to attach the file manually.")
+                upload_url = ""
+
             query_params = urllib.parse.urlencode({
                 "template": "extension_submission.yml",
                 "title": f"[Extension Submission]: {name}",
@@ -2175,6 +2241,7 @@ def main() -> None:
                 "description": desc,
                 "selected_symbol": symbol,
                 "symbol_color": color,
+                "package_upload": upload_url,
             })
             issue_url = f"https://github.com/{args.repo}/issues/new?{query_params}"
 
@@ -2185,7 +2252,8 @@ def main() -> None:
             print(f"GitHub:  {issue_url}")
             print(f"\nNext steps:")
             print(f"1. The submission form is opening in your browser.")
-            print(f"2. Drag and drop the revealed file into the issue form.")
+            if not upload_url:
+                print(f"2. Drag and drop the revealed file into the issue form.")
             print(f"3. Click 'Submit new issue'!")
 
             subprocess.run(["open", "-R", str(pkg_path)], check=False)

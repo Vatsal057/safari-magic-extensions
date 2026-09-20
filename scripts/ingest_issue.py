@@ -11,14 +11,21 @@ def main():
         print("Error: ISSUE_BODY environment variable is empty.")
         exit(1)
         
-    # Find github user-attachments URL for the .magicext file
-    match = re.search(r'(https://github\.com/user-attachments/assets/[a-zA-Z0-9-]+)', body)
-    if not match:
-        print("Error: Could not find a .magicext attachment URL in the issue body.")
-        exit(1)
-        
-    url = match.group(1)
-    print(f"Found attachment URL: {url}")
+    # Check for tmpfiles.org URL first
+    tmpfiles_match = re.search(r'(https://tmpfiles\.org/[a-zA-Z0-9]+/[a-zA-Z0-9_.-]+)', body)
+    if tmpfiles_match:
+        view_url = tmpfiles_match.group(1)
+        # Convert view URL to direct download URL
+        url = view_url.replace('tmpfiles.org/', 'tmpfiles.org/dl/', 1)
+        print(f"Found tmpfiles URL: {url}")
+    else:
+        # Fallback to GitHub attachments
+        match = re.search(r'(https://github\.com/user-attachments/assets/[a-zA-Z0-9-]+)', body)
+        if not match:
+            print("Error: Could not find a .magicext attachment URL (tmpfiles or github) in the issue body.")
+            exit(1)
+        url = match.group(1)
+        print(f"Found GitHub attachment URL: {url}")
     
     packages_dir = Path("web/packages")
     packages_dir.mkdir(parents=True, exist_ok=True)
