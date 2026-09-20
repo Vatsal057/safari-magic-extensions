@@ -1,5 +1,5 @@
 /* =========================================================================
-   Safari Magic Gallery — Retro Pixel Art Design System
+   Safari Magic Gallery: Retro Pixel Art Design System
    Exact palette & composition matching reference aesthetic:
    • Cream: #E8E0C6
    • Dark Charcoal Canvas: #252525
@@ -2077,9 +2077,9 @@ body.modal-open {
   }
 }
 
-/* ================================================================
-   Install & Submit Modal — Tab Switcher
-   ================================================================ */
+/* ==========================================================================
+   Install & Submit Modal: Tab Switcher
+   ========================================================================== */
 
 .install-tab-bar {
   display: flex;
@@ -2145,7 +2145,7 @@ body.modal-open {
 }
 
 /* ================================================================
-   Submit Modal — Dropzone
+   Submit Modal: Dropzone
    ================================================================ */
 
 .submit-tab-bar {

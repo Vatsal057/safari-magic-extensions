@@ -2,7 +2,7 @@
 # Render a real screenshot of each extension's new-tab page.
 #
 # Every .magicext is self-contained HTML, so the honest thumbnail is a picture
-# of what the extension actually looks like — not hand-picked art that may not
+# of what the extension actually looks like, rather than hand-picked art that may not
 # match. Output goes to web/assets/thumbnails/<slug>.png, which
 # build_registry.py picks up automatically unless a curated art_image overrides it.
 #

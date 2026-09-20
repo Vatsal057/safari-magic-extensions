@@ -13,14 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   which are evaluated at import time and need Python 3.10, but macOS ships 3.9.6
   as `/usr/bin/python3`. `safari-magic-ext install <id>` failed with
   `TypeError: unsupported operand type(s) for |` for anyone who had not separately
-  installed a newer Python — while the docs claimed macOS already had a suitable
+  installed a newer Python, while documentation stated macOS included a suitable
   version. The CLI and both maintainer scripts now run on 3.9.6.
 - `install-cli.sh` executes the downloaded tool rather than only byte-compiling it.
   `py_compile` checks syntax only, which is why the above shipped unnoticed. If the
-  interpreter is unsuitable it now says so and points at the app instead.
+  interpreter is unsuitable, it reports the failure directly.
 - `explore <id>` found nothing while `install <id>` worked, because the search did
   not cover the catalog `id`. Pasting an ID copied from the gallery now works.
-- `Info.plist` reported version 1.0.0 while the CLI reported 1.1.0.
 
 ### Added
 
@@ -40,7 +39,7 @@ CLI previously could not reach the catalog at all) and hardened archive extracti
 
 - **The installed CLI could never load the community catalog.** The catalog path was
   resolved relative to the script file, but `install-cli.sh` copies the script to
-  `~/.local/bin`, where no `web/` directory exists — and there was no default remote
+  `~/.local/bin`, where no `web/` directory exists, and there was no default remote
   URL, only an undocumented `SAFARI_MAGIC_REGISTRY_URL` environment variable. As a
   result `explore` listed nothing and `install <id>` failed for every user who
   installed the tool as documented. The CLI now fetches the published catalog, falls
@@ -48,10 +47,9 @@ CLI previously could not reach the catalog at all) and hardened archive extracti
 - **Catalog IDs are now readable slugs** (`night-meadow-new-tab`) instead of raw
   UUIDs, so the documented `install <id>` commands work. Lookups still accept a
   UUID, a name, or a slug.
-- `pack` and `convert` no longer rewrite `manifest.json` inside your source folder;
-  packaging happens on a staged copy.
-- `convert` no longer requires Safari's database, so it works on a machine where
-  Safari has never run.
+- `pack` and `convert` now operate on a staged copy, preserving `manifest.json`
+  inside your source directory.
+- `convert` operates independently of Safari's database, functioning on any system.
 - Ambiguous extension names (for example `night` matching three extensions) now
   report the candidates instead of silently picking the first match.
 - The gallery's "nature" filter showed every extension, because the button emitted

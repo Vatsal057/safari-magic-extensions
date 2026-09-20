@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Safari Magic Gallery — Community AI Extensions for Safari</title>
+  <title>Safari Magic Gallery: Community AI Extensions for Safari</title>
   <meta name="description" content="Browse and install community-made Safari AI Magic Extensions. Every package ships with the original AI prompt so you can remix it. Install with one command or one double-click.">
   <meta name="theme-color" content="#252525">
 
@@ -78,11 +78,11 @@
 
         <div class="hero-floating-card">
           <p class="hero-card-desc">
-            Safari can build an extension from a sentence. This is where people share the
-            ones they made — with the exact prompt included, so you can install it or remix it.
+            Safari can build an extension from a sentence. Here people share what
+            they made, with the original prompt included so you can install or remix it.
           </p>
           <p class="hero-card-sub">
-            Install with one command, or download a package and double-click it.
+            Install with a single terminal command or browse the catalog.
           </p>
         </div>
 
@@ -135,7 +135,7 @@
             <div>
               <h3 class="setup-primary-title">Instant Setup in 1 Command</h3>
               <p class="setup-primary-sub">
-                Runs on standard macOS with built-in Python — no external tools, no dependencies.
+                Runs on macOS using the built-in Python 3 interpreter.
               </p>
             </div>
           </div>
@@ -199,8 +199,8 @@
             <select id="sort-select" class="sort-select">
               <option value="newest">Newest first</option>
               <option value="oldest">Oldest first</option>
-              <option value="name">Name (A–Z)</option>
-              <option value="author">Author (A–Z)</option>
+              <option value="name">Name (A-Z)</option>
+              <option value="author">Author (A-Z)</option>
             </select>
           </div>
 
@@ -314,8 +314,7 @@
             <div class="install-pane" id="install-pane-oneliner" role="tabpanel"
                  aria-labelledby="tab-oneliner">
               <p class="install-route-hint">
-                Paste into Terminal. Installs the CLI <em>and</em> the extension in one go.
-                No setup required.
+                Paste into Terminal to install both the CLI and extension together.
               </p>
               <div class="code-row">
                 <code id="modal-oneliner-cmd"></code>
@@ -383,7 +382,7 @@
         <div class="install-tab-bar submit-tab-bar" role="tablist">
           <button class="install-tab active" id="stab-nonterminal" role="tab"
                   aria-selected="true" aria-controls="submit-pane-nonterminal">
-            🖱 No Terminal
+            🖱 Finder Upload
           </button>
           <button class="install-tab" id="stab-oneliner" role="tab"
                   aria-selected="false" aria-controls="submit-pane-oneliner">
@@ -395,7 +394,7 @@
           </button>
         </div>
 
-        <!-- Pane 1: No Terminal — drag folder -->
+        <!-- Pane 1: Finder upload -->
         <div class="install-pane submit-pane" id="submit-pane-nonterminal" role="tabpanel"
              aria-labelledby="stab-nonterminal">
           <p class="option-desc">
@@ -404,7 +403,7 @@
           <div class="code-row">
             <code id="magic-ext-path">~/Library/Containers/com.apple.Safari/Data/Library/Safari/MagicExtensions</code>
             <button class="btn-mini-copy" data-copy-target="magic-ext-path"
-                    data-copy-label="Path copied — now press Cmd+Shift+G in Finder">copy path</button>
+                    data-copy-label="Path copied. Press Cmd+Shift+G in Finder.">copy path</button>
           </div>
           <p class="option-desc" style="margin-top:12px">
             Then drag your extension folder (e.g. <code>nightlife-24B7</code>) into the dropzone below.
@@ -445,8 +444,8 @@
         <div class="install-pane submit-pane hidden" id="submit-pane-oneliner" role="tabpanel"
              aria-labelledby="stab-oneliner">
           <p class="option-desc">
-            Paste this into Terminal. Installs the CLI, shows an interactive picker of your
-            extensions, packages the chosen one, and opens the submission form — all in one step.
+            Paste this into Terminal. Installs the CLI, presents an interactive picker,
+            packages the selected extension, and opens the GitHub submission form.
           </p>
           <div class="code-row">
             <code id="submit-oneliner-cmd">curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash -s -- submit</code>

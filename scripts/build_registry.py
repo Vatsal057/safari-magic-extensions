@@ -102,8 +102,8 @@ def read_package_metadata(pkg: Path) -> dict:
 def resolve_art_image(slug: str, curated: dict) -> str:
     """Pick a preview image, in order of honesty and intent:
 
-      1. A curated `art_image` — an explicit maintainer choice always wins.
-      2. A real screenshot from scripts/generate_thumbnails.sh — the default,
+      1. A curated `art_image`: an explicit maintainer choice always wins.
+      2. A real screenshot from scripts/generate_thumbnails.sh: the default,
          because it shows what the extension actually looks like.
       3. A slug-named asset dropped into web/assets/ by hand.
       4. The generic fallback image.

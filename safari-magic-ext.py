@@ -91,7 +91,7 @@ def _prompt_for_full_disk_access(db_path: Path) -> None:
 
     print()
     print("╔══════════════════════════════════════════════════════════════╗")
-    print("║         Full Disk Access required — opening settings…       ║")
+    print("║         Full Disk Access required: opening settings…         ║")
     print("╚══════════════════════════════════════════════════════════════╝")
     print()
     print("macOS is blocking access to Safari's extension database.")
@@ -102,7 +102,7 @@ def _prompt_for_full_disk_access(db_path: Path) -> None:
     print( "       If it's listed but OFF, toggle it ON.")
     print( "       If it's not listed, click '+' and select your terminal app.")
     print( "  2. Quit and reopen Terminal.")
-    print( "  3. Run the same command again — it will work.")
+    print( "  3. Re-run your command.")
     print()
 
     # Open directly to the Full Disk Access pane. Works without FDA.
@@ -1336,7 +1336,7 @@ def launch_gui() -> None:
     from tkinter import filedialog, messagebox, ttk
 
     root = tk.Tk()
-    root.title("Safari Magic Extensions — Community Manager")
+    root.title("Safari Magic Extensions: Community Manager")
     root.geometry("880x660")
     root.minsize(760, 520)
 
@@ -2286,7 +2286,7 @@ def main() -> None:
             print(f"GitHub:  {issue_url}")
             print(f"\nNext steps:")
             print(f"1. Opening submission form in your browser.")
-            print(f"2. Package is pre-attached — just click 'Submit new issue'!")
+            print(f"2. Package payload is pre-attached. Click 'Submit new issue'.")
 
             if not args.dry_run:
                 subprocess.run(["open", issue_url], check=False)

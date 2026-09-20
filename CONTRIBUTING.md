@@ -1,47 +1,53 @@
 # Contributing
 
-Thanks for helping build the Safari Magic Extensions Community Hub.
-
-There are two kinds of contribution: **submitting an extension** and **changing the code**.
+Contributions to the Safari Magic Extensions Community Hub are welcome. You can contribute by submitting an extension or by improving the codebase.
 
 ---
 
-## Submitting an extension
+## Submitting an Extension
 
-The easiest path is the CLI, which packages the extension and opens a pre-filled issue form:
+The recommended path is the CLI submit command:
 
 ```bash
 safari-magic-ext submit "My Extension Name"
 ```
 
-Prefer a pull request? Then:
+The CLI packages the selected extension and opens a pre-filled submission issue with the archive payload.
 
-1. Package it: `safari-magic-ext pack "My Extension Name" --author "your-handle"`
+### Submitting via Pull Request
+
+If you prefer submitting through a Git pull request:
+
+1. Package the extension:
+   ```bash
+   safari-magic-ext pack "My Extension Name" --author "your-handle"
+   ```
 2. Copy the `.magicext` file into `web/packages/`.
-3. Validate it: `python3 scripts/verify_packages.py`
-4. Regenerate the catalog: `python3 scripts/build_registry.py`
-5. Commit the package **and** the updated `web/community_registry.json`.
+3. Validate package integrity:
+   ```bash
+   python3 scripts/verify_packages.py
+   ```
+4. Regenerate the catalog:
+   ```bash
+   python3 scripts/build_registry.py
+   ```
+5. Commit both the package file and the updated `web/community_registry.json`.
 
-Your extension's catalog ID is the slug of its name, which `scripts/build_registry.py` prints
-(`Night Meadow New Tab` → `night-meadow-new-tab`). Users install it with that ID.
+The catalog identifier is the slug printed by `scripts/build_registry.py` (for example, `night-meadow-new-tab`). Users install the extension using this slug.
 
-### Thumbnails
+### Generating Thumbnails
 
-Thumbnails are **real screenshots** of the extension's new-tab page, not hand-picked art.
-Generate them with:
+Thumbnails are real browser screenshots of the extension's new-tab page. Generate them with:
 
 ```bash
-make thumbnails      # renders each package headless into web/assets/thumbnails/<slug>.png
+make thumbnails
 ```
 
-This needs a Chromium-based browser (Chrome, Edge, Brave, or Chromium). Each package is
-self-contained HTML, so the screenshot shows what the extension actually looks like. Animated
-pages are captured after a short settle time. Commit the generated PNG alongside your package.
+This renders each package using a local Chromium-compatible browser into `web/assets/thumbnails/<slug>.png`. Commit the generated PNG with your package.
 
-### Gallery presentation (optional)
+### Gallery Metadata (Optional)
 
-`web/registry_curation.json` controls tags and, if needed, an image override. Add an entry
-keyed by your slug:
+`web/registry_curation.json` specifies category tags and optional image overrides. Add an entry matching your extension's slug:
 
 ```json
 "my-extension-name": {
@@ -49,48 +55,42 @@ keyed by your slug:
 }
 ```
 
-- `tags` must come from `ambient`, `focus`, `newtab`, `tech` (these are the gallery filters).
-- Image priority is: `art_image` override → generated screenshot → `assets/<slug>.{jpg,png,svg}`
-  → a default. Only set `art_image` if the screenshot is a poor representation (for example a
-  page that only looks right after interaction).
-- Every extension appears equally in the gallery; there is no featured slot. Users order the
-  list themselves with the sort control.
+Allowed tags: `ambient`, `focus`, `newtab`, `tech`.
 
-### Submission requirements
+### Package Requirements
 
-Your package must contain, at the archive root:
+The archive root must contain:
 
-- `manifest.json` — a valid WebExtension manifest
-- `magic.json` — with at least a non-empty `name` and `prompt`
+- `manifest.json`: Valid WebExtension manifest format.
+- `magic.json`: Metadata with non-empty `name` and `prompt` strings.
 
-It must not contain absolute paths, `..` traversal, or symlinks; CI rejects those. It must not
-include obfuscated code, analytics, or external tracking.
+Archives containing absolute paths, directory traversal sequences (`..`), or symbolic links fail verification. Packages must be free of obfuscated scripts and external tracking endpoints.
 
 ---
 
-## Changing the code
+## Modifying Code
 
-### Layout
+### Repository Structure
 
-| Path | What it is |
+| Path | Description |
 | --- | --- |
-| `safari-magic-ext.py` | CLI + tkinter GUI. Single file, standard library only. |
-| `install-cli.sh` | Bootstrap installer for the CLI. |
-| `web/` | Static gallery. No build step, no dependencies. |
-| `scripts/build_registry.py` | Generates `web/community_registry.json`. |
-| `scripts/verify_packages.py` | Package validation, shared by contributors and CI. |
+| `safari-magic-ext.py` | CLI and GUI application. Single file using Python standard library. |
+| `install-cli.sh` | Shell installer for the CLI binary. |
+| `web/` | Static gallery frontend (HTML, CSS, vanilla JavaScript). |
+| `scripts/build_registry.py` | Compiles `web/community_registry.json`. |
+| `scripts/verify_packages.py` | Package validator run locally and in CI. |
 
-Maintainer tooling belongs in `scripts/`. `safari-magic-ext.py` and `install-cli.sh` stay
-at the repository root because they are fetched by fixed `raw.githubusercontent.com`
-URLs — moving them breaks the published install command.
+`safari-magic-ext.py` and `install-cli.sh` remain at the root because external installation commands fetch them from fixed URLs.
 
-### Before you open a pull request
+### Pre-Commit Validation
+
+Before opening a pull request, run:
 
 ```bash
-make test                        # lint + package validation + registry check
+make test
 ```
 
-`make test` expands to exactly what CI runs:
+This runs the automated checks:
 
 ```bash
 python3 -m compileall -q safari-magic-ext.py scripts/
@@ -99,32 +99,22 @@ python3 scripts/verify_packages.py
 python3 scripts/build_registry.py --check
 ```
 
-Run `make` with no arguments to see every target.
+Run `make` to list all targets.
 
-### Conventions worth knowing
+### Implementation Guidelines
 
-- **`safari-magic-ext.py` must stay a single stdlib-only file.** `install-cli.sh` downloads
-  just that file, so it cannot import anything from this repository, and it cannot take
-  third-party dependencies. Some logic is therefore duplicated between it and
-  `scripts/verify_packages.py` on purpose.
-- **Never hand-edit `web/community_registry.json`.** It is generated. Edit the packages or
-  `web/registry_curation.json` and re-run `scripts/build_registry.py`.
-- **Don't hardcode machine-specific paths.** Resolve locations from the bundle, the working
-  directory, or `Path.home()`.
-- **Archive extraction is security-sensitive.** If you touch it, keep the traversal and
-  symlink checks in the Python path.
-- **Shared catalog format.** A field added to the registry may need handling
-  in `web/app.js` and `safari-magic-ext.py`.
+- **Keep `safari-magic-ext.py` self-contained:** It must depend only on Python's standard library. Do not introduce imports from external packages.
+- **Do not edit `web/community_registry.json` directly:** Update the package or `web/registry_curation.json`, then execute `scripts/build_registry.py`.
+- **Use dynamic paths:** Derive paths using `pathlib.Path.home()` or the current working directory rather than hardcoded machine paths.
+- **Security checks:** Keep path traversal and symlink guards active during archive extraction.
+- **Shared schema:** Field updates in the registry require matching updates in `web/app.js` and `safari-magic-ext.py`.
 
-### Things that need root access to test
+### Permissions
 
-Installing an extension writes into Safari's sandboxed container and requires Full Disk
-Access. Commands that don't need it: `pack`, `convert`, `explore`, and everything in
-`scripts/build_registry.py` / `scripts/verify_packages.py`.
+Writing to Safari's extension database requires Full Disk Access. Testing `pack`, `convert`, `explore`, and the verification scripts runs with standard user permissions.
 
 ---
 
-## Reporting bugs
+## Reporting Bugs
 
-Open an issue with your macOS version, Safari version, the exact command you ran, and the full
-output. For anything security-related, please use a private security advisory instead.
+Open a GitHub issue with your macOS version, Safari version, command executed, and console output. For security vulnerabilities, open a private security advisory instead.

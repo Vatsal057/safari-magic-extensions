@@ -16,9 +16,7 @@ venv/
 *.xcuserstate
 *.xcworkspace/xcuserdata/
 
-# Build output — SafariMagicHub.app is produced by ./scripts/build_native_app.sh
-# and distributed via GitHub Releases, not committed here.
-SafariMagicHub.app/
+# Build output and archives
 build/
 dist/
 *.zip

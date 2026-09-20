@@ -1,69 +1,58 @@
-# Safari Magic Extensions Community Hub 🪄
+# Safari Magic Extensions Community Hub
 
-A community sharing and distribution platform for Apple Safari's AI-generated **Magic Extensions**.
+Share and discover AI-generated Magic Extensions for Apple Safari.
 
-Safari can generate an extension from a natural-language prompt. This project makes those
-extensions shareable: it packages one into a single `.magicext` file (carrying the original
-prompt as metadata), publishes it to a catalog, and installs it on someone else's Mac in one
-command.
+Safari can generate extensions from natural language prompts. This hub packages those extensions into standalone `.magicext` bundles with prompt metadata, publishes them to a catalog, and provides single-command installation on macOS.
 
-The project consists of two core components:
-
-| Component | Path | What it is |
+| Component | Path | Description |
 | --- | --- | --- |
-| CLI + GUI Manager | [`safari-magic-ext.py`](safari-magic-ext.py) | Single-file, stdlib-only manager (terminal + native GUI) |
-| Web Gallery | [`web/`](web/) | Community gallery with search, prompts & 1-click install |
+| CLI and GUI Manager | [`safari-magic-ext.py`](safari-magic-ext.py) | Python standard library manager (terminal and tkinter GUI) |
+| Web Gallery | [`web/`](web/) | Interactive gallery with search, prompts, and direct install commands |
 
-> **Requirements:** macOS with Safari. The CLI runs on the Python that ships with macOS (3.9.6+),
-> with zero external dependencies. Full Disk Access may be requested to read Safari's extension database
-> (see [Troubleshooting](#6-troubleshooting)).
-
+> **Requirements:** macOS with Safari. The CLI runs on system Python 3.9.6 or later. Reading Safari's extension database requires granting Full Disk Access to your terminal app (see [Troubleshooting](#6-troubleshooting)).
 
 ---
 
-## Architecture Overview
+## Architecture
 
 ```
-[ Creator ]                        [ GitHub ]                          [ User ]
+[ Creator ]                          [ GitHub Actions ]                  [ User ]
 
-1. Generate in Safari       1. Issue form or CLI submit         1. Browse web gallery
-2. safari-magic-ext submit     (automated ingestion)                or: safari-magic-ext explore
-                            2. Actions verifies & screenshots   2. One-click install:
-                            3. Live on Community Gallery           safari-magic-ext install <id>
+1. Generate in Safari         1. Issue submission with payload    1. Browse web gallery
+2. safari-magic-ext submit       (Base64 package data)               or: safari-magic-ext explore
+                              2. Verification and screenshot run  2. Install command:
+                              3. Published to community gallery      safari-magic-ext install <id>
 ```
 
 ---
 
-## 1. Install an extension
+## 1. Installation
 
-### Fastest — one paste into Terminal
+### Quick install
+
+Run this command in Terminal to install the CLI and an extension together:
 
 ```bash
-# Install + run in a single line. Installs the CLI, then installs the extension.
 curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash -s -- install hacker-news-minimal
 ```
 
-No setup required. Works on any Mac with Safari. Swap `hacker-news-minimal` for any
-extension ID from `safari-magic-ext explore` or the [web gallery][gallery].
+Replace `hacker-news-minimal` with any slug from `safari-magic-ext explore` or the [web gallery][gallery].
 
-### Install the CLI permanently
+### Install the CLI
+
+Install the tool to `~/.local/bin`:
 
 ```bash
-# Install the CLI once…
 curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash
-
-# …then install anything by ID:
-safari-magic-ext install hacker-news-minimal
 ```
 
-Installs `safari-magic-ext` into `~/.local/bin` and adds it to your PATH automatically.
-Runs on the Python that ships with macOS — nothing else needed. Pin a release with `REF=v1.1.1`.
+The installer adds `~/.local/bin` to your `PATH` in `~/.zshrc`. It uses the Python 3 interpreter bundled with macOS. To pin a specific release version, set `REF=v1.1.1`.
 
-> **One-time setup:** grant **Full Disk Access** to your terminal app in
+> **Setup step:** Grant **Full Disk Access** to your terminal application in:
 > **System Settings → Privacy & Security → Full Disk Access**.
-> macOS blocks any process that isn't the app itself from reading Safari's sandbox.
+> macOS protects Safari's container from third-party read access by default.
 
-From a clone you can skip the installer entirely:
+When working inside a repository checkout, invoke the script directly:
 
 ```bash
 python3 safari-magic-ext.py --help
@@ -71,143 +60,107 @@ python3 safari-magic-ext.py --help
 
 ---
 
-## 2. CLI Quick Reference
+## 2. CLI Reference
 
-Extension IDs are readable slugs. Run `explore` to see the current ones.
+Extension identifiers are human-readable slugs. Use `explore` to list available items.
 
 ```bash
-# Browse the community catalog
+# Browse community extensions
 safari-magic-ext explore
 safari-magic-ext explore "pomodoro"
 
-# Install from the community catalog
+# Install from the catalog
 safari-magic-ext install night-meadow-new-tab
 
-# Install from a local package, a folder, or a URL
+# Install from a local package, folder, or remote URL
 safari-magic-ext install ~/Downloads/MyExtension.magicext
 safari-magic-ext install ./my-extension-folder
 safari-magic-ext install https://example.com/package.magicext
 
-# List what you already have installed
+# List installed extensions
 safari-magic-ext list
 
-# Package an installed extension for sharing
-# (interactive picker if you omit the name)
+# Package an installed extension (prompts for selection if name is omitted)
 safari-magic-ext pack
 safari-magic-ext pack "Night Meadow New Tab" --author "vatsal"
 
-# Turn any local web folder into a .magicext bundle (no Safari required)
+# Convert a local web folder to a .magicext bundle independently of Safari
 safari-magic-ext convert ./my-extension-folder
 
-# Submit to the GitHub catalog
-# (interactive picker — no need to know the exact name)
+# Submit an extension to the community catalog
 safari-magic-ext submit
 safari-magic-ext submit "Night Meadow New Tab"
 
-# Export / back up to ~/Downloads
+# Export packages as zip archives to ~/Downloads
 safari-magic-ext export all --zip
 
-# Register extension folders Safari has on disk but not in its database
+# Sync on-disk extension folders into Safari's database
 safari-magic-ext sync
 
-# Open the tkinter GUI (also the default with no arguments)
+# Launch the visual interface
 safari-magic-ext gui
 ```
 
-The catalog is fetched from GitHub Pages and cached in `~/Library/Caches/safari-magic-ext`,
-so `explore` and `install` keep working offline. Point the CLI at your own fork with
-`SAFARI_MAGIC_REGISTRY_URL`.
+The CLI caches catalog data at `~/Library/Caches/safari-magic-ext` so `explore` and `install` remain usable offline. To target a custom catalog URL, set `SAFARI_MAGIC_REGISTRY_URL`.
 
 ---
 
 ## 3. Web Gallery
 
-**[Browse the gallery →](https://vatsal057.github.io/safari-magic-extensions/)**
+**[Open the Community Gallery](https://vatsal057.github.io/safari-magic-extensions/)**
 
-The static gallery lives in [`web/`](web/). It has no build step and no dependencies:
+The gallery lives in [`web/`](web/) as static HTML, CSS, and vanilla JavaScript:
 
-- A **1-step setup guide** to install the CLI in seconds.
-- **Live Search** across name, prompt, author, tag, and ID, plus category filters.
-- Each extension has an **install card** with 1-click command copying and prompt remixing.
-- **Automated Screenshots**: Every extension in the gallery has real, automated thumbnails captured directly from Safari AI code.
-- **Search** across name, prompt, author, tag, and ID, plus the category ribbon. Every
-  term in a multi-word query has to match.
-- Each extension opens an **install panel** with the exact `install <id>` command, a
-  direct package download, and the original prompt to copy and remix.
-- **Shareable links**: `#ext=<id>` opens a specific extension, `#submit` opens the
-  contribution instructions.
+- **Live search:** Filters across extension names, prompts, authors, tags, and IDs.
+- **Category filters:** Narrow results by `ambient`, `focus`, `newtab`, or `tech`.
+- **Automated previews:** Headless browser screenshots of each extension's actual new-tab page.
+- **Install modal:** Displays copyable CLI commands, direct package downloads, and original prompts.
+- **Deep links:** Anchor links `#ext=<id>` open a specific modal; `#submit` jumps to submission instructions.
 
-To view it locally:
+To run the gallery locally:
 
 ```bash
 make serve
-# open http://localhost:8000
+# Open http://localhost:8000
 ```
 
-It must be served over HTTP. Opening `index.html` with `file://` blocks the `fetch` of the
-catalog, and the page will say so rather than appearing empty.
-
-To deploy: push to `main`, then set **Settings → Pages → Build and deployment → Source:
-GitHub Actions**.
+The gallery must be served via HTTP because browser security policies block catalog `fetch` requests when opened through `file://`.
 
 ---
 
-## 5. Submitting & Reviewing Extensions
+## 4. Submitting Extensions
 
-### For creators
+### For Creators
 
-**If you have the CLI installed:**
+Submit extensions with the CLI:
+
 ```bash
-# Interactive — picks from your installed extensions, no name needed.
 safari-magic-ext submit
-
-# Or name it explicitly:
-safari-magic-ext submit "Nightlife in the Wild"
 ```
 
-**No CLI yet? One paste does everything:**
+The command prompts you to select an installed extension, packages it, and opens the GitHub submission form with the extension payload embedded in the body.
+
+If the CLI is not yet installed:
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash -s -- submit
 ```
-Installs the CLI, shows an interactive picker, packages the chosen extension, and opens the
-submission form — all in one step.
 
-In all cases the `.magicext` file is revealed in Finder and a pre-filled GitHub issue form
-opens in your browser. Drag the file into the form and click Submit.
+### Automated Ingestion Pipeline
 
-### For maintainers
+When an issue is opened with the `extension-submission` label:
 
-1. Download the submitted `.magicext` and put it in `web/packages/`.
-2. Optionally add presentation data (tags, preview image, featured slot) for its slug to
-   [`web/registry_curation.json`](web/registry_curation.json).
-3. Validate and regenerate:
-   ```bash
-   python3 scripts/verify_packages.py
-   python3 scripts/build_registry.py
-   ```
-4. Commit both the package and the regenerated `web/community_registry.json`, then push to
-   `main`. GitHub Actions re-verifies and deploys the gallery.
-
-### How the registry is built
-
-`web/community_registry.json` is **generated**. Never edit it by hand.
-
-```
-web/packages/*.magicext  ──┐
-                           ├─→  scripts/build_registry.py  ─→  web/community_registry.json
-web/registry_curation.json ┘
-```
-
-`scripts/build_registry.py` derives each `id` by slugifying the package name, validates every archive,
-rejects duplicate IDs, and only changes `updated_at` when the content actually changes.
-`python3 scripts/build_registry.py --check` verifies the committed file is current; CI runs it on
-every pull request.
+1. **Extraction:** GitHub Actions extracts the package data.
+2. **Security validation:** `scripts/verify_packages.py` checks file paths, permissions, and metadata.
+3. **Screenshot capture:** Headless Chromium renders a 1280x800 preview of the extension.
+4. **Catalog update:** `scripts/build_registry.py` compiles `web/community_registry.json`.
+5. **Publishing:** The workflow commits the changes to `main`, closes the issue, and deploys to GitHub Pages.
 
 ---
 
-## 6. Packaging Standard (`.magicext`)
+## 5. Packaging Standard (`.magicext`)
 
-A `.magicext` file is a ZIP archive of a standard WebExtension plus a root-level `magic.json`:
+A `.magicext` package is a zip archive containing a standard WebExtension structure and a root `magic.json`:
 
 ```json
 {
@@ -216,77 +169,64 @@ A `.magicext` file is a ZIP archive of a standard WebExtension plus a root-level
   "name": "Night Meadow New Tab",
   "author": "vatsal",
   "version": "1.0",
-  "description": "A beautiful, premium 2D illustrated night ecosystem for your new tab page.",
-  "prompt": "Build a beautiful, premium 2D illustrated night ecosystem that feels calm, natural, and alive on the new tab page.",
+  "description": "2D illustrated night ecosystem for your new tab page.",
+  "prompt": "Build a 2D illustrated night ecosystem that feels calm and natural on the new tab page.",
   "selected_symbol": "moon.stars.fill",
   "symbol_color_name": "blue",
   "packaged_at": "2026-09-20T12:00:00Z"
 }
 ```
 
-`id` here is the extension's Safari UUID. The catalog ID a user types is the slug derived from
-`name`. `prompt` is the point of the format: it lets anyone remix the extension in Safari.
+The `id` field stores Safari's internal UUID. The command-line slug derives from `name`. The `prompt` string preserves the AI instruction used to generate the extension.
 
 ---
 
-## 7. Troubleshooting
+## 6. Troubleshooting
 
-**"Extensions.db not found"** — Launch Safari at least once so it creates the database.
+**Extensions.db not found:**
+Launch Safari at least once so the browser initializes its database.
 
-**"Cannot open Safari's extension database" / `OperationalError`** — macOS is blocking
-access via TCC. Grant **Full Disk Access** to your terminal app:
+**Cannot open Safari's extension database / OperationalError:**
+macOS blocked access via TCC. Open **System Settings → Privacy & Security → Full Disk Access** and enable your terminal app (Terminal, iTerm2, Ghostty). Restart the terminal application afterward.
 
-**System Settings → Privacy & Security → Full Disk Access** → toggle ON your terminal
-(Terminal.app, iTerm2, etc.), then close and reopen it.
-
-**Safari restarts when I install something** — Safari only reloads its extension list at
-launch, so installs relaunch it by default. Pass `--no-restart` to skip that.
+**Safari restarts during installation:**
+Safari loads extensions during launch. Installs restart the browser by default. To skip restarting Safari, pass `--no-restart`.
 
 ---
 
-## 8. Security
+## 7. Security
 
-Packages are untrusted input, so extraction is guarded:
+Packages are treated as untrusted input. Extraction incorporates these protections:
 
-- Archive members with absolute paths, `..` traversal, or symlinks are rejected before
-  extraction (`assert_archive_is_safe` in the CLI).
-- Each resolved destination is re-checked against the extraction root, so a member cannot
-  escape via a sibling-prefix path.
-- `scripts/verify_packages.py` runs the same checks in CI on every submitted package and
-  publishes the results to the job summary.
+- Rejection of archive members with absolute paths, directory traversal (`..`), or symbolic links.
+- Post-resolution path checks ensuring all extracted files reside inside the target directory.
+- Continuous validation in CI via `scripts/verify_packages.py` on all catalog entries.
 
-Found a security issue? Please open a private security advisory rather than a public issue.
+To report a vulnerability, open a private security advisory on GitHub instead of a public issue.
 
 ---
 
-## 9. Repository Layout
+## 8. Repository Layout
 
 ```
-safari-magic-ext.py            The CLI + tkinter GUI (single file, stdlib only)
-install-cli.sh                 Installs the CLI into ~/.local/bin
-Makefile                       Shortcuts for the commands below
-web/                           GitHub Pages gallery, packages, and the catalog
-scripts/build_registry.py      Generates web/community_registry.json
-scripts/verify_packages.py     Package validation (used locally and by CI)
-scripts/generate_thumbnails.sh Renders real screenshots of each extension
-.github/workflows/             CI, submission verification, Pages deploy
+safari-magic-ext.py            CLI and tkinter GUI (single file, standard library only)
+install-cli.sh                 Installer script for ~/.local/bin
+Makefile                       Task shortcuts
+web/                           Gallery interface, extension packages, and catalog
+scripts/build_registry.py      Compiles web/community_registry.json
+scripts/verify_packages.py     Package validation script for local and CI use
+scripts/generate_thumbnails.sh Renders screenshots of extensions
+.github/workflows/             CI, submission ingestion, and Pages deployment
 ```
 
-Maintainer tooling lives in `scripts/`. The two files at the root that look like
-tooling stay there on purpose: `safari-magic-ext.py` and `install-cli.sh` are fetched
-by fixed `raw.githubusercontent.com` URLs, so moving them would break the documented
-install command for everyone who has already copied it.
-
-### Common commands
+### Common Commands
 
 ```bash
-make            # list available targets
-make test       # everything CI runs: lint + verify + registry check
-make registry   # regenerate the catalog
-make serve      # preview the gallery at localhost:8000
+make            # List available targets
+make test       # Run CI validation suite: compile check, package tests, registry check
+make registry   # Recompile community catalog
+make serve      # Preview gallery at http://localhost:8000
 ```
-
-Each target is a one-line wrapper, so you can always call the script directly instead.
 
 ## License
 
