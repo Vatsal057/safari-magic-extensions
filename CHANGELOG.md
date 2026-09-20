@@ -5,6 +5,37 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-09-20
+
+### Fixed
+
+- **The CLI crashed on a stock Mac.** It used PEP 604 (`X | None`) annotations,
+  which are evaluated at import time and need Python 3.10, but macOS ships 3.9.6
+  as `/usr/bin/python3`. `safari-magic-ext install <id>` failed with
+  `TypeError: unsupported operand type(s) for |` for anyone who had not separately
+  installed a newer Python — while the docs claimed macOS already had a suitable
+  version. The CLI and both maintainer scripts now run on 3.9.6.
+- `install-cli.sh` executes the downloaded tool rather than only byte-compiling it.
+  `py_compile` checks syntax only, which is why the above shipped unnoticed. If the
+  interpreter is unsuitable it now says so and points at the app instead.
+- `explore <id>` found nothing while `install <id>` worked, because the search did
+  not cover the catalog `id`. Pasting an ID copied from the gallery now works.
+- `Info.plist` reported version 1.0.0 while the CLI reported 1.1.0.
+
+### Added
+
+- **A drag-to-Applications `.dmg`**, built by `scripts/package_release.sh` alongside
+  the zip and a `SHA256SUMS.txt`. The DMG includes first-run instructions, since
+  releases are signed but not notarized.
+- CI runs the Python suite on a 3.9 / 3.13 matrix so the stock-macOS interpreter
+  cannot regress.
+
+### Changed
+
+- The website and README now lead with the Mac app, which requires no Python or
+  Terminal, and treat the CLI as an optional route. The setup section is a numbered
+  walkthrough, and the install panel leads with download-and-double-click.
+
 ## [1.1.0] - 2026-09-20
 
 A repository-wide cleanup. The headline items are the catalog lookup fix (the installed
@@ -89,5 +120,6 @@ CLI previously could not reach the catalog at all) and hardened archive extracti
 Initial release: the `.magicext` package format, the CLI and tkinter GUI, the native
 SwiftUI app, the web gallery, and the GitHub submission workflow.
 
+[1.1.1]: https://github.com/Vatsal057/safari-magic-extensions/releases/tag/v1.1.1
 [1.1.0]: https://github.com/Vatsal057/safari-magic-extensions/releases/tag/v1.1.0
 [1.0.0]: https://github.com/Vatsal057/safari-magic-extensions/releases/tag/v1.0.0

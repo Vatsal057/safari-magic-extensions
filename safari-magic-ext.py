@@ -19,7 +19,7 @@ below keeps the `X | None` annotations lazy so they do not need Python 3.10.
 # this file are evaluated at import time and raise TypeError on Python 3.9.
 from __future__ import annotations
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 import argparse
 import json

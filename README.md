@@ -57,7 +57,7 @@ curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/m
 safari-magic-ext install hacker-news-minimal
 ```
 
-This installs `safari-magic-ext` into `~/.local/bin`. Pin a release with `REF=v1.1.0` if you
+This installs `safari-magic-ext` into `~/.local/bin`. Pin a release with `REF=v1.1.1` if you
 prefer. It runs on the Python that ships with macOS, so there is nothing else to install.
 Your Terminal needs Full Disk Access.
 
