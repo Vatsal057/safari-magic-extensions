@@ -2072,37 +2072,44 @@ body.modal-open {
 
 .install-tab-bar {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   margin-bottom: 14px;
-  background: var(--cream-dim, #f5f0e8);
-  border: 1px solid var(--cream-border, #ccc);
-  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--cream-border);
+  border-radius: 9px;
   padding: 4px;
 }
 
 .install-tab {
   flex: 1;
-  font-family: var(--font-mono, monospace);
-  font-size: 11px;
-  font-weight: 700;
-  padding: 7px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 8px 12px;
   border-radius: 6px;
-  border: none;
+  border: 1px solid transparent;
   cursor: pointer;
   background: transparent;
-  color: var(--cream-muted, #888);
-  transition: background 0.15s, color 0.15s;
+  color: var(--text-muted);
+  transition: all var(--transition-fast);
   white-space: nowrap;
 }
 
 .install-tab.active {
-  background: var(--charcoal, #252525);
-  color: var(--cream, #e8e0c6);
+  background: var(--bg-canvas);
+  color: var(--cream-accent);
+  border-color: var(--cream-border-strong);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
 }
 
 .install-tab:hover:not(.active) {
-  background: rgba(0,0,0,0.06);
-  color: var(--charcoal, #252525);
+  background: rgba(232, 224, 198, 0.08);
+  color: var(--cream-accent);
 }
 
 .install-pane {

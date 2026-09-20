@@ -1,22 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Safari Magic Gallery: Community AI Extensions for Safari</title>
-  <meta name="description" content="Browse and install community-made Safari AI Magic Extensions. Every package ships with the original AI prompt so you can remix it. Install with one command or one double-click.">
+  <meta name="description"
+    content="Browse and install community-made Safari AI Magic Extensions. Every package ships with the original AI prompt so you can remix it. Install with one command or one double-click.">
   <meta name="theme-color" content="#252525">
 
   <meta property="og:title" content="Safari Magic Gallery">
-  <meta property="og:description" content="Browse and install community-made Safari AI Magic Extensions. Every package ships with the original AI prompt.">
+  <meta property="og:description"
+    content="Browse and install community-made Safari AI Magic Extensions. Every package ships with the original AI prompt.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="assets/hero_cyberpunk.jpg">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&family=Pixelify+Sans:wght@500;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&family=Pixelify+Sans:wght@500;700&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
   <a href="#gallery" class="skip-link">Skip to gallery</a>
@@ -34,7 +40,8 @@
         </a>
         <a href="#gallery" class="nav-item">browse</a>
         <a href="#setup" class="nav-item">setup</a>
-        <a href="https://github.com/Vatsal057/safari-magic-extensions" target="_blank" rel="noopener" class="nav-item">github</a>
+        <a href="https://github.com/Vatsal057/safari-magic-extensions" target="_blank" rel="noopener"
+          class="nav-item">github</a>
         <button id="open-submit-modal-btn" class="nav-item nav-btn">share yours</button>
       </nav>
 
@@ -99,8 +106,10 @@
             </div>
             <div class="code-row code-row-terminal">
               <span class="terminal-prompt-prefix" aria-hidden="true">%</span>
-              <code id="setup-cli-cmd">curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash</code>
-              <button class="btn-mini-copy" data-copy-target="setup-cli-cmd" data-copy-label="Install command copied">copy</button>
+              <code
+                id="setup-cli-cmd">curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash</code>
+              <button class="btn-mini-copy" data-copy-target="setup-cli-cmd"
+                data-copy-label="Install command copied">copy</button>
             </div>
           </div>
 
@@ -142,14 +151,14 @@
         <!-- Search, sort, and result count -->
         <div class="browse-toolbar">
           <div class="search-wrap">
-            <svg class="search-icon" viewBox="0 0 24 24" width="14" height="14" fill="none"
-                 stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <svg class="search-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+              stroke-width="2" aria-hidden="true">
               <circle cx="11" cy="11" r="7"></circle>
               <path d="M21 21l-4.3-4.3"></path>
             </svg>
             <label class="visually-hidden" for="search-input">Search extensions</label>
             <input type="search" id="search-input" class="search-input" autocomplete="off"
-                   placeholder="search by name, prompt, author, or tag…">
+              placeholder="search by name, prompt, author, or tag…">
             <kbd class="search-kbd" aria-hidden="true">⌘K</kbd>
             <button id="search-clear" class="search-clear hidden" aria-label="Clear search">&times;</button>
           </div>
@@ -223,16 +232,18 @@
       </div>
       <div class="footer-right">
         <a href="https://github.com/Vatsal057/safari-magic-extensions" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://github.com/Vatsal057/safari-magic-extensions/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Contributing</a>
-        <a href="https://github.com/Vatsal057/safari-magic-extensions/releases/latest" target="_blank" rel="noopener">Releases</a>
+        <a href="https://github.com/Vatsal057/safari-magic-extensions/blob/main/CONTRIBUTING.md" target="_blank"
+          rel="noopener">Contributing</a>
+        <a href="https://github.com/Vatsal057/safari-magic-extensions/releases/latest" target="_blank"
+          rel="noopener">Releases</a>
       </div>
     </footer>
 
   </div>
 
   <!-- ============ INSPECTOR / INSTALL MODAL ============ -->
-  <div id="inspector-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true"
-       aria-labelledby="modal-title" aria-hidden="true">
+  <div id="inspector-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title"
+    aria-hidden="true">
     <div class="modal-pixel-card">
       <div class="modal-pixel-header">
         <div class="modal-header-meta">
@@ -260,19 +271,18 @@
 
             <!-- Tab switcher -->
             <div class="install-tab-bar" role="tablist">
-              <button class="install-tab active" id="tab-oneliner" role="tab"
-                      aria-selected="true" aria-controls="install-pane-oneliner">
-                ⚡ One command
+              <button class="install-tab active" id="tab-oneliner" role="tab" aria-selected="true"
+                aria-controls="install-pane-oneliner">
+                Quick Install
               </button>
-              <button class="install-tab" id="tab-cli" role="tab"
-                      aria-selected="false" aria-controls="install-pane-cli">
-                CLI (already installed)
+              <button class="install-tab" id="tab-cli" role="tab" aria-selected="false"
+                aria-controls="install-pane-cli">
+                CLI (If Installed)
               </button>
             </div>
 
             <!-- Pane 1: instant curl one-liner -->
-            <div class="install-pane" id="install-pane-oneliner" role="tabpanel"
-                 aria-labelledby="tab-oneliner">
+            <div class="install-pane" id="install-pane-oneliner" role="tabpanel" aria-labelledby="tab-oneliner">
               <p class="install-route-hint">
                 Paste into Terminal to install both the CLI and extension together.
               </p>
@@ -283,8 +293,7 @@
             </div>
 
             <!-- Pane 2: short CLI command (existing users) -->
-            <div class="install-pane hidden" id="install-pane-cli" role="tabpanel"
-                 aria-labelledby="tab-cli">
+            <div class="install-pane hidden" id="install-pane-cli" role="tabpanel" aria-labelledby="tab-cli">
               <div class="code-row">
                 <code id="modal-cli-cmd"></code>
                 <button id="copy-modal-cli-btn" class="btn-mini-copy">copy</button>
@@ -301,10 +310,13 @@
                 <p class="download-instruction-label">After downloading, install via Terminal:</p>
                 <div class="code-row code-row-tight">
                   <code id="modal-download-install-cmd">safari-magic-ext install ~/Downloads/package.magicext</code>
-                  <button class="btn-mini-copy" data-copy-target="modal-download-install-cmd" data-copy-label="Install command copied">copy</button>
+                  <button class="btn-mini-copy" data-copy-target="modal-download-install-cmd"
+                    data-copy-label="Install command copied">copy</button>
                 </div>
                 <p class="download-instruction-note">
-                  Need the CLI? Run the 1-command installer above or check the <a href="#setup" id="modal-setup-link">setup guide</a>. You can also unzip the file to inspect source code and prompts.
+                  Need the CLI? Run the 1-command installer above or check the <a href="#setup"
+                    id="modal-setup-link">setup guide</a>. You can also unzip the file to inspect source code and
+                  prompts.
                 </p>
               </div>
             </div>
@@ -329,7 +341,7 @@
 
   <!-- ============ SUBMIT MODAL ============ -->
   <div id="submit-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true"
-       aria-labelledby="submit-modal-title" aria-hidden="true">
+    aria-labelledby="submit-modal-title" aria-hidden="true">
     <div class="modal-pixel-card submit-card">
       <div class="modal-pixel-header">
         <div>
@@ -347,30 +359,29 @@
 
         <!-- Tab switcher -->
         <div class="install-tab-bar submit-tab-bar" role="tablist">
-          <button class="install-tab active" id="stab-nonterminal" role="tab"
-                  aria-selected="true" aria-controls="submit-pane-nonterminal">
+          <button class="install-tab active" id="stab-nonterminal" role="tab" aria-selected="true"
+            aria-controls="submit-pane-nonterminal">
             🖱 Finder Upload
           </button>
-          <button class="install-tab" id="stab-oneliner" role="tab"
-                  aria-selected="false" aria-controls="submit-pane-oneliner">
-            ⚡ One-liner
+          <button class="install-tab" id="stab-oneliner" role="tab" aria-selected="false"
+            aria-controls="submit-pane-oneliner">
+            ⚡ One-Liner
           </button>
-          <button class="install-tab" id="stab-cli" role="tab"
-                  aria-selected="false" aria-controls="submit-pane-cli">
-            CLI
+          <button class="install-tab" id="stab-cli" role="tab" aria-selected="false" aria-controls="submit-pane-cli">
+            💻 CLI Command
           </button>
         </div>
 
         <!-- Pane 1: Finder upload -->
         <div class="install-pane submit-pane" id="submit-pane-nonterminal" role="tabpanel"
-             aria-labelledby="stab-nonterminal">
+          aria-labelledby="stab-nonterminal">
           <p class="option-desc">
             In Finder, press <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd> and paste this path:
           </p>
           <div class="code-row">
             <code id="magic-ext-path">~/Library/Containers/com.apple.Safari/Data/Library/Safari/MagicExtensions</code>
             <button class="btn-mini-copy" data-copy-target="magic-ext-path"
-                    data-copy-label="Path copied. Press Cmd+Shift+G in Finder.">copy path</button>
+              data-copy-label="Path copied. Press Cmd+Shift+G in Finder.">copy path</button>
           </div>
           <p class="option-desc" style="margin-top:12px">
             Then drag your extension folder (e.g. <code>nightlife-24B7</code>) into the dropzone below.
@@ -378,13 +389,14 @@
           </p>
 
           <div id="submit-dropzone" class="submit-dropzone" role="button" tabindex="0"
-               aria-label="Drop extension folder here">
+            aria-label="Drop extension folder here">
             <div class="dropzone-inner">
               <span class="dropzone-icon" aria-hidden="true">📂</span>
               <p class="dropzone-label">Drop your extension folder here</p>
-              <p class="dropzone-sub">or <label for="submit-folder-input" class="dropzone-browse-link">browse for it</label></p>
-              <input type="file" id="submit-folder-input" webkitdirectory multiple
-                     style="display:none" aria-label="Select extension folder">
+              <p class="dropzone-sub">or <label for="submit-folder-input" class="dropzone-browse-link">browse for
+                  it</label></p>
+              <input type="file" id="submit-folder-input" webkitdirectory multiple style="display:none"
+                aria-label="Select extension folder">
             </div>
           </div>
 
@@ -396,8 +408,8 @@
                 <div class="submit-preview-meta" id="preview-prompt"></div>
               </div>
             </div>
-            <a id="submit-github-btn" href="#" target="_blank" rel="noopener"
-               class="btn-pill-cream" style="margin-top:12px;display:block;text-align:center">
+            <a id="submit-github-btn" href="#" target="_blank" rel="noopener" class="btn-pill-cream"
+              style="margin-top:12px;display:block;text-align:center">
               Submit to GitHub ↗
             </a>
             <p class="install-route-footnote">
@@ -409,21 +421,21 @@
 
         <!-- Pane 2: One-liner -->
         <div class="install-pane submit-pane hidden" id="submit-pane-oneliner" role="tabpanel"
-             aria-labelledby="stab-oneliner">
+          aria-labelledby="stab-oneliner">
           <p class="option-desc">
             Paste this into Terminal. Installs the CLI, presents an interactive picker,
             packages the selected extension, and opens the GitHub submission form.
           </p>
           <div class="code-row">
-            <code id="submit-oneliner-cmd">curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash -s -- submit</code>
+            <code
+              id="submit-oneliner-cmd">curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash -s -- submit</code>
             <button class="btn-mini-copy" data-copy-target="submit-oneliner-cmd"
-                    data-copy-label="Command copied">copy</button>
+              data-copy-label="Command copied">copy</button>
           </div>
         </div>
 
         <!-- Pane 3: CLI (already installed) -->
-        <div class="install-pane submit-pane hidden" id="submit-pane-cli" role="tabpanel"
-             aria-labelledby="stab-cli">
+        <div class="install-pane submit-pane hidden" id="submit-pane-cli" role="tabpanel" aria-labelledby="stab-cli">
           <p class="option-desc">
             Packages your extension, reveals the file in Finder, and opens a
             pre-filled submission form. The name picker is interactive if you omit the name.
@@ -431,7 +443,7 @@
           <div class="code-row">
             <code id="submit-cmd">safari-magic-ext submit</code>
             <button class="btn-mini-copy" data-copy-target="submit-cmd"
-                    data-copy-label="Submit command copied">copy</button>
+              data-copy-label="Submit command copied">copy</button>
           </div>
         </div>
 
@@ -444,8 +456,8 @@
           </p>
           <p>
             Full details in the
-            <a href="https://github.com/Vatsal057/safari-magic-extensions/blob/main/CONTRIBUTING.md"
-               target="_blank" rel="noopener">contributing guide ↗</a>.
+            <a href="https://github.com/Vatsal057/safari-magic-extensions/blob/main/CONTRIBUTING.md" target="_blank"
+              rel="noopener">contributing guide ↗</a>.
           </p>
         </details>
 
@@ -462,4 +474,5 @@
 
   <script src="app.js"></script>
 </body>
+
 </html>
