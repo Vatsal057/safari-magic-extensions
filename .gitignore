@@ -1,6 +1,27 @@
+# Python
 __pycache__/
 *.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# macOS
 .DS_Store
-.tmp/
+._*
+
+# Editors
 *.swp
+.idea/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+
+# Build output — SafariMagicHub.app is produced by ./scripts/build_native_app.sh
+# and distributed via GitHub Releases, not committed here.
 SafariMagicHub.app/
+build/
+dist/
+*.zip
+
+# Scratch
+.tmp/

@@ -46,7 +46,7 @@
             <path d="M12 2L15 8L21 9L17 14L18 20L12 17L6 20L7 14L3 9L9 8L12 2Z"/>
           </svg>
         </div>
-        <a href="downloads/SafariMagicHub.zip" class="nav-item" download>hub app</a>
+        <a href="https://github.com/Vatsal057/safari-magic-extensions" target="_blank" rel="noopener" class="nav-item">github</a>
         <button id="open-submit-modal-btn" class="nav-item nav-btn">submit</button>
       </nav>
 
@@ -81,29 +81,29 @@
         <!-- Top-Right Floating Actions -->
         <div class="hero-floating-actions">
           <button id="hero-become-author-btn" class="btn-pill-cream">become an author</button>
-          <a href="downloads/SafariMagicHub.zip" class="btn-pill-outline" download>get native app</a>
+          <a href="https://github.com/Vatsal057/safari-magic-extensions" target="_blank" rel="noopener" class="btn-pill-outline">view on github</a>
         </div>
 
         <!-- Bottom Category Icon Ribbon -->
-        <div class="hero-bottom-ribbon">
-          <button class="ribbon-icon-btn active" data-filter="all" title="All Extensions">
-            <span class="ribbon-icon">☕</span>
+        <div class="hero-bottom-ribbon" role="group" aria-label="Filter extensions by category">
+          <button class="ribbon-icon-btn active" data-filter="all" title="All Extensions" aria-pressed="true">
+            <span class="ribbon-icon" aria-hidden="true">☕</span>
             <span class="ribbon-label">all</span>
           </button>
-          <button class="ribbon-icon-btn" data-filter="ambient" title="Ambient & Nature">
-            <span class="ribbon-icon">🌿</span>
+          <button class="ribbon-icon-btn" data-filter="ambient" title="Ambient &amp; Nature" aria-pressed="false">
+            <span class="ribbon-icon" aria-hidden="true">🌿</span>
             <span class="ribbon-label">nature</span>
           </button>
-          <button class="ribbon-icon-btn" data-filter="focus" title="Zen & Focus">
-            <span class="ribbon-icon">⛩️</span>
+          <button class="ribbon-icon-btn" data-filter="focus" title="Zen &amp; Focus" aria-pressed="false">
+            <span class="ribbon-icon" aria-hidden="true">⛩️</span>
             <span class="ribbon-label">zen</span>
           </button>
-          <button class="ribbon-icon-btn" data-filter="newtab" title="Interactive Tabs">
-            <span class="ribbon-icon">👾</span>
+          <button class="ribbon-icon-btn" data-filter="newtab" title="Interactive Tabs" aria-pressed="false">
+            <span class="ribbon-icon" aria-hidden="true">👾</span>
             <span class="ribbon-label">tabs</span>
           </button>
-          <button class="ribbon-icon-btn" data-filter="tech" title="Tech & Minimal">
-            <span class="ribbon-icon">🎯</span>
+          <button class="ribbon-icon-btn" data-filter="tech" title="Tech &amp; Minimal" aria-pressed="false">
+            <span class="ribbon-icon" aria-hidden="true">🎯</span>
             <span class="ribbon-label">tech</span>
           </button>
         </div>
@@ -142,7 +142,7 @@
             <div class="featured-badge-overlay">
               <span class="badge-featured-star">★ FEATURED</span>
             </div>
-            <button class="heart-btn" id="featured-heart-btn" aria-label="Like this extension">
+            <button class="heart-btn" id="featured-heart-btn" aria-label="Like this extension" aria-pressed="false">
               <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
               </svg>
@@ -186,16 +186,15 @@
         Safari Magic Gallery • Open source repository for Apple Safari AI Extensions
       </div>
       <div class="footer-right">
-        <a href="https://github.com/Vatsal057/safari-magic-extensions" target="_blank" rel="noopener">GitHub</a>
-        <span>•</span>
-        <a href="downloads/SafariMagicHub.zip" download>Download macOS App</a>
+        <a href="https://github.com/Vatsal057/safari-magic-extensions" target="_blank" rel="noopener">GitHub Repository</a>
       </div>
     </footer>
 
   </div>
 
   <!-- Extension Inspector Drawer / Modal -->
-  <div id="inspector-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+  <div id="inspector-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true"
+       aria-labelledby="modal-title" aria-hidden="true">
     <div class="modal-pixel-card">
       <div class="modal-pixel-header">
         <div class="modal-header-meta">
@@ -203,7 +202,7 @@
           <h2 class="modal-title" id="modal-title">Night Meadow New Tab</h2>
           <div class="modal-author-badge" id="modal-author">by @vatsal</div>
         </div>
-        <button id="close-inspector-btn" class="modal-pixel-close">&times;</button>
+        <button id="close-inspector-btn" class="modal-pixel-close" aria-label="Close inspector">&times;</button>
       </div>
 
       <div class="modal-pixel-body">
@@ -228,7 +227,7 @@
           <div class="modal-section-block">
             <div class="modal-section-label">1-CLICK TERMINAL INSTALL</div>
             <div class="modal-terminal-box">
-              <code id="modal-cli-cmd">safari-magic-ext install night-meadow</code>
+              <code id="modal-cli-cmd">safari-magic-ext install &lt;extension-id&gt;</code>
               <button id="copy-modal-cli-btn" class="btn-mini-copy">copy</button>
             </div>
           </div>
@@ -244,7 +243,8 @@
   </div>
 
   <!-- Submit Modal -->
-  <div id="submit-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+  <div id="submit-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true"
+       aria-hidden="true">
     <div class="modal-pixel-card submit-card">
       <div class="modal-pixel-header">
         <div>
@@ -272,7 +272,7 @@
           <div class="submit-option-box">
             <div class="option-num">02</div>
             <h3 class="option-heading">Pull Request (Instant)</h3>
-            <p class="option-desc">Drop your package into <code>packages/</code>, run <code>python3 build_registry.py</code>, and open a PR. Automatically published on merge.</p>
+            <p class="option-desc">Drop your package into <code>web/packages/</code>, run <code>python3 scripts/build_registry.py</code>, and open a PR. Automatically published on merge.</p>
             <a href="https://github.com/Vatsal057/safari-magic-extensions" target="_blank" rel="noopener" class="btn-pill-outline">
               Fork Repository ↗
             </a>

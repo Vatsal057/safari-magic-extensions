@@ -1,6 +1,27 @@
 import Foundation
 import SwiftUI
 
+/// Maps the colour names used by the registry and Safari's database onto
+/// SwiftUI colours.
+///
+/// The accepted names are the options offered by the submission form in
+/// `.github/ISSUE_TEMPLATE/extension_submission.yml`, so keep the two in sync.
+public enum MagicColor {
+    public static func named(_ name: String?) -> Color {
+        switch (name ?? "").lowercased() {
+        case "purple": return .purple
+        case "blue": return .blue
+        case "green": return .green
+        case "orange": return .orange
+        case "pink": return .pink
+        case "red": return .red
+        case "yellow": return .yellow
+        case "gray", "grey": return .gray
+        default: return .blue
+        }
+    }
+}
+
 public struct InstalledExtension: Identifiable, Hashable {
     public let id: String
     public let name: String
@@ -15,16 +36,7 @@ public struct InstalledExtension: Identifiable, Hashable {
     public let modifiedDate: Date
 
     public var color: Color {
-        switch symbolColorName.lowercased() {
-        case "purple": return .purple
-        case "blue": return .blue
-        case "green": return .green
-        case "orange": return .orange
-        case "pink": return .pink
-        case "red": return .red
-        case "yellow": return .yellow
-        default: return .blue
-        }
+        MagicColor.named(symbolColorName)
     }
 }
 
@@ -39,22 +51,18 @@ public struct CommunityExtension: Identifiable, Codable, Hashable {
     public let symbol_color_name: String?
     public let tags: [String]?
     public let download_url: String?
+    // Presentation fields curated in web/registry_curation.json. Optional so
+    // the app keeps decoding older catalogs that predate them.
+    public let category: String?
+    public let art_image: String?
+    public let featured: Bool?
 
     public var safeSymbol: String {
         selected_symbol ?? "puzzlepiece.extension"
     }
 
     public var safeColor: Color {
-        switch (symbol_color_name ?? "").lowercased() {
-        case "purple": return .purple
-        case "blue": return .blue
-        case "green": return .green
-        case "orange": return .orange
-        case "pink": return .pink
-        case "red": return .red
-        case "yellow": return .yellow
-        default: return .blue
-        }
+        MagicColor.named(symbol_color_name)
     }
 }
 

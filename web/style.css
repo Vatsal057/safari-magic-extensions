@@ -751,6 +751,42 @@ body {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
 }
 
+/* Keyboard focus must be as obvious as hover. */
+.grid-card-item:focus-visible,
+.ribbon-icon-btn:focus-visible,
+.btn-card-action:focus-visible,
+.btn-card-save:focus-visible,
+.btn-mini-copy:focus-visible,
+.modal-pixel-close:focus-visible,
+.terminal-copy-btn:focus-visible {
+  outline: 2px solid var(--cream-accent);
+  outline-offset: 2px;
+}
+
+/* Empty / error state shown when the registry is unavailable or a filter
+   matches nothing. Spans the whole grid so the message is centered. */
+.grid-empty-note {
+  grid-column: 1 / -1;
+  align-self: center;
+  margin: 0;
+  padding: 24px;
+  text-align: center;
+  color: var(--cream-muted);
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+
+.grid-empty-note code {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 3px 7px;
+  background: var(--bg-card);
+  border: 1px solid var(--cream-border);
+  border-radius: 5px;
+  font-size: 0.78rem;
+  color: var(--cream-accent);
+}
+
 .grid-card-thumb {
   width: 100%;
   height: 100%;

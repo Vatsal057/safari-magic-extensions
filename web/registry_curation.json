@@ -1,0 +1,32 @@
+{
+  "_comment": "Maintainer-curated presentation data for the community gallery. Keyed by extension slug (the `id` build_registry.py derives from the package's magic.json name). Everything here is optional: packages without an entry fall back to sensible defaults. This file is an INPUT to build_registry.py; community_registry.json is generated OUTPUT and should never be hand-edited.",
+  "_schema": {
+    "tags": "Filter tags shown in the gallery ribbon. Valid: ambient, focus, newtab, tech.",
+    "art_image": "Preview image path relative to web/. Must exist on disk.",
+    "category": "Primary category used for the card label. Defaults to the first tag.",
+    "featured": "Set true on exactly one extension to pin it to the large hero card."
+  },
+  "extensions": {
+    "night-meadow-new-tab": {
+      "tags": ["ambient", "newtab"],
+      "art_image": "assets/night_meadow.jpg",
+      "featured": true
+    },
+    "nightlife-in-the-wild": {
+      "tags": ["ambient", "newtab"],
+      "art_image": "assets/hero_cyberpunk.jpg"
+    },
+    "night-garden-tab": {
+      "tags": ["ambient", "newtab"],
+      "art_image": "assets/art_night_garden.svg"
+    },
+    "zen-focus-timer": {
+      "tags": ["focus", "newtab"],
+      "art_image": "assets/zen_pagoda.jpg"
+    },
+    "hacker-news-minimal": {
+      "tags": ["tech", "newtab"],
+      "art_image": "assets/art_hackernews.svg"
+    }
+  }
+}

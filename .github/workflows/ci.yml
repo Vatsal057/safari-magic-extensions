@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    name: Python & registry
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # The CLI is stdlib-only, so a syntax check is a meaningful smoke test.
+      - name: Byte-compile all Python
+        run: python3 -m compileall -q safari-magic-ext.py scripts/
+
+      - name: Verify packages
+        run: python3 scripts/verify_packages.py
+
+      - name: Check registry is up to date
+        run: python3 scripts/build_registry.py --check
+
+      - name: CLI reports a version
+        run: python3 safari-magic-ext.py --version
+
+      - name: CLI help for every subcommand
+        run: |
+          set -euo pipefail
+          python3 safari-magic-ext.py --help >/dev/null
+          for cmd in list explore pack convert submit install export add update sync gui; do
+            echo "  checking: $cmd"
+            python3 safari-magic-ext.py "$cmd" --help >/dev/null
+          done
+
+  shell:
+    name: Shell scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ShellCheck
+        run: |
+          shellcheck --severity=warning \
+            scripts/build_native_app.sh \
+            install-cli.sh \
+            "Launch Safari Magic Hub.command"
+
+  macos-app:
+    name: Build native app
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # No signing identity on CI, so the script falls back to an ad-hoc
+      # signature. This verifies the sources compile for both architectures.
+      - name: Build SafariMagicHub.app
+        run: ./scripts/build_native_app.sh
+
+      - name: Confirm the binary is universal
+        run: |
+          set -euo pipefail
+          archs="$(lipo -archs SafariMagicHub.app/Contents/MacOS/SafariMagicHub)"
+          echo "architectures: $archs"
+          for required in arm64 x86_64; do
+            case "$archs" in
+              *"$required"*) ;;
+              *) echo "missing $required slice" >&2; exit 1 ;;
+            esac
+          done

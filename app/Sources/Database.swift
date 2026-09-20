@@ -55,11 +55,13 @@ public final class ExtensionDatabase {
         return db
     }
 
-public struct ExtensionFetchResult {
-    public let extensions: [InstalledExtension]
-    public let error: String?
-    public let isPermissionDenied: Bool
-}
+    /// Outcome of a catalog read, including whether it failed for lack of
+    /// Full Disk Access (which the UI surfaces with recovery instructions).
+    public struct ExtensionFetchResult {
+        public let extensions: [InstalledExtension]
+        public let error: String?
+        public let isPermissionDenied: Bool
+    }
 
     public func fetchInstalledExtensionsWithStatus() -> ExtensionFetchResult {
         var db: OpaquePointer?
@@ -154,8 +156,45 @@ public struct ExtensionFetchResult {
         }
         sqlite3_finalize(syncStmt)
 
-        let extId = UUID().uuidString.uppercased()
         let appleNow = Date().timeIntervalSince1970 - macAbsoluteTimeOffset
+        let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+
+        // Check if directory already exists
+        var checkStmt: OpaquePointer?
+        if sqlite3_prepare_v2(db, "SELECT id FROM magic_extensions WHERE directory_name = ?;", -1, &checkStmt, nil) == SQLITE_OK {
+            sqlite3_bind_text(checkStmt, 1, directoryName, -1, SQLITE_TRANSIENT)
+            if sqlite3_step(checkStmt) == SQLITE_ROW {
+                let existingId = String(cString: sqlite3_column_text(checkStmt, 0))
+                sqlite3_finalize(checkStmt)
+
+                var updStmt: OpaquePointer?
+                let updSQL = """
+                UPDATE magic_extensions SET
+                    modified_date = ?, name = ?, description = ?,
+                    selected_symbol = ?, prompt = ?, symbol_color_name = ?,
+                    sync_generation = ?
+                WHERE id = ?;
+                """
+                if sqlite3_prepare_v2(db, updSQL, -1, &updStmt, nil) == SQLITE_OK {
+                    sqlite3_bind_double(updStmt, 1, appleNow)
+                    sqlite3_bind_text(updStmt, 2, name, -1, SQLITE_TRANSIENT)
+                    sqlite3_bind_text(updStmt, 3, description, -1, SQLITE_TRANSIENT)
+                    sqlite3_bind_text(updStmt, 4, symbol, -1, SQLITE_TRANSIENT)
+                    sqlite3_bind_text(updStmt, 5, prompt, -1, SQLITE_TRANSIENT)
+                    sqlite3_bind_text(updStmt, 6, color, -1, SQLITE_TRANSIENT)
+                    sqlite3_bind_int(updStmt, 7, Int32(nextGen))
+                    sqlite3_bind_text(updStmt, 8, existingId, -1, SQLITE_TRANSIENT)
+                    _ = sqlite3_step(updStmt)
+                    sqlite3_finalize(updStmt)
+                }
+
+                sqlite3_exec(db, "PRAGMA wal_checkpoint(FULL);", nil, nil, nil)
+                return existingId
+            }
+            sqlite3_finalize(checkStmt)
+        }
+
+        let extId = UUID().uuidString.uppercased()
 
         let insertSQL = """
         INSERT INTO magic_extensions (
@@ -171,7 +210,6 @@ public struct ExtensionFetchResult {
             throw NSError(domain: "ExtensionDatabase", code: 500, userInfo: [NSLocalizedDescriptionKey: err])
         }
 
-        let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
         sqlite3_bind_text(insertStmt, 1, extId, -1, SQLITE_TRANSIENT)
         sqlite3_bind_double(insertStmt, 2, appleNow)
         sqlite3_bind_double(insertStmt, 3, appleNow)
@@ -199,6 +237,87 @@ public struct ExtensionFetchResult {
         }
         sqlite3_finalize(bumpStmt)
 
+        // Flush WAL checkpoint
+        sqlite3_exec(db, "PRAGMA wal_checkpoint(FULL);", nil, nil, nil)
+
         return extId
+    }
+
+    public func findUnlinkedFolders() -> [URL] {
+        let storageDir = Self.magicExtensionsDir
+        guard FileManager.default.fileExists(atPath: storageDir.path) else { return [] }
+
+        let currentExtensions = fetchInstalledExtensions()
+        let registeredDirs = Set(currentExtensions.map { $0.directoryName })
+
+        guard let contents = try? FileManager.default.contentsOfDirectory(at: storageDir, includingPropertiesForKeys: [.isDirectoryKey]) else {
+            return []
+        }
+
+        var unlinked: [URL] = []
+        for url in contents {
+            let name = url.lastPathComponent
+            if name.hasPrefix(".") || name.hasSuffix(".app") || name.hasPrefix("chrome-to-safari") {
+                continue
+            }
+            var isDir: ObjCBool = false
+            if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir), isDir.boolValue {
+                if !registeredDirs.contains(name) {
+                    unlinked.append(url)
+                }
+            }
+        }
+        return unlinked
+    }
+
+    public func syncAllUnlinkedFolders(relaunchSafari: Bool = false) throws -> Int {
+        let unlinked = findUnlinkedFolders()
+        guard !unlinked.isEmpty else { return 0 }
+
+        var count = 0
+        for folderURL in unlinked {
+            var name = folderURL.lastPathComponent
+            var desc = ""
+            var prompt = ""
+            var symbol = "puzzlepiece.extension"
+            let color = "blue"
+
+            let manifestURL = folderURL.appendingPathComponent("manifest.json")
+            if FileManager.default.fileExists(atPath: manifestURL.path),
+               let data = try? Data(contentsOf: manifestURL),
+               let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] {
+                if let n = json["name"] as? String, !n.isEmpty { name = n }
+                if let d = json["description"] as? String { desc = d }
+                if let specific = json["browser_specific_settings"] as? [String: Any],
+                   let safari = specific["safari"] as? [String: Any],
+                   let p = safari["prompt"] as? String {
+                    prompt = p
+                }
+                if let icons = json["icon_variants"] as? [[String: Any]],
+                   let first = icons.first,
+                   let anyVal = first["any"] as? String,
+                   anyVal.hasPrefix("symbol:") {
+                    symbol = anyVal.replacingOccurrences(of: "symbol:", with: "")
+                }
+            }
+
+            if prompt.isEmpty { prompt = desc.isEmpty ? name : desc }
+
+            _ = try registerExtension(
+                name: name,
+                directoryName: folderURL.lastPathComponent,
+                symbol: symbol,
+                color: color,
+                prompt: prompt,
+                description: desc
+            )
+            count += 1
+        }
+
+        if relaunchSafari && count > 0 {
+            PackageManager.relaunchSafari()
+        }
+
+        return count
     }
 }

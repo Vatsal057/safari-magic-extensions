@@ -12,13 +12,16 @@ Features:
   7. Dual-tab native macOS GUI (My Extensions + Community Hub) via tkinter.
 """
 
+__version__ = "1.1.0"
+
 import argparse
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 import shutil
 import sqlite3
+import stat
 import subprocess
 import sys
 import tempfile
@@ -35,7 +38,28 @@ MAGIC_EXTENSIONS_DIR = (
 )
 DB_PATH = MAGIC_EXTENSIONS_DIR / "Extensions.db"
 MAC_ABSOLUTE_TIME_OFFSET = 978307200.0  # 2001-01-01 00:00:00 UTC
-LOCAL_REGISTRY_PATH = Path(__file__).resolve().parent / "community_registry.json"
+
+# Published community catalog. Kept in sync with the native app
+# (app/Sources/CommunityRegistry.swift) and the web gallery.
+DEFAULT_REGISTRY_URL = (
+    "https://vatsal057.github.io/safari-magic-extensions/community_registry.json"
+)
+
+# Base used to resolve relative `download_url` values from the registry.
+REGISTRY_BASE_URL = DEFAULT_REGISTRY_URL.rsplit("/", 1)[0] + "/"
+
+# When running from a repository checkout the catalog and packages are on disk.
+# Once `install-cli.sh` copies this script to ~/.local/bin there is no adjacent
+# `web/` directory, so the remote catalog above becomes the only source.
+_SCRIPT_DIR = Path(__file__).resolve().parent
+LOCAL_REGISTRY_PATH = _SCRIPT_DIR / "web" / "community_registry.json"
+LOCAL_REGISTRY_CANDIDATES = (
+    LOCAL_REGISTRY_PATH,
+    _SCRIPT_DIR / "community_registry.json",
+)
+CACHE_DIR = Path.home() / "Library/Caches/safari-magic-ext"
+CACHED_REGISTRY_PATH = CACHE_DIR / "community_registry.json"
+USER_AGENT = "SafariMagicExtensionsManager/1.0"
 
 
 def get_db_connection(db_path: Path = DB_PATH) -> sqlite3.Connection:
@@ -48,6 +72,28 @@ def get_db_connection(db_path: Path = DB_PATH) -> sqlite3.Connection:
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def invocation_name() -> str:
+    """How the user invoked this tool, for copy-pasteable hints.
+
+    Reads as `safari-magic-ext` once installed, or `python3 safari-magic-ext.py`
+    when run from a repository checkout.
+    """
+    name = Path(sys.argv[0]).name if sys.argv and sys.argv[0] else "safari-magic-ext"
+    if name.endswith(".py"):
+        return f"python3 {name}"
+    return name or "safari-magic-ext"
+
+
+def slugify(value: str) -> str:
+    """Convert a name into a lowercase, dash-separated catalog identifier.
+
+    Registry IDs are slugs (e.g. "night-meadow-new-tab") so that
+    `safari-magic-ext install <id>` is memorable and copy-pasteable.
+    """
+    slug = re.sub(r"[^a-z0-9]+", "-", str(value).lower()).strip("-")
+    return slug or "extension"
 
 
 def clean_target_folder_name(name: str) -> str:
@@ -90,6 +136,35 @@ def synthesize_manifest_if_missing(extension_dir: Path) -> None:
     with open(manifest_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
     print(f"-> Generated default manifest.json using entry point '{entry_html}'")
+
+
+def apply_metadata_to_manifest(
+    extension_dir: Path, name: str | None = None, prompt: str | None = None
+) -> None:
+    """Write name/prompt into an extension's manifest.json, if it has one.
+
+    Safari reads the AI prompt from `browser_specific_settings.safari.prompt`,
+    so packages and installs keep it in sync with magic.json / the database.
+    """
+    manifest_path = extension_dir / "manifest.json"
+    if not manifest_path.exists():
+        return
+
+    try:
+        with open(manifest_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        if prompt:
+            settings = data.setdefault("browser_specific_settings", {})
+            safari = settings.setdefault("safari", {})
+            safari["prompt"] = prompt
+        if name:
+            data["name"] = name
+
+        with open(manifest_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+    except (OSError, json.JSONDecodeError) as e:
+        print(f"[Warning] Could not update manifest.json: {e}")
 
 
 def normalize_manifest(extension_dir: Path) -> dict:
@@ -183,6 +258,50 @@ def get_installed_extensions(conn: sqlite3.Connection | None = None) -> list[dic
 #  Package Standard (.magicext) & Packaging
 # =========================================================================
 
+# Never shipped inside a .magicext bundle.
+IGNORE_NAMES = (
+    ".git",
+    ".vscode",
+    ".tmp",
+    "node_modules",
+    ".DS_Store",
+    "Thumbs.db",
+    "magic.json",
+)
+
+
+def find_installed_extension(
+    target_identifier: str, conn: sqlite3.Connection | None = None
+) -> dict | None:
+    """Find an installed extension by ID, directory name, or name.
+
+    Exact matches (ID, directory, full name) win. A partial name match is only
+    accepted when exactly one extension matches, so a vague target like "night"
+    reports the ambiguity instead of silently picking the first hit.
+    """
+    extensions = get_installed_extensions(conn)
+    needle = target_identifier.strip().lower()
+
+    for ext in extensions:
+        if needle in (
+            ext["id"].lower(),
+            ext["directory_name"].lower(),
+            (ext["name"] or "").lower(),
+        ):
+            return ext
+
+    partial = [ext for ext in extensions if needle and needle in (ext["name"] or "").lower()]
+    if len(partial) == 1:
+        return partial[0]
+    if len(partial) > 1:
+        names = ", ".join(f"'{e['name']}'" for e in partial)
+        raise ValueError(
+            f"'{target_identifier}' matches {len(partial)} extensions: {names}. "
+            "Use the full name or the extension ID."
+        )
+    return None
+
+
 def pack_extension(
     target_identifier: str,
     output_dir: Path | str | None = None,
@@ -194,65 +313,74 @@ def pack_extension(
     Embeds magic.json containing the exact AI prompt, SF Symbol, badge tint color,
     author handle, and description.
     """
-    close_conn = False
-    if conn is None:
-        conn = get_db_connection()
-        close_conn = True
+    candidate = Path(target_identifier).expanduser()
+    is_folder_target = candidate.is_dir()
 
-    try:
-        extensions = get_installed_extensions(conn)
-        matched = None
-        for ext in extensions:
-            if (
-                target_identifier.lower() == ext["id"].lower()
-                or target_identifier.lower() == ext["directory_name"].lower()
-                or target_identifier.lower() in ext["name"].lower()
-            ):
-                matched = ext
-                break
+    matched: dict | None = None
+    if is_folder_target:
+        # Packaging a plain folder needs no database access, so `convert` works
+        # even on a machine where Safari has never created Extensions.db.
+        source_dir = candidate.resolve()
+    else:
+        close_conn = False
+        if conn is None:
+            conn = get_db_connection()
+            close_conn = True
+        try:
+            matched = find_installed_extension(target_identifier, conn)
+        finally:
+            if close_conn:
+                conn.close()
 
-        # Check if user passed an unlinked local folder directly
-        source_dir = None
         if not matched:
-            candidate = Path(target_identifier).expanduser().resolve()
-            if not candidate.is_dir() and (MAGIC_EXTENSIONS_DIR / target_identifier).is_dir():
-                candidate = (MAGIC_EXTENSIONS_DIR / target_identifier).resolve()
+            raise ValueError(
+                f"No active extension or valid folder found matching '{target_identifier}'."
+            )
+        source_dir = Path(matched["folder_path"])
 
-            if candidate.is_dir() and (candidate / "manifest.json").exists():
-                meta = normalize_manifest(candidate)
-                source_dir = candidate
-                matched = {
-                    "id": str(uuid.uuid4()).upper(),
-                    "name": meta["name"],
-                    "directory_name": candidate.name,
-                    "selected_symbol": meta["selected_symbol"],
-                    "symbol_color_name": "blue",
-                    "prompt": meta["prompt"],
-                    "description": meta["description"],
-                }
-            else:
-                raise ValueError(
-                    f"No active extension or valid folder found matching '{target_identifier}'."
-                )
-        else:
-            source_dir = Path(matched["folder_path"])
+    if not source_dir.exists():
+        raise FileNotFoundError(f"Extension files not found at: {source_dir}")
 
-        if not source_dir or not source_dir.exists():
-            raise FileNotFoundError(f"Extension files not found at: {source_dir}")
+    dest_dir = (
+        Path(output_dir).expanduser().resolve()
+        if output_dir
+        else (Path.home() / "Downloads")
+    )
+    dest_dir.mkdir(parents=True, exist_ok=True)
 
-        dest_dir = (
-            Path(output_dir).expanduser().resolve()
-            if output_dir
-            else (Path.home() / "Downloads")
+    with tempfile.TemporaryDirectory(prefix="safari_ext_pack_") as tmp_dir:
+        # Stage a copy so normalizing the manifest never edits the user's files.
+        # Keep the original folder name: normalize_manifest derives a default
+        # extension name from it when the folder has no manifest.json.
+        staging = Path(tmp_dir) / source_dir.name
+        shutil.copytree(
+            source_dir, staging, ignore=shutil.ignore_patterns(*IGNORE_NAMES)
         )
-        dest_dir.mkdir(parents=True, exist_ok=True)
+
+        manifest_meta = normalize_manifest(staging)
+
+        if matched is None:
+            matched = {
+                "id": str(uuid.uuid4()).upper(),
+                "name": manifest_meta["name"],
+                "directory_name": source_dir.name,
+                "selected_symbol": manifest_meta["selected_symbol"],
+                "symbol_color_name": "blue",
+                "prompt": manifest_meta["prompt"],
+                "description": manifest_meta["description"],
+            }
+        else:
+            # The database is authoritative for installed extensions; make the
+            # packaged manifest agree with it.
+            apply_metadata_to_manifest(
+                staging, name=matched["name"], prompt=matched["prompt"]
+            )
 
         safe_name = re.sub(r"[^a-zA-Z0-9_-]", "_", matched["name"]).strip("_")
         if not safe_name:
             safe_name = "SafariExtension"
         output_file = dest_dir / f"{safe_name}.magicext"
 
-        # Construct package metadata (magic.json)
         package_meta = {
             "magic_format_version": 1,
             "id": matched["id"],
@@ -266,37 +394,23 @@ def pack_extension(
             "packaged_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         }
 
-        # Build ZIP archive with .magicext extension
-        ignore_names = {
-            ".git",
-            ".vscode",
-            ".tmp",
-            "node_modules",
-            ".DS_Store",
-            "Thumbs.db",
-        }
-
         with zipfile.ZipFile(output_file, "w", zipfile.ZIP_DEFLATED) as zf:
-            # Store magic.json at archive root
+            # magic.json lives at the archive root.
             zf.writestr("magic.json", json.dumps(package_meta, indent=2))
 
-            for root, dirs, files in os.walk(source_dir):
-                dirs[:] = [d for d in dirs if d not in ignore_names]
+            for root, dirs, files in os.walk(staging):
+                dirs[:] = [d for d in dirs if d not in IGNORE_NAMES]
                 for file in files:
-                    if file in ignore_names or file == "magic.json":
+                    if file in IGNORE_NAMES:
                         continue
                     full_path = Path(root) / file
-                    rel_path = full_path.relative_to(source_dir)
-                    zf.write(full_path, arcname=str(rel_path))
+                    zf.write(full_path, arcname=str(full_path.relative_to(staging)))
 
-        print(f"✓ Packaged '{matched['name']}' into .magicext:")
-        print(f"  Bundle: {output_file}")
-        print(f"  Prompt: {matched['prompt']}")
-        print(f"  Symbol: {matched['selected_symbol']} ({matched['symbol_color_name']})")
-        return output_file
-    finally:
-        if close_conn:
-            conn.close()
+    print(f"✓ Packaged '{matched['name']}' into .magicext:")
+    print(f"  Bundle: {output_file}")
+    print(f"  Prompt: {matched['prompt']}")
+    print(f"  Symbol: {matched['selected_symbol']} ({matched['symbol_color_name']})")
+    return output_file
 
 
 # =========================================================================
@@ -306,41 +420,77 @@ def pack_extension(
 class CommunityRegistry:
     """Manages browsing and resolving extensions from the community catalog."""
 
-    def __init__(self, local_path: Path = LOCAL_REGISTRY_PATH):
-        self.local_path = local_path
-        self._cache = None
+    def __init__(self, local_path: Path | None = None):
+        # An explicit path wins; otherwise prefer a repo checkout beside this
+        # script, falling back to the last successful remote download.
+        if local_path is not None:
+            self.local_candidates: tuple[Path, ...] = (Path(local_path),)
+        else:
+            self.local_candidates = LOCAL_REGISTRY_CANDIDATES + (CACHED_REGISTRY_PATH,)
+        self._cache: dict | None = None
+
+    @property
+    def local_path(self) -> Path:
+        """First on-disk catalog that actually exists (else the preferred path)."""
+        for candidate in self.local_candidates:
+            if candidate.exists():
+                return candidate
+        return self.local_candidates[0]
+
+    def _read_local(self) -> dict | None:
+        for candidate in self.local_candidates:
+            if not candidate.exists():
+                continue
+            try:
+                with open(candidate, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception as err:
+                print(f"[Warning] Failed to read local registry {candidate}: {err}")
+        return None
 
     def fetch_catalog(self) -> dict:
-        """Load registry from remote URL if configured, or bundled fallback."""
+        """Load the catalog from the published URL, falling back to local copies.
+
+        Resolution order:
+          1. $SAFARI_MAGIC_REGISTRY_URL (override, useful for testing a fork)
+          2. The published GitHub Pages catalog
+          3. A `web/community_registry.json` next to this script (repo checkout)
+          4. The cached copy from the last successful download
+        """
         if self._cache is not None:
             return self._cache
 
-        remote_url = os.getenv("SAFARI_MAGIC_REGISTRY_URL")
+        remote_url = os.getenv("SAFARI_MAGIC_REGISTRY_URL") or DEFAULT_REGISTRY_URL
         data = None
 
-        if remote_url:
-            try:
-                req = urllib.request.Request(
-                    remote_url,
-                    headers={"User-Agent": "SafariMagicExtensionsManager/1.0"},
-                )
-                with urllib.request.urlopen(req, timeout=5) as resp:
-                    data = json.loads(resp.read().decode("utf-8"))
-            except Exception as err:
-                print(f"[Notice] Remote registry unavailable ({err}). Using local catalog.")
+        try:
+            req = urllib.request.Request(
+                remote_url, headers={"User-Agent": USER_AGENT}
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+            self._write_cache(data)
+        except Exception as err:
+            print(f"[Notice] Remote registry unavailable ({err}). Using local catalog.")
 
-        if not data and self.local_path.exists():
-            try:
-                with open(self.local_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-            except Exception as err:
-                print(f"[Warning] Failed to read local registry: {err}")
+        if not data:
+            data = self._read_local()
 
         if not data:
             data = {"version": 1, "extensions": []}
 
         self._cache = data
         return data
+
+    @staticmethod
+    def _write_cache(data: dict) -> None:
+        """Persist the downloaded catalog so offline runs still work."""
+        try:
+            CACHE_DIR.mkdir(parents=True, exist_ok=True)
+            with open(CACHED_REGISTRY_PATH, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+        except Exception:
+            pass  # A warm cache is a convenience, never a requirement.
 
     def list_all(self) -> list[dict]:
         """Return all catalog extensions."""
@@ -365,12 +515,17 @@ class CommunityRegistry:
         return matches
 
     def get(self, item_id: str) -> dict | None:
-        """Find catalog item by ID or name."""
+        """Find a catalog item by ID, slug, or name (all case-insensitive)."""
+        needle = item_id.strip().lower()
+        needle_slug = slugify(item_id)
         for item in self.list_all():
-            if (
-                item.get("id", "").lower() == item_id.lower()
-                or item.get("name", "").lower() == item_id.lower()
-            ):
+            candidates = {
+                item.get("id", "").lower(),
+                slugify(item.get("id", "")),
+                item.get("name", "").lower(),
+                slugify(item.get("name", "")),
+            }
+            if needle in candidates or needle_slug in candidates:
                 return item
         return None
 
@@ -379,16 +534,51 @@ class CommunityRegistry:
 #  Package Installation & Security
 # =========================================================================
 
+def assert_archive_is_safe(archive_path: Path) -> None:
+    """Reject archives that could write outside their extraction directory.
+
+    Guards against three separate tricks:
+      * absolute member paths ("/etc/passwd")
+      * parent traversal ("../../etc/passwd"), including Windows separators
+      * symlink members, which extract harmlessly but redirect later writes
+    """
+    with zipfile.ZipFile(archive_path, "r") as zf:
+        for member in zf.infolist():
+            name = member.filename
+            normalized = name.replace("\\", "/")
+
+            if normalized.startswith("/") or re.match(r"^[A-Za-z]:", normalized):
+                raise ValueError(
+                    f"Security Exception: absolute path in archive member '{name}'"
+                )
+
+            if any(part == ".." for part in PurePosixPath(normalized).parts):
+                raise ValueError(
+                    f"Security Exception: path traversal in archive member '{name}'"
+                )
+
+            # Upper 16 bits of external_attr hold the Unix mode for zips
+            # created on POSIX systems.
+            mode = member.external_attr >> 16
+            if mode and stat.S_ISLNK(mode):
+                raise ValueError(
+                    f"Security Exception: symbolic link in archive member '{name}'"
+                )
+
+
 def safe_extract_archive(archive_path: Path, dest_dir: Path) -> dict:
-    """Extract zip/.magicext archive safely protecting against zip-slip directory traversal."""
+    """Extract a .magicext/.zip archive, refusing anything that escapes dest_dir."""
     dest_dir = dest_dir.resolve()
     dest_dir.mkdir(parents=True, exist_ok=True)
 
+    assert_archive_is_safe(archive_path)
+
     with zipfile.ZipFile(archive_path, "r") as zf:
+        # Re-verify each resolved destination, which also catches members that
+        # would land outside dest_dir via an intermediate symlink.
         for member in zf.infolist():
             member_path = (dest_dir / member.filename).resolve()
-            # Prevent Zip Slip directory traversal vulnerability
-            if not str(member_path).startswith(str(dest_dir)):
+            if member_path != dest_dir and not member_path.is_relative_to(dest_dir):
                 raise ValueError(
                     f"Security Exception: Zip traversal attempt detected in '{member.filename}'"
                 )
@@ -439,21 +629,31 @@ def resolve_source_to_package(source: str, temp_workspace: Path) -> tuple[Path, 
     catalog_item = registry.get(source_str)
     if catalog_item:
         url = catalog_item.get("download_url", "")
+        if not url:
+            raise ValueError(
+                f"Community extension '{catalog_item.get('name', source_str)}' has no "
+                "download_url in the catalog."
+            )
+
         # Check if it references a local extension already on disk
         if url.startswith("local:"):
             folder_ref = url.replace("local:", "", 1)
             candidate_dir = MAGIC_EXTENSIONS_DIR / folder_ref
-            if candidate_dir.exists():
-                print(f"-> Packing local showcase extension '{catalog_item['name']}'...")
-                pkg = pack_extension(
-                    target_identifier=folder_ref,
-                    output_dir=temp_workspace,
-                    author=catalog_item.get("author"),
+            if not candidate_dir.exists():
+                raise FileNotFoundError(
+                    f"Catalog entry '{catalog_item.get('name', source_str)}' points at the "
+                    f"local folder '{folder_ref}', which is not installed in Safari."
                 )
-                return pkg, catalog_item
+            print(f"-> Packing local showcase extension '{catalog_item['name']}'...")
+            pkg = pack_extension(
+                target_identifier=folder_ref,
+                output_dir=temp_workspace,
+                author=catalog_item.get("author"),
+            )
+            return pkg, catalog_item
 
         # Check if URL is a relative or local package file path
-        rel_candidate = (LOCAL_REGISTRY_PATH.parent / url).resolve()
+        rel_candidate = (registry.local_path.parent / url).resolve()
         if rel_candidate.is_file():
             return rel_candidate, catalog_item
 
@@ -461,16 +661,20 @@ def resolve_source_to_package(source: str, temp_workspace: Path) -> tuple[Path, 
         if cwd_candidate.is_file():
             return cwd_candidate, catalog_item
 
-        if url.startswith("http://") or url.startswith("https://"):
-            download_target = temp_workspace / f"{catalog_item['id']}.magicext"
-            print(f"-> Downloading '{catalog_item['name']}' from registry...")
-            req = urllib.request.Request(
-                url, headers={"User-Agent": "SafariMagicExtensionsManager/1.0"}
-            )
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                with open(download_target, "wb") as f:
-                    shutil.copyfileobj(resp, f)
-            return download_target, catalog_item
+        # Relative URLs in the catalog are published alongside it, so resolve
+        # them against the registry base rather than giving up.
+        download_url = (
+            url
+            if url.startswith(("http://", "https://"))
+            else urllib.parse.urljoin(REGISTRY_BASE_URL, url)
+        )
+        download_target = temp_workspace / f"{slugify(catalog_item['id'])}.magicext"
+        print(f"-> Downloading '{catalog_item['name']}' from registry...")
+        req = urllib.request.Request(download_url, headers={"User-Agent": USER_AGENT})
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            with open(download_target, "wb") as f:
+                shutil.copyfileobj(resp, f)
+        return download_target, catalog_item
 
     # 4. Local Folder (direct sideload)
     if local_path.is_dir():
@@ -542,22 +746,10 @@ def install_package(
         )
 
         # If prompt is present in magic.json, sync it into manifest.json
-        manifest_file = extract_dir / "manifest.json"
-        if manifest_file.exists() and effective_prompt:
-            try:
-                with open(manifest_file, "r", encoding="utf-8") as mf:
-                    mdata = json.load(mf)
-                if "browser_specific_settings" not in mdata:
-                    mdata["browser_specific_settings"] = {}
-                if "safari" not in mdata["browser_specific_settings"]:
-                    mdata["browser_specific_settings"]["safari"] = {}
-                mdata["browser_specific_settings"]["safari"]["prompt"] = effective_prompt
-                if effective_name:
-                    mdata["name"] = effective_name
-                with open(manifest_file, "w", encoding="utf-8") as mf:
-                    json.dump(mdata, mf, indent=2)
-            except Exception as e:
-                print(f"[Warning] Could not update extracted manifest prompt: {e}")
+        if effective_prompt:
+            apply_metadata_to_manifest(
+                extract_dir, name=effective_name, prompt=effective_prompt
+            )
 
         # Rename extract_dir to match effective name so Safari directory is descriptive
         clean_ext_name = re.sub(r"[^a-zA-Z0-9_-]", "", effective_name) or "MagicExtension"
@@ -609,17 +801,7 @@ def export_extension(
         close_conn = True
 
     try:
-        extensions = get_installed_extensions(conn)
-        matched = None
-        for ext in extensions:
-            if (
-                target_identifier.lower() == ext["id"].lower()
-                or target_identifier.lower() == ext["directory_name"].lower()
-                or target_identifier.lower() in ext["name"].lower()
-            ):
-                matched = ext
-                break
-
+        matched = find_installed_extension(target_identifier, conn)
         if not matched:
             raise ValueError(f"No extension found matching '{target_identifier}'.")
 
@@ -709,7 +891,60 @@ def list_extensions(conn: sqlite3.Connection) -> None:
         print("  (None)")
     for u in unregistered:
         print(f"  • {u}")
+    if unregistered:
+        print(f"\n  Tip: Run 'python3 safari-magic-ext.py sync' to register all {len(unregistered)} unlinked folder(s) in Safari.")
     print()
+
+
+def sync_unlinked_extensions(
+    conn: sqlite3.Connection | None = None, relaunch: bool = True
+) -> list[str]:
+    """Scan Safari MagicExtensions storage for unlinked folders and register them in Extensions.db."""
+    close_conn = False
+    if conn is None:
+        conn = get_db_connection(DB_PATH)
+        close_conn = True
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT directory_name FROM magic_extensions WHERE name != ''")
+        registered_dirs = {row["directory_name"] for row in cursor.fetchall()}
+
+        synced = []
+        if MAGIC_EXTENSIONS_DIR.exists():
+            for item in sorted(MAGIC_EXTENSIONS_DIR.iterdir()):
+                if (
+                    item.is_dir()
+                    and not item.name.startswith(".")
+                    and not item.name.endswith(".app")
+                    and item.name != "chrome-to-safari-8a9210f8262ad887ad0836bca385444cae8089eb"
+                ):
+                    if item.name not in registered_dirs:
+                        print(f"-> Found unlinked folder: {item.name}, registering in database...")
+                        try:
+                            add_extension(
+                                conn=conn,
+                                source_path=item,
+                                relaunch=False,
+                            )
+                            synced.append(item.name)
+                        except Exception as e:
+                            print(f"[Warning] Failed to register '{item.name}': {e}")
+
+        conn.commit()
+        conn.execute("PRAGMA wal_checkpoint(FULL);")
+
+        if synced:
+            print(f"\n✓ Successfully registered {len(synced)} unlinked extension(s) in Safari database!")
+            if relaunch:
+                relaunch_safari()
+        else:
+            print("\nAll extension folders in Safari storage are already registered in the database.")
+
+        return synced
+    finally:
+        if close_conn:
+            conn.close()
 
 
 def explore_community(query: str = "") -> None:
@@ -733,7 +968,7 @@ def explore_community(query: str = "") -> None:
         print(f"      Tags:   {tags}")
         print(f"      Prompt: \"{item.get('prompt')}\"")
         print(f"      Desc:   {item.get('description')}")
-        print(f"      Install command: safari-magic-ext.py install {item.get('id')}\n")
+        print(f"      Install command: {invocation_name()} install {item.get('id')}\n")
 
 
 def add_extension(
@@ -831,6 +1066,7 @@ def add_extension(
             (next_gen + 1,),
         )
         conn.commit()
+        conn.execute("PRAGMA wal_checkpoint(FULL);")
 
         print(f"\n✓ Successfully installed & activated '{final_name}'")
         print(f"    ID:     {ext_id}")
@@ -946,6 +1182,7 @@ def update_extension(
         (next_gen + 1,),
     )
     conn.commit()
+    conn.execute("PRAGMA wal_checkpoint(FULL);")
 
     print(f"\n✓ Extension '{new_name}' updated successfully!")
     print(f"    ID:     {ext_id}")
@@ -1533,7 +1770,13 @@ def main() -> None:
         return
 
     parser = argparse.ArgumentParser(
-        description="Share, package, install, and manage Safari Magic Extensions easily."
+        prog="safari-magic-ext",
+        description="Share, package, install, and manage Safari Magic Extensions easily.",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"safari-magic-ext {__version__}",
     )
     subparsers = parser.add_subparsers(dest="command")
 
@@ -1568,6 +1811,29 @@ def main() -> None:
         help="Destination directory (defaults to ~/Downloads)",
     )
     pack_parser.add_argument(
+        "--author",
+        type=str,
+        default=None,
+        help="Creator name/handle to embed in package",
+    )
+
+    # Command: convert
+    convert_parser = subparsers.add_parser(
+        "convert", help="Convert any local extension folder into a .magicext bundle"
+    )
+    convert_parser.add_argument(
+        "path",
+        type=str,
+        help="Path to local extension folder",
+    )
+    convert_parser.add_argument(
+        "--to",
+        dest="output_dir",
+        type=str,
+        default=None,
+        help="Destination directory (defaults to ~/Downloads)",
+    )
+    convert_parser.add_argument(
         "--author",
         type=str,
         default=None,
@@ -1718,6 +1984,16 @@ def main() -> None:
         help="Do not restart Safari automatically",
     )
 
+    # Command: sync
+    sync_parser = subparsers.add_parser(
+        "sync", help="Scan storage and register all unlinked extension folders into Safari database"
+    )
+    sync_parser.add_argument(
+        "--no-restart",
+        action="store_true",
+        help="Do not restart Safari automatically",
+    )
+
     args = parser.parse_args()
 
     if args.command == "gui":
@@ -1735,6 +2011,19 @@ def main() -> None:
             )
         finally:
             conn.close()
+    elif args.command == "convert":
+        # Converting a folder is a pure file operation: no Safari database needed.
+        try:
+            pkg = pack_extension(
+                target_identifier=args.path,
+                output_dir=args.output_dir,
+                author=args.author,
+            )
+            print(f"\n✓ Successfully converted folder '{args.path}' into .magicext bundle!")
+            print(f"  Package: {pkg}")
+        except Exception as e:
+            print(f"\n[Error] {e}")
+            sys.exit(1)
     elif args.command == "submit":
         conn = get_db_connection(DB_PATH)
         try:
@@ -1849,6 +2138,15 @@ def main() -> None:
                 name=args.name,
                 relaunch=not args.no_restart,
             )
+        except Exception as e:
+            print(f"\n[Error] {e}")
+            sys.exit(1)
+        finally:
+            conn.close()
+    elif args.command == "sync":
+        conn = get_db_connection(DB_PATH)
+        try:
+            sync_unlinked_extensions(conn=conn, relaunch=not args.no_restart)
         except Exception as e:
             print(f"\n[Error] {e}")
             sys.exit(1)

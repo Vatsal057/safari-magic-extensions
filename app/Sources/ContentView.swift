@@ -10,8 +10,8 @@ public struct ContentView: View {
     @State private var statusMessage: String = "Ready"
     @State private var isPermissionDenied: Bool = false
     @State private var isDropTargeted: Bool = false
+    // Drives List selection in the "My Extensions" tab.
     @State private var selectedInstalled: InstalledExtension? = nil
-    @State private var selectedCommunity: CommunityExtension? = nil
     @State private var installingId: String? = nil
 
     @StateObject private var registry = CommunityRegistryClient.shared
@@ -67,7 +67,7 @@ public struct ContentView: View {
         }
         .frame(minWidth: 780, minHeight: 520)
         .onAppear {
-            refreshInstalled()
+            refreshInstalled(relaunchIfSynced: false)
             Task { await registry.fetchCatalog() }
         }
         .onDrop(of: [UTType.fileURL], isTargeted: $isDropTargeted) { providers in
@@ -83,7 +83,7 @@ public struct ContentView: View {
                             Image(systemName: "arrow.down.doc.fill")
                                 .font(.system(size: 44))
                                 .foregroundColor(.accentColor)
-                            Text("Drop .magicext to Install in Safari")
+                            Text("Drop .magicext or Extension Folder to Install")
                                 .font(.title3.bold())
                         }
                     )
@@ -113,11 +113,25 @@ public struct ContentView: View {
                 Spacer()
 
                 Button {
-                    refreshInstalled()
+                    refreshInstalled(relaunchIfSynced: true)
                 } label: {
                     Image(systemName: "arrow.clockwise")
                 }
-                .help("Refresh Extensions")
+                .help("Refresh list & auto-sync any new folders from Safari storage")
+
+                Button {
+                    chooseAndConvertFolder()
+                } label: {
+                    Label("Convert Folder", systemImage: "shippingbox.fill")
+                }
+                .help("Convert any local extension folder into a shareable .magicext package")
+
+                Button {
+                    chooseAndInstallFolder()
+                } label: {
+                    Label("Install Folder", systemImage: "folder.badge.plus")
+                }
+                .help("Install an unpacked extension folder directly into Safari")
 
                 Button {
                     chooseAndInstallPackage()
@@ -289,12 +303,15 @@ public struct ContentView: View {
     // =====================================================================
     //  Actions
     // =====================================================================
-    private func refreshInstalled() {
+    private func refreshInstalled(relaunchIfSynced: Bool = true) {
+        let unlinkedCount = (try? ExtensionDatabase.shared.syncAllUnlinkedFolders(relaunchSafari: relaunchIfSynced)) ?? 0
         let res = ExtensionDatabase.shared.fetchInstalledExtensionsWithStatus()
         installed = res.extensions
         isPermissionDenied = res.isPermissionDenied
         if let err = res.error {
             statusMessage = "DB Notice: \(err)"
+        } else if unlinkedCount > 0 {
+            statusMessage = "✓ Synced & activated \(unlinkedCount) new folder(s) in Safari"
         } else {
             statusMessage = "Loaded \(installed.count) active Safari extensions."
         }
@@ -315,6 +332,59 @@ public struct ContentView: View {
             } catch {
                 NSSound.beep()
                 statusMessage = "Install failed: \(error.localizedDescription)"
+            }
+        }
+    }
+
+    private func chooseAndInstallFolder() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.prompt = "Install into Safari"
+        panel.message = "Select an unpacked extension folder to install and activate directly in Safari."
+
+        if panel.runModal() == .OK, let folderURL = panel.url {
+            do {
+                let id = try PackageManager.shared.installFromDirectory(sourceURL: folderURL, relaunchSafari: true)
+                refreshInstalled()
+                statusMessage = "✓ Installed folder: \(folderURL.lastPathComponent) [\(id)]"
+            } catch {
+                NSSound.beep()
+                statusMessage = "Install failed: \(error.localizedDescription)"
+            }
+        }
+    }
+
+    private func chooseAndConvertFolder() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.prompt = "Select Folder"
+        panel.message = "Choose an extension folder to package into a .magicext bundle."
+
+        if panel.runModal() == .OK, let folderURL = panel.url {
+            let savePanel = NSSavePanel()
+            savePanel.allowedContentTypes = [UTType(filenameExtension: "magicext") ?? .archive]
+            let defaultName = folderURL.lastPathComponent.replacingOccurrences(of: " ", with: "_")
+            savePanel.nameFieldStringValue = "\(defaultName).magicext"
+            savePanel.prompt = "Save .magicext"
+
+            if savePanel.runModal() == .OK, let destFile = savePanel.url {
+                let destDir = destFile.deletingLastPathComponent()
+                do {
+                    let out = try PackageManager.shared.packFolder(
+                        sourceFolder: folderURL,
+                        destinationDir: destDir,
+                        customName: destFile.deletingPathExtension().lastPathComponent
+                    )
+                    statusMessage = "✓ Created: \(out.lastPathComponent)"
+                    NSWorkspace.shared.activateFileViewerSelecting([out])
+                } catch {
+                    NSSound.beep()
+                    statusMessage = "Convert failed: \(error.localizedDescription)"
+                }
             }
         }
     }
@@ -366,9 +436,16 @@ public struct ContentView: View {
                    let url = URL(dataRepresentation: data, relativeTo: nil) {
                     DispatchQueue.main.async {
                         do {
-                            let id = try PackageManager.shared.installPackage(from: url, relaunchSafari: true)
-                            refreshInstalled()
-                            statusMessage = "Installed dropped package: \(url.lastPathComponent) [\(id)]"
+                            var isDir: ObjCBool = false
+                            if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir), isDir.boolValue {
+                                let id = try PackageManager.shared.installFromDirectory(sourceURL: url, relaunchSafari: true)
+                                refreshInstalled()
+                                statusMessage = "✓ Installed extension folder: \(url.lastPathComponent) [\(id)]"
+                            } else {
+                                let id = try PackageManager.shared.installPackage(from: url, relaunchSafari: true)
+                                refreshInstalled()
+                                statusMessage = "✓ Installed package: \(url.lastPathComponent) [\(id)]"
+                            }
                         } catch {
                             NSSound.beep()
                             statusMessage = "Drop install failed: \(error.localizedDescription)"
