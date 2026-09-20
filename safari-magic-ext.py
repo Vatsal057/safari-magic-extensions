@@ -2223,6 +2223,7 @@ def main() -> None:
                         res = json.loads(resp.read().decode())
                         return res["data"]["url"]
                 except Exception as e:
+                    print(f"DEBUG Exception during upload: {e}")
                     return None
 
             upload_url = upload_tmpfiles(pkg_path)
