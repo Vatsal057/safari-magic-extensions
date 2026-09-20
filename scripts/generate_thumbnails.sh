@@ -95,8 +95,16 @@ for pkg in "${packages[@]}"; do
 
   printf '  %-24s ' "$slug"
   if render "file://$work/$entry" "$raw"; then
-    # Downscale to a consistent gallery width and strip metadata.
-    sips -Z 640 "$raw" --out "$out" >/dev/null 2>&1
+    # Downscale to a consistent gallery width and strip metadata if tool available, or copy
+    if command -v sips >/dev/null 2>&1; then
+      sips -Z 640 "$raw" --out "$out" >/dev/null 2>&1
+    elif command -v convert >/dev/null 2>&1; then
+      convert "$raw" -resize 640x "$out" >/dev/null 2>&1
+    elif python3 -c "import PIL" 2>/dev/null; then
+      python3 -c "from PIL import Image; img = Image.open('$raw'); img.thumbnail((640, 400)); img.save('$out')"
+    else
+      cp "$raw" "$out"
+    fi
     echo "ok  ($(du -h "$out" | cut -f1))"
   else
     echo "FAILED to render"
