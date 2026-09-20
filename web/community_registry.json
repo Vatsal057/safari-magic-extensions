@@ -1,7 +1,7 @@
 {
   "version": 1,
   "registry_name": "Safari Magic Extensions Community Hub",
-  "updated_at": "2026-09-20T12:52:37Z",
+  "updated_at": "2026-09-20T15:12:41Z",
   "extensions": [
     {
       "id": "hacker-news-minimal",
@@ -20,42 +20,6 @@
       "art_image": "assets/thumbnails/hacker-news-minimal.png",
       "added_at": "2026-09-20T06:40:40Z",
       "download_url": "packages/Hacker_News_Minimal.magicext"
-    },
-    {
-      "id": "night-garden-tab",
-      "name": "Night Garden Tab",
-      "author": "vatsal",
-      "version": "1.0",
-      "description": "Draws a different flower every time you open a new tab.",
-      "prompt": "Every time I open a new tab, draw me a different flower; there shoydl be trees and all as well. and it sholud be night time, so stars and moon and all. ; no green trees. or grass. it should be liek a shadow. and the stars and moon should be moving at their own speed. and make the trees and flowers look natural.",
-      "selected_symbol": "leaf.fill",
-      "symbol_color_name": "blue",
-      "tags": [
-        "ambient",
-        "newtab"
-      ],
-      "category": "ambient",
-      "art_image": "assets/thumbnails/night-garden-tab.png",
-      "added_at": "2026-09-20T06:22:43Z",
-      "download_url": "packages/Night_Garden_Tab.magicext"
-    },
-    {
-      "id": "night-meadow-new-tab",
-      "name": "Night Meadow New Tab",
-      "author": "vatsal",
-      "version": "1.0",
-      "description": "A beautiful, premium 2D illustrated night ecosystem for your new tab page.",
-      "prompt": "Build a beautiful, premium 2D illustrated night ecosystem that feels calm, natural, and alive on the new tab page.",
-      "selected_symbol": "moon.stars.fill",
-      "symbol_color_name": "blue",
-      "tags": [
-        "ambient",
-        "newtab"
-      ],
-      "category": "ambient",
-      "art_image": "assets/thumbnails/night-meadow-new-tab.png",
-      "added_at": "2026-09-20T06:22:43Z",
-      "download_url": "packages/Night_Meadow_New_Tab.magicext"
     },
     {
       "id": "nightlife-in-the-wild",
@@ -92,6 +56,23 @@
       "art_image": "assets/thumbnails/zen-focus-timer.png",
       "added_at": "2026-09-20T06:40:40Z",
       "download_url": "packages/Zen_Focus_Timer.magicext"
+    },
+    {
+      "id": "video-pip",
+      "name": "Video PiP",
+      "author": "Vatsal",
+      "version": "1.0",
+      "description": "Play any video in Picture-in-Picture mode with a single click. Safari will find the largest video on the page and open it in a floating window.",
+      "prompt": "make any video play as a pip",
+      "selected_symbol": "video.fill",
+      "symbol_color_name": "orange",
+      "tags": [
+        "newtab"
+      ],
+      "category": "newtab",
+      "art_image": "assets/thumbnails/video-pip.png",
+      "added_at": "2026-09-20T15:07:32Z",
+      "download_url": "packages/video-pip.magicext"
     }
   ]
 }
