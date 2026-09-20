@@ -1,7 +1,7 @@
 {
   "version": 1,
   "registry_name": "Safari Magic Extensions Community Hub",
-  "updated_at": "2026-09-20T15:22:17Z",
+  "updated_at": "2026-09-20T15:24:11Z",
   "extensions": [
     {
       "id": "hacker-news-minimal",
@@ -71,7 +71,7 @@
       ],
       "category": "newtab",
       "art_image": "assets/thumbnails/random-animal-new-tab.png",
-      "added_at": "2026-09-20T15:21:37Z",
+      "added_at": "2026-09-20T15:23:24Z",
       "download_url": "packages/random-animal-new-tab.magicext"
     },
     {
