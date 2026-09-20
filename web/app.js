@@ -366,7 +366,10 @@ function setupEventListeners() {
     if (e.target === inspectorModal) closeModal(inspectorModal);
   });
   inspectorModal.addEventListener('keydown', e => trapFocus(e, inspectorModal));
-  if (modalSetupLink) modalSetupLink.addEventListener('click', () => closeModal(inspectorModal));
+  // Both "set up" links jump to the setup section, so close the modal first.
+  [modalSetupLink, document.getElementById('modal-cli-setup-link')].forEach(link => {
+    if (link) link.addEventListener('click', () => closeModal(inspectorModal));
+  });
 
   const openSubmit = () => openModal(submitModal);
   [openSubmitModalBtn, heroBecomeAuthorBtn, footerSubmitBtn].forEach(btn => {
