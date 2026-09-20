@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "registry_name": "Safari Magic Extensions Community Hub",
+  "updated_at": "2026-09-20T06:28:20Z",
+  "extensions": [
+    {
+      "id": "72E1FD51-CE82-4291-936A-EEC01FBE9CE7",
+      "name": "Night Garden Tab",
+      "author": "vatsal",
+      "version": "1.0",
+      "description": "Draws a different flower every time you open a new tab.",
+      "prompt": "Every time I open a new tab, draw me a different flower; there shoydl be trees and all as well. and it sholud be night time, so stars and moon and all. ; no green trees. or grass. it should be liek a shadow. and the stars and moon should be moving at their own speed. and make the trees and flowers look natural. ",
+      "selected_symbol": "leaf.fill",
+      "symbol_color_name": "blue",
+      "tags": [
+        "ambient",
+        "newtab"
+      ],
+      "download_url": "packages/Night_Garden_Tab.magicext"
+    },
+    {
+      "id": "DA903C92-D525-4201-8A7D-75A552FB28FE",
+      "name": "Night Meadow New Tab",
+      "author": "vatsal",
+      "version": "1.0",
+      "description": "A beautiful, premium 2D illustrated night ecosystem for your new tab page.",
+      "prompt": "Build a beautiful, premium 2D illustrated night ecosystem that feels calm, natural, and alive on the new tab page.",
+      "selected_symbol": "moon.stars.fill",
+      "symbol_color_name": "blue",
+      "tags": [
+        "ambient",
+        "newtab"
+      ],
+      "download_url": "packages/Night_Meadow_New_Tab.magicext"
+    },
+    {
+      "id": "96B7A6A1-52C1-437C-9F1A-20AF99888FCE",
+      "name": "Nightlife in the Wild",
+      "author": "vatsal",
+      "version": "1.0",
+      "description": "Nightlife 24B7 Safari Extension",
+      "prompt": "Create Nightlife 24B7; make it day time; revert",
+      "selected_symbol": "moon.stars.fill",
+      "symbol_color_name": "purple",
+      "tags": [
+        "ambient",
+        "newtab"
+      ],
+      "download_url": "packages/Nightlife_in_the_Wild.magicext"
+    },
+    {
+      "id": "hackernews-minimal",
+      "name": "Hacker News Minimal",
+      "author": "community",
+      "version": "1.0",
+      "description": "Clean, ultra-fast Hacker News top stories reader directly in your Safari new tab.",
+      "prompt": "Create a modern minimalist Hacker News top stories reader for new tab with dark mode, score badges, and direct discussion links.",
+      "selected_symbol": "newspaper.fill",
+      "symbol_color_name": "orange",
+      "tags": [
+        "news",
+        "tech",
+        "minimalist"
+      ],
+      "download_url": "https://raw.githubusercontent.com/vatsal/safari-magic-extensions-hub/main/packages/hackernews-minimal.magicext"
+    },
+    {
+      "id": "zen-focus-tab",
+      "name": "Zen Focus & Timer",
+      "author": "community",
+      "version": "1.1",
+      "description": "Distraction-free Pomodoro timer and daily intentions board with ambient lo-fi soundscapes.",
+      "prompt": "Create a peaceful Zen focus new tab page with a customizable 25-minute Pomodoro timer, minimal daily intention list, and calming background gradients.",
+      "selected_symbol": "sparkles",
+      "symbol_color_name": "blue",
+      "tags": [
+        "focus",
+        "pomodoro",
+        "productivity"
+      ],
+      "download_url": "https://raw.githubusercontent.com/vatsal/safari-magic-extensions-hub/main/packages/zen-focus-tab.magicext"
+    }
+  ]
+}
