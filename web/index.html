@@ -24,94 +24,42 @@
   <!-- Outer Page Frame Wrapper -->
   <div class="outer-page-wrapper">
 
-    <!-- Top Meta Bar (Rocket & Color Swatches) -->
-    <header class="top-meta-header">
-      <div class="top-meta-left">
-        <a href="#" class="top-rocket-link" title="Safari Magic Gallery">
-          <img src="assets/pixel_rocket.svg" alt="" class="pixel-rocket-img">
-        </a>
-      </div>
-      <div class="top-meta-right">
-        <div class="top-tagline">
-          community AI extensions for safari • every package ships its original prompt
-        </div>
-        <div class="color-palette-bar">
-          <div class="swatch-pill swatch-cream">E8E0C6</div>
-          <div class="swatch-pill swatch-charcoal">252525</div>
-          <div class="swatch-pill swatch-gray">474744</div>
-        </div>
-      </div>
-    </header>
-
     <!-- Main Framed Canvas Container -->
     <main class="main-canvas-frame">
 
-      <!-- Pill Capsule Navigation -->
+      <!-- Streamlined Capsule Navigation -->
       <nav class="capsule-nav" aria-label="Main navigation">
+        <a href="#" class="nav-rocket-link" title="Safari Magic Home" aria-label="Safari Magic Home">
+          <img src="assets/pixel_rocket.svg" alt="" class="nav-rocket-img">
+        </a>
         <a href="#gallery" class="nav-item">browse</a>
         <a href="#setup" class="nav-item">setup</a>
-        <div class="nav-center-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-            <path d="M12 2L15 8L21 9L17 14L18 20L12 17L6 20L7 14L3 9L9 8L12 2Z"/>
-          </svg>
-        </div>
         <a href="https://github.com/Vatsal057/safari-magic-extensions" target="_blank" rel="noopener" class="nav-item">github</a>
         <button id="open-submit-modal-btn" class="nav-item nav-btn">share yours</button>
       </nav>
 
-      <!-- Massive Retro Pixel Headline -->
-      <header class="hero-headline-group">
-        <h1 class="pixel-title-main">
-          <span>SAFARI</span> <span>MAGIC</span>
-        </h1>
-        <div class="pixel-title-sub">
-          GALLERY
-        </div>
-      </header>
-
-      <!-- Hero Cinematic Showcase Box -->
-      <section class="hero-showcase-box" id="hero-box" aria-label="Introduction">
+      <!-- Hero Atmospheric Showcase: Integrated Canvas & Frosted HUD -->
+      <section class="hero-showcase-box" id="hero-box" aria-label="Safari Magic Introduction">
         <div class="hero-art-layer" id="hero-art">
-          <img src="assets/hero_cyberpunk.jpg" alt="" class="hero-img">
+          <img src="assets/hero_cyberpunk.jpg" alt="Cyberpunk pixel art cityscape" class="hero-img">
           <div class="hero-scanlines"></div>
         </div>
 
-        <div class="hero-floating-card">
-          <p class="hero-card-desc">
-            Safari can build an extension from a sentence. Here people share what
-            they made, with the original prompt included so you can install or remix it.
+        <div class="hero-hud-card">
+          <h1 class="pixel-title-main">
+            <span>SAFARI</span> <span>MAGIC</span>
+          </h1>
+          <div class="pixel-title-sub">
+            GALLERY
+          </div>
+          <p class="hero-subtitle">
+            Safari builds extensions from a sentence. Here the community shares what
+            they made, complete with original prompts to install or remix.
           </p>
-          <p class="hero-card-sub">
-            Install with a single terminal command or browse the catalog.
-          </p>
-        </div>
-
-        <div class="hero-floating-actions">
-          <a href="#gallery" class="btn-pill-cream">browse extensions</a>
-          <button id="hero-become-author-btn" class="btn-pill-outline">share yours</button>
-        </div>
-
-        <div class="hero-bottom-ribbon" role="group" aria-label="Filter extensions by category">
-          <button class="ribbon-icon-btn active" data-filter="all" title="All extensions" aria-pressed="true">
-            <span class="ribbon-icon" aria-hidden="true">☕</span>
-            <span class="ribbon-label">all</span>
-          </button>
-          <button class="ribbon-icon-btn" data-filter="ambient" title="Ambient &amp; nature" aria-pressed="false">
-            <span class="ribbon-icon" aria-hidden="true">🌿</span>
-            <span class="ribbon-label">nature</span>
-          </button>
-          <button class="ribbon-icon-btn" data-filter="focus" title="Zen &amp; focus" aria-pressed="false">
-            <span class="ribbon-icon" aria-hidden="true">⛩️</span>
-            <span class="ribbon-label">zen</span>
-          </button>
-          <button class="ribbon-icon-btn" data-filter="newtab" title="Interactive new tabs" aria-pressed="false">
-            <span class="ribbon-icon" aria-hidden="true">👾</span>
-            <span class="ribbon-label">tabs</span>
-          </button>
-          <button class="ribbon-icon-btn" data-filter="tech" title="Tech &amp; minimal" aria-pressed="false">
-            <span class="ribbon-icon" aria-hidden="true">🎯</span>
-            <span class="ribbon-label">tech</span>
-          </button>
+          <div class="hero-cta-group">
+            <a href="#gallery" class="btn-pill-cream">browse extensions</a>
+            <a href="#setup" class="btn-pill-outline">quick setup</a>
+          </div>
         </div>
       </section>
 
@@ -140,9 +88,20 @@
             </div>
           </div>
 
-          <div class="code-row" style="margin-top: 1rem;">
-            <code id="setup-cli-cmd">curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash</code>
-            <button class="btn-mini-copy" data-copy-target="setup-cli-cmd" data-copy-label="Install command copied">copy</button>
+          <div class="terminal-card" style="margin-top: 1.25rem;">
+            <div class="terminal-card-header">
+              <div class="terminal-traffic-lights" aria-hidden="true">
+                <span class="traffic-dot dot-red"></span>
+                <span class="traffic-dot dot-yellow"></span>
+                <span class="traffic-dot dot-green"></span>
+              </div>
+              <span class="terminal-card-title">Terminal - zsh</span>
+            </div>
+            <div class="code-row code-row-terminal">
+              <span class="terminal-prompt-prefix" aria-hidden="true">%</span>
+              <code id="setup-cli-cmd">curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash</code>
+              <button class="btn-mini-copy" data-copy-target="setup-cli-cmd" data-copy-label="Install command copied">copy</button>
+            </div>
           </div>
 
           <ol class="setup-steps" style="margin-top: 1.5rem;">
@@ -191,6 +150,7 @@
             <label class="visually-hidden" for="search-input">Search extensions</label>
             <input type="search" id="search-input" class="search-input" autocomplete="off"
                    placeholder="search by name, prompt, author, or tag…">
+            <kbd class="search-kbd" aria-hidden="true">⌘K</kbd>
             <button id="search-clear" class="search-clear hidden" aria-label="Clear search">&times;</button>
           </div>
 

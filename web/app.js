@@ -231,6 +231,8 @@ function resetFilters() {
   searchQuery = '';
   if (searchInput) searchInput.value = '';
   if (searchClear) searchClear.classList.add('hidden');
+  const searchKbd = document.querySelector('.search-kbd');
+  if (searchKbd) searchKbd.classList.remove('hidden');
   ribbonButtons.forEach(b => {
     const isAll = b.getAttribute('data-filter') === 'all';
     b.classList.toggle('active', isAll);
@@ -266,9 +268,11 @@ function openInspector(ext, { updateHash = true } = {}) {
   modalMetaRow.textContent = bits.join('  ·  ');
 
   copyModalPromptBtn.onclick = () =>
-    copyText(ext.prompt, 'Prompt copied. Paste it into Safari to remix.');
-  if (copyModalCliBtn) copyModalCliBtn.onclick = () => copyText(cliCommand, 'Install command copied.');
-  if (copyModalOnelinerBtn) copyModalOnelinerBtn.onclick = () => copyText(oneliner, 'One-liner copied!');
+    copyText(ext.prompt, 'Prompt copied. Paste it into Safari to remix.', copyModalPromptBtn);
+  if (copyModalCliBtn) copyModalCliBtn.onclick = () =>
+    copyText(cliCommand, 'Install command copied.', copyModalCliBtn);
+  if (copyModalOnelinerBtn) copyModalOnelinerBtn.onclick = () =>
+    copyText(oneliner, 'One-liner copied!', copyModalOnelinerBtn);
 
   // Reset install tabs to default (one-liner)
   if (installTabOneliner && installTabCli) {
@@ -364,9 +368,12 @@ function setupEventListeners() {
   }
 
   if (searchInput) {
+    const searchKbd = document.querySelector('.search-kbd');
     searchInput.addEventListener('input', () => {
       searchQuery = searchInput.value.trim();
-      searchClear.classList.toggle('hidden', searchQuery === '');
+      const hasQuery = searchQuery !== '';
+      searchClear.classList.toggle('hidden', !hasQuery);
+      if (searchKbd) searchKbd.classList.toggle('hidden', hasQuery);
       render();
     });
     searchInput.addEventListener('keydown', e => {
@@ -375,15 +382,18 @@ function setupEventListeners() {
         searchInput.value = '';
         searchQuery = '';
         searchClear.classList.add('hidden');
+        if (searchKbd) searchKbd.classList.remove('hidden');
         render();
       }
     });
   }
   if (searchClear) {
     searchClear.addEventListener('click', () => {
+      const searchKbd = document.querySelector('.search-kbd');
       searchInput.value = '';
       searchQuery = '';
       searchClear.classList.add('hidden');
+      if (searchKbd) searchKbd.classList.remove('hidden');
       searchInput.focus();
       render();
     });
@@ -445,46 +455,106 @@ function setupEventListeners() {
   setupDropzone();
 
   document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      if (searchInput) {
+        searchInput.focus();
+        searchInput.select();
+      }
+      return;
+    }
     if (e.key !== 'Escape') return;
     if (!inspectorModal.classList.contains('hidden')) closeModal(inspectorModal);
     if (!submitModal.classList.contains('hidden')) closeModal(submitModal);
   });
 
-  // Generic mini-copy buttons (data-copy-target)
+  // Generic copy buttons (data-copy-target)
   document.addEventListener('click', e => {
-    const btn = e.target.closest('.btn-mini-copy[data-copy-target]');
+    const btn = e.target.closest('[data-copy-target]');
     if (!btn) return;
     const targetEl = document.getElementById(btn.dataset.copyTarget);
-    if (targetEl) copyText(targetEl.textContent, btn.dataset.copyLabel || 'Copied!');
+    if (targetEl) {
+      copyText(targetEl.textContent, btn.dataset.copyLabel || 'Copied!', btn);
+    }
   });
 }
 
 // ---------------------------------------------------------------- utilities
-function copyText(text, successMsg) {
+function copyText(text, successMsg, triggerBtn) {
   if (!text) return;
-  const fallback = () => {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.setAttribute('readonly', '');
-    ta.style.position = 'absolute';
-    ta.style.left = '-9999px';
-    document.body.appendChild(ta);
-    ta.select();
-    try {
-      document.execCommand('copy');
-      showToast(successMsg || 'Copied to clipboard.');
-    } catch {
-      showToast('Could not copy. Select the text and copy manually.');
-    }
-    document.body.removeChild(ta);
+  const cleanText = text.trim();
+
+  const onCopySuccess = () => {
+    showToast(successMsg || 'Copied to clipboard.');
+    if (triggerBtn) flashCopiedButton(triggerBtn);
   };
+
+  const onCopyFailure = () => {
+    showToast('Could not copy. Select the text and copy manually.');
+  };
+
   if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(text)
-      .then(() => showToast(successMsg || 'Copied to clipboard.'))
-      .catch(fallback);
-  } else {
-    fallback();
+    navigator.clipboard.writeText(cleanText)
+      .then(onCopySuccess)
+      .catch(() => {
+        if (execFallback(cleanText)) {
+          onCopySuccess();
+        } else {
+          onCopyFailure();
+        }
+      });
+    return;
   }
+
+  if (execFallback(cleanText)) {
+    onCopySuccess();
+  } else {
+    onCopyFailure();
+  }
+}
+
+function execFallback(cleanText) {
+  const ta = document.createElement('textarea');
+  ta.value = cleanText;
+  ta.style.position = 'fixed';
+  ta.style.top = '0';
+  ta.style.left = '0';
+  ta.style.width = '2em';
+  ta.style.height = '2em';
+  ta.style.padding = '0';
+  ta.style.border = 'none';
+  ta.style.outline = 'none';
+  ta.style.boxShadow = 'none';
+  ta.style.background = 'transparent';
+  ta.style.color = 'transparent';
+  ta.style.opacity = '0.01';
+  ta.style.zIndex = '-9999';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  ta.setSelectionRange(0, cleanText.length);
+
+  let ok = false;
+  try {
+    ok = document.execCommand('copy');
+  } catch (err) {
+    ok = false;
+  }
+  document.body.removeChild(ta);
+  return ok;
+}
+
+function flashCopiedButton(btn) {
+  if (!btn || btn.dataset.copying) return;
+  btn.dataset.copying = 'true';
+  const originalHtml = btn.innerHTML;
+  btn.classList.add('is-copied');
+  btn.textContent = 'copied!';
+  setTimeout(() => {
+    btn.innerHTML = originalHtml;
+    btn.classList.remove('is-copied');
+    delete btn.dataset.copying;
+  }, 1800);
 }
 
 let toastTimer = null;
