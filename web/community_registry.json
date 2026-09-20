@@ -1,7 +1,7 @@
 {
   "version": 1,
   "registry_name": "Safari Magic Extensions Community Hub",
-  "updated_at": "2026-09-20T15:12:41Z",
+  "updated_at": "2026-09-20T15:22:17Z",
   "extensions": [
     {
       "id": "hacker-news-minimal",
@@ -56,6 +56,23 @@
       "art_image": "assets/thumbnails/zen-focus-timer.png",
       "added_at": "2026-09-20T06:40:40Z",
       "download_url": "packages/Zen_Focus_Timer.magicext"
+    },
+    {
+      "id": "random-animal-new-tab",
+      "name": "Random Animal New Tab",
+      "author": "Vatsal",
+      "version": "1.0",
+      "description": "Shows a random animal emoji and its name every time you open a new tab.",
+      "prompt": "show a random animal every time i open a new tab",
+      "selected_symbol": "pawprint.fill",
+      "symbol_color_name": "pink",
+      "tags": [
+        "newtab"
+      ],
+      "category": "newtab",
+      "art_image": "assets/thumbnails/random-animal-new-tab.png",
+      "added_at": "2026-09-20T15:21:37Z",
+      "download_url": "packages/random-animal-new-tab.magicext"
     },
     {
       "id": "video-pip",
