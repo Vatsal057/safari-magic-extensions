@@ -1,8 +1,27 @@
 {
   "version": 1,
   "registry_name": "Safari Magic Extensions Community Hub",
-  "updated_at": "2026-09-21T11:37:18Z",
+  "updated_at": "2026-09-21T16:53:43Z",
   "extensions": [
+    {
+      "id": "nightlife-in-the-wild",
+      "name": "Nightlife in the Wild",
+      "author": "vatsal",
+      "version": "1.0",
+      "description": "Nightlife 24B7 Safari Extension",
+      "prompt": "Create Nightlife 24B7; make it day time; revert",
+      "selected_symbol": "moon.stars.fill",
+      "symbol_color_name": "purple",
+      "tags": [
+        "ambient",
+        "newtab"
+      ],
+      "category": "ambient",
+      "art_image": "assets/thumbnails/nightlife-in-the-wild.png",
+      "added_at": "2026-09-20T06:22:18Z",
+      "download_url": "packages/Nightlife_in_the_Wild.magicext",
+      "pinned": true
+    },
     {
       "id": "hacker-news-minimal",
       "name": "Hacker News Minimal",
@@ -20,24 +39,6 @@
       "art_image": "assets/thumbnails/hacker-news-minimal.png",
       "added_at": "2026-09-20T06:40:40Z",
       "download_url": "packages/Hacker_News_Minimal.magicext"
-    },
-    {
-      "id": "nightlife-in-the-wild",
-      "name": "Nightlife in the Wild",
-      "author": "vatsal",
-      "version": "1.0",
-      "description": "Nightlife 24B7 Safari Extension",
-      "prompt": "Create Nightlife 24B7; make it day time; revert",
-      "selected_symbol": "moon.stars.fill",
-      "symbol_color_name": "purple",
-      "tags": [
-        "ambient",
-        "newtab"
-      ],
-      "category": "ambient",
-      "art_image": "assets/thumbnails/nightlife-in-the-wild.png",
-      "added_at": "2026-09-20T06:22:18Z",
-      "download_url": "packages/Nightlife_in_the_Wild.magicext"
     },
     {
       "id": "zen-focus-timer",

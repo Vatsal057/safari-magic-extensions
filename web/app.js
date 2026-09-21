@@ -118,19 +118,23 @@ function matchesSearch(ext, query) {
 
 function sortExtensions(list) {
   const copy = [...list];
+  const pinOrder = (a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0);
+
   switch (sortMode) {
     case 'oldest':
-      return copy.sort((a, b) => (a.added_at || '').localeCompare(b.added_at || ''));
+      return copy.sort((a, b) => pinOrder(a, b) || (a.added_at || '').localeCompare(b.added_at || ''));
     case 'name':
-      return copy.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+      return copy.sort((a, b) => pinOrder(a, b) || (a.name || '').localeCompare(b.name || ''));
     case 'author':
       return copy.sort((a, b) =>
+        pinOrder(a, b) ||
         (a.author || '').localeCompare(b.author || '') ||
         (a.name || '').localeCompare(b.name || ''));
     case 'newest':
     default:
-      // Most recent first; ties fall back to name for a stable order.
+      // Pinned first, then most recent; ties fall back to name for a stable order.
       return copy.sort((a, b) =>
+        pinOrder(a, b) ||
         (b.added_at || '').localeCompare(a.added_at || '') ||
         (a.name || '').localeCompare(b.name || ''));
   }
@@ -174,9 +178,10 @@ function renderGrid(list) {
   }
 
   grid.innerHTML = list.map(ext => `
-    <article class="ext-card" data-id="${escapeHTML(ext.id)}" role="button" tabindex="0"
+    <article class="ext-card ${ext.pinned ? 'ext-card-pinned' : ''}" data-id="${escapeHTML(ext.id)}" role="button" tabindex="0"
              aria-label="${escapeHTML(ext.name)} by ${escapeHTML(ext.author || 'community')}: view install instructions">
       <div class="ext-card-media">
+        ${ext.pinned ? '<span class="ext-pinned-badge"><span class="pinned-icon">📌</span> Pinned</span>' : ''}
         <img src="${escapeHTML(artFor(ext))}" alt="Preview of ${escapeHTML(ext.name)}" loading="lazy">
       </div>
       <div class="ext-card-body">

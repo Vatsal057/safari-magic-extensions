@@ -189,31 +189,36 @@ def build_extensions() -> tuple[list[dict], list[str]]:
             print(f"  [Notice] {slug}: no packaged_at in magic.json; sorts last by date")
             added_at = EPOCH_FALLBACK
 
-        entries.append(
-            {
-                "id": slug,
-                "name": name,
-                "author": str(meta.get("author") or "community"),
-                "version": str(meta.get("version") or "1.0"),
-                "description": str(
-                    meta.get("description") or f"{name} Safari Extension"
-                ).strip(),
-                "prompt": str(meta["prompt"]).strip(),
-                "selected_symbol": str(meta.get("selected_symbol") or DEFAULT_SYMBOL),
-                "symbol_color_name": str(
-                    meta.get("symbol_color_name") or DEFAULT_COLOR
-                ),
-                "tags": tags,
-                "category": str(curated.get("category") or tags[0]),
-                "art_image": resolve_art_image(slug, curated),
-                "added_at": added_at,
-                "download_url": f"packages/{pkg.name}",
-            }
-        )
-        print(f"  ✓ {name}  →  id: {slug}")
+        pinned = bool(curated.get("pinned", False))
 
-    # Every extension is presented equally in the gallery, so there is no
-    # featured flag to validate.
+        entry = {
+            "id": slug,
+            "name": name,
+            "author": str(meta.get("author") or "community"),
+            "version": str(meta.get("version") or "1.0"),
+            "description": str(
+                meta.get("description") or f"{name} Safari Extension"
+            ).strip(),
+            "prompt": str(meta["prompt"]).strip(),
+            "selected_symbol": str(meta.get("selected_symbol") or DEFAULT_SYMBOL),
+            "symbol_color_name": str(
+                meta.get("symbol_color_name") or DEFAULT_COLOR
+            ),
+            "tags": tags,
+            "category": str(curated.get("category") or tags[0]),
+            "art_image": resolve_art_image(slug, curated),
+            "added_at": added_at,
+            "download_url": f"packages/{pkg.name}",
+        }
+        if pinned:
+            entry["pinned"] = True
+
+        entries.append(entry)
+        pin_mark = " [pinned]" if pinned else ""
+        print(f"  ✓ {name}  →  id: {slug}{pin_mark}")
+
+    # Pinned extensions sort first; stable fallback to package order.
+    entries.sort(key=lambda e: (not e.get("pinned", False)))
 
     # Flag curation entries that no longer match a package, so the file
     # does not silently accumulate stale slugs.
