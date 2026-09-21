@@ -94,7 +94,13 @@ for pkg in "${packages[@]}"; do
   out="$OUT_DIR/$slug.png"
 
   printf '  %-24s ' "$slug"
-  if render "file://$work/$entry" "$raw"; then
+  target_url="file://$work/$entry"
+  if [[ ! -f "$work/$entry" ]]; then
+    python3 scripts/generate_action_card.py "$work" >/dev/null 2>&1 || true
+    target_url="file://$work/_action_preview.html"
+  fi
+
+  if render "$target_url" "$raw"; then
     # Downscale to a consistent gallery width and strip metadata if tool available, or copy
     if command -v sips >/dev/null 2>&1; then
       sips -Z 640 "$raw" --out "$out" >/dev/null 2>&1
