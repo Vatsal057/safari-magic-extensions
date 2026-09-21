@@ -9,10 +9,38 @@
     "downloads": "OPTIONAL integer. Baseline community downloads count."
   },
   "extensions": {
-    "nightlife-in-the-wild": { "tags": ["ambient", "newtab"], "pinned": true, "downloads": 1280 },
-    "zen-focus-timer": { "tags": ["focus", "newtab"], "downloads": 845 },
-    "video-pip": { "tags": ["newtab"], "downloads": 960 },
-    "greyscale-web": { "tags": ["newtab"], "downloads": 420 },
-    "random-animal-new-tab": { "tags": ["newtab"], "downloads": 310 }
+    "nightlife-in-the-wild": {
+      "tags": [
+        "ambient",
+        "newtab"
+      ],
+      "pinned": true,
+      "downloads": 501
+    },
+    "zen-focus-timer": {
+      "tags": [
+        "focus",
+        "newtab"
+      ],
+      "downloads": 122
+    },
+    "video-pip": {
+      "tags": [
+        "newtab"
+      ],
+      "downloads": 480
+    },
+    "greyscale-web": {
+      "tags": [
+        "newtab"
+      ],
+      "downloads": 320
+    },
+    "random-animal-new-tab": {
+      "tags": [
+        "newtab"
+      ],
+      "downloads": 47
+    }
   }
 }

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "registry_name": "Safari Magic Extensions Community Hub",
-  "updated_at": "2026-09-21T18:41:52Z",
+  "updated_at": "2026-09-21T19:21:29Z",
   "extensions": [
     {
       "id": "nightlife-in-the-wild",
@@ -20,7 +20,7 @@
       "art_image": "assets/thumbnails/nightlife-in-the-wild.png",
       "added_at": "2026-09-20T06:22:18Z",
       "download_url": "packages/Nightlife_in_the_Wild.magicext",
-      "downloads": 1280,
+      "downloads": 501,
       "pinned": true
     },
     {
@@ -40,7 +40,7 @@
       "art_image": "assets/thumbnails/zen-focus-timer.png",
       "added_at": "2026-09-20T06:40:40Z",
       "download_url": "packages/Zen_Focus_Timer.magicext",
-      "downloads": 845
+      "downloads": 422
     },
     {
       "id": "greyscale-web",
@@ -58,7 +58,7 @@
       "art_image": "assets/thumbnails/greyscale-web.png",
       "added_at": "2026-09-21T11:36:21Z",
       "download_url": "packages/greyscale-web.magicext",
-      "downloads": 420
+      "downloads": 320
     },
     {
       "id": "random-animal-new-tab",
@@ -76,7 +76,7 @@
       "art_image": "assets/thumbnails/random-animal-new-tab.png",
       "added_at": "2026-09-20T15:23:24Z",
       "download_url": "packages/random-animal-new-tab.magicext",
-      "downloads": 310
+      "downloads": 47
     },
     {
       "id": "video-pip",
@@ -94,7 +94,7 @@
       "art_image": "assets/thumbnails/video-pip.png",
       "added_at": "2026-09-20T15:07:32Z",
       "download_url": "packages/video-pip.magicext",
-      "downloads": 960
+      "downloads": 480
     }
   ]
 }
