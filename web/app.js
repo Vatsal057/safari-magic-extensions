@@ -107,6 +107,51 @@ function oneLineInstallFor(ext) {
   return `curl -fsSL ${CLI_INSTALLER_URL} | bash -s -- install ${ext.id}`;
 }
 
+function getDownloads(ext) {
+  if (!ext) return 0;
+  const localDelta = parseInt(localStorage.getItem(`downloads_${ext.id}`) || '0', 10);
+  return (ext.downloads || 0) + (isNaN(localDelta) ? 0 : localDelta);
+}
+
+function formatDownloads(count) {
+  if (count >= 1000000) {
+    return (count / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  }
+  if (count >= 1000) {
+    return (count / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+  }
+  return String(count);
+}
+
+function trackDownload(extId) {
+  if (!extId) return;
+  const currentDelta = parseInt(localStorage.getItem(`downloads_${extId}`) || '0', 10) || 0;
+  localStorage.setItem(`downloads_${extId}`, String(currentDelta + 1));
+  updateDownloadsUI(extId);
+}
+
+function updateDownloadsUI(extId) {
+  const ext = extensions.find(e => e.id === extId);
+  if (!ext) return;
+  const total = getDownloads(ext);
+  const formatted = formatDownloads(total);
+
+  const cardBadge = document.querySelector(`.ext-card[data-id="${extId}"] .ext-card-downloads`);
+  if (cardBadge) {
+    cardBadge.setAttribute('title', `${total.toLocaleString()} downloads`);
+    const countSpan = cardBadge.querySelector('.download-count-text');
+    if (countSpan) countSpan.textContent = formatted;
+  }
+
+  const modalDownloads = document.getElementById('modal-downloads');
+  if (modalDownloads && !inspectorModal.classList.contains('hidden')) {
+    modalDownloads.innerHTML = `
+      <svg class="download-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      <span>${total.toLocaleString()} downloads</span>
+    `;
+  }
+}
+
 function matchesSearch(ext, query) {
   if (!query) return true;
   const haystack = [
@@ -121,6 +166,11 @@ function sortExtensions(list) {
   const pinOrder = (a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0);
 
   switch (sortMode) {
+    case 'downloads':
+      return copy.sort((a, b) =>
+        pinOrder(a, b) ||
+        (getDownloads(b) - getDownloads(a)) ||
+        (a.name || '').localeCompare(b.name || ''));
     case 'oldest':
       return copy.sort((a, b) => pinOrder(a, b) || (a.added_at || '').localeCompare(b.added_at || ''));
     case 'name':
@@ -177,7 +227,10 @@ function renderGrid(list) {
     return;
   }
 
-  grid.innerHTML = list.map(ext => `
+  grid.innerHTML = list.map(ext => {
+    const count = getDownloads(ext);
+    const countFormatted = formatDownloads(count);
+    return `
     <article class="ext-card ${ext.pinned ? 'ext-card-pinned' : ''}" data-id="${escapeHTML(ext.id)}" role="button" tabindex="0"
              aria-label="${escapeHTML(ext.name)} by ${escapeHTML(ext.author || 'community')}: view install instructions">
       <div class="ext-card-media">
@@ -193,9 +246,14 @@ function renderGrid(list) {
         </div>
       </div>
       <div class="ext-card-foot">
+        <span class="ext-card-downloads" title="${count.toLocaleString()} downloads">
+          <svg class="download-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span class="download-count-text">${countFormatted}</span>
+        </span>
         <span class="ext-card-cta">Install →</span>
       </div>
-    </article>`).join('');
+    </article>`;
+  }).join('');
 
   grid.querySelectorAll('.ext-card').forEach(card => {
     const open = () => {
@@ -284,17 +342,34 @@ function openInspector(ext, { updateHash = true } = {}) {
     modalDownloadInstallCmd.textContent = `safari-magic-ext install ~/Downloads/${filename}`;
   }
 
+  const count = getDownloads(ext);
+  const modalDownloads = document.getElementById('modal-downloads');
+  if (modalDownloads) {
+    modalDownloads.innerHTML = `
+      <svg class="download-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      <span>${count.toLocaleString()} downloads</span>
+    `;
+  }
+
   const bits = [`id: ${ext.id}`];
   if (ext.version) bits.push(`v${ext.version}`);
+  bits.push(`${count.toLocaleString()} downloads`);
   if (Array.isArray(ext.tags) && ext.tags.length) bits.push(ext.tags.map(t => `#${t}`).join(' '));
   modalMetaRow.textContent = bits.join('  ·  ');
 
+  modalDownloadPkgBtn.onclick = () => {
+    trackDownload(ext.id);
+  };
   copyModalPromptBtn.onclick = () =>
     copyText(ext.prompt, 'Prompt copied. Paste it into Safari to remix.', copyModalPromptBtn);
-  if (copyModalCliBtn) copyModalCliBtn.onclick = () =>
+  if (copyModalCliBtn) copyModalCliBtn.onclick = () => {
+    trackDownload(ext.id);
     copyText(cliCommand, 'Install command copied.', copyModalCliBtn);
-  if (copyModalOnelinerBtn) copyModalOnelinerBtn.onclick = () =>
+  };
+  if (copyModalOnelinerBtn) copyModalOnelinerBtn.onclick = () => {
+    trackDownload(ext.id);
     copyText(oneliner, 'One-liner copied!', copyModalOnelinerBtn);
+  };
 
   // Reset install tabs to default (1-Step Install)
   if (installTabOneliner && installTabCli) {
@@ -506,6 +581,10 @@ function setupEventListeners() {
     if (!btn) return;
     const targetEl = document.getElementById(btn.dataset.copyTarget);
     if (targetEl) {
+      if (btn.dataset.copyTarget === 'modal-download-install-cmd') {
+        const activeExtMatch = modalMetaRow?.textContent?.match(/id:\s*([^\s·]+)/);
+        if (activeExtMatch) trackDownload(activeExtMatch[1]);
+      }
       copyText(targetEl.textContent, btn.dataset.copyLabel || 'Copied!', btn);
     }
   });

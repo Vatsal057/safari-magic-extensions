@@ -5,10 +5,14 @@
     "tags": "Filter tags shown in the gallery. Valid: ambient, focus, newtab, tech.",
     "art_image": "OPTIONAL override, relative to web/. Must exist on disk.",
     "category": "OPTIONAL. Primary category shown on the card. Defaults to the first tag.",
-    "pinned": "OPTIONAL boolean. If true, pins the extension to the top of the gallery."
+    "pinned": "OPTIONAL boolean. If true, pins the extension to the top of the gallery.",
+    "downloads": "OPTIONAL integer. Baseline community downloads count."
   },
   "extensions": {
-    "nightlife-in-the-wild": { "tags": ["ambient", "newtab"], "pinned": true },
-    "zen-focus-timer": { "tags": ["focus", "newtab"] }
+    "nightlife-in-the-wild": { "tags": ["ambient", "newtab"], "pinned": true, "downloads": 1280 },
+    "zen-focus-timer": { "tags": ["focus", "newtab"], "downloads": 845 },
+    "video-pip": { "tags": ["newtab"], "downloads": 960 },
+    "greyscale-web": { "tags": ["newtab"], "downloads": 420 },
+    "random-animal-new-tab": { "tags": ["newtab"], "downloads": 310 }
   }
 }

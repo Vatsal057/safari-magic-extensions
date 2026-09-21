@@ -20,7 +20,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&family=Pixelify+Sans:wght@500;700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.2.0">
+  <link rel="stylesheet" href="style.css?v=1.3.0">
 </head>
 
 <body>
@@ -167,6 +167,7 @@
             <label class="sort-label" for="sort-select">Sort</label>
             <select id="sort-select" class="sort-select">
               <option value="newest">Newest first</option>
+              <option value="downloads">Most downloaded</option>
               <option value="oldest">Oldest first</option>
               <option value="name">Name (A-Z)</option>
               <option value="author">Author (A-Z)</option>
@@ -234,8 +235,8 @@
         <a href="https://github.com/Vatsal057/safari-magic-extensions" target="_blank" rel="noopener">GitHub</a>
         <a href="https://github.com/Vatsal057/safari-magic-extensions/blob/main/CONTRIBUTING.md" target="_blank"
           rel="noopener">Contributing</a>
-        <a href="https://github.com/Vatsal057/safari-magic-extensions/releases/latest" target="_blank"
-          rel="noopener">Releases</a>
+        <a href="https://github.com/Vatsal057/safari-magic-extensions/blob/main/CHANGELOG.md" target="_blank"
+          rel="noopener">Changelog</a>
       </div>
     </footer>
 
@@ -247,7 +248,10 @@
     <div class="modal-pixel-card">
       <div class="modal-pixel-header">
         <div class="modal-header-meta">
-          <span class="modal-category-tag" id="modal-category">EXTENSION</span>
+          <div class="modal-badge-row">
+            <span class="modal-category-tag" id="modal-category">EXTENSION</span>
+            <span class="modal-downloads-badge" id="modal-downloads"></span>
+          </div>
           <h2 class="modal-title" id="modal-title"></h2>
           <div class="modal-author-badge" id="modal-author"></div>
         </div>
@@ -449,7 +453,7 @@
   <!-- Toast Notification -->
   <div id="toast" class="pixel-toast hidden" role="status" aria-live="polite"></div>
 
-  <script src="app.js?v=1.2.0"></script>
+  <script src="app.js?v=1.3.0"></script>
 </body>
 
 </html>

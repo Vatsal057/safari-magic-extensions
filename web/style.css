@@ -573,6 +573,14 @@ body {
   justify-content: space-between;
 }
 
+.modal-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
 .modal-category-tag {
   font-family: var(--font-mono);
   font-size: 9px;
@@ -583,7 +591,27 @@ body {
   padding: 3px 8px;
   border-radius: 4px;
   display: inline-block;
-  margin-bottom: 6px;
+  margin-bottom: 0;
+}
+
+.modal-downloads-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cream-accent);
+  background: rgba(245, 242, 235, 0.08);
+  border: 1px solid rgba(245, 242, 235, 0.15);
+  border-radius: 4px;
+  padding: 3px 8px;
+  line-height: 1.2;
+}
+
+.modal-downloads-badge .download-icon {
+  stroke: currentColor;
+  flex-shrink: 0;
 }
 
 .modal-title {
@@ -1804,8 +1832,35 @@ body.modal-open {
 
 .ext-card-foot {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
   padding: 0 15px 14px;
+}
+
+.ext-card-downloads {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(245, 242, 235, 0.08);
+  border-radius: 9999px;
+  padding: 3px 8px;
+  transition: color var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.ext-card:hover .ext-card-downloads {
+  color: var(--cream-accent);
+  border-color: rgba(245, 242, 235, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ext-card-downloads .download-icon {
+  stroke: currentColor;
+  flex-shrink: 0;
 }
 
 .ext-card-cta {

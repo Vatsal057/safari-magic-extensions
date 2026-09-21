@@ -1077,6 +1077,8 @@ def explore_community(query: str = "") -> None:
         print(f"      ID:     {item.get('id')}")
         print(f"      Symbol: {item.get('selected_symbol')} ({item.get('symbol_color_name')})")
         print(f"      Tags:   {tags}")
+        if item.get("downloads"):
+            print(f"      Downloads: {item.get('downloads'):,}")
         print(f"      Prompt: \"{item.get('prompt')}\"")
         print(f"      Desc:   {item.get('description')}")
         print(f"      Install command: {invocation_name()} install {item.get('id')}\n")

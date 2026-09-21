@@ -6,7 +6,7 @@
 #   REF=v1.2.0 ./install-cli.sh   # install a tagged release
 #
 # Pass-through usage (run a command immediately after installing):
-#   curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash -s -- install hacker-news-minimal
+#   curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash -s -- install nightlife-in-the-wild
 #   curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash -s -- submit
 set -euo pipefail
 
