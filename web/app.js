@@ -336,11 +336,8 @@ function openInspector(ext, { updateHash = true } = {}) {
   const filename = download.split('/').pop() || `${ext.name}.magicext`;
   modalDownloadPkgBtn.href = download;
   modalDownloadPkgBtn.download = filename;
-  if (modalDownloadLabel) modalDownloadLabel.textContent = `Download ${filename}`;
-  const modalDownloadInstallCmd = document.getElementById('modal-download-install-cmd');
-  if (modalDownloadInstallCmd) {
-    modalDownloadInstallCmd.textContent = `safari-magic-ext install ~/Downloads/${filename}`;
-  }
+  if (modalDownloadLabel) modalDownloadLabel.textContent = 'Download .magicext bundle';
+  modalDownloadPkgBtn.setAttribute('title', `Download ${filename}`);
 
   const count = getDownloads(ext);
   const modalDownloads = document.getElementById('modal-downloads');
