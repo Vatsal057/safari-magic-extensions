@@ -49,6 +49,7 @@ const installPaneCli = document.getElementById('install-pane-cli');
 const submitModal = document.getElementById('submit-modal');
 const openSubmitModalBtn = document.getElementById('open-submit-modal-btn');
 const footerSubmitBtn = document.getElementById('footer-submit-btn');
+const heroSubmitBtn = document.getElementById('hero-submit-btn');
 const closeSubmitBtn = document.getElementById('close-submit-btn');
 
 const PLACEHOLDER_ART = 'assets/hero_cyberpunk.jpg';
@@ -530,7 +531,7 @@ function setupEventListeners() {
     }
     openModal(submitModal);
   };
-  [openSubmitModalBtn, footerSubmitBtn].forEach(btn => {
+  [openSubmitModalBtn, footerSubmitBtn, heroSubmitBtn].forEach(btn => {
     if (btn) btn.addEventListener('click', openSubmit);
   });
   if (closeSubmitBtn) closeSubmitBtn.addEventListener('click', () => closeModal(submitModal));

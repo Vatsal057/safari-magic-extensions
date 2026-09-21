@@ -20,7 +20,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&family=Pixelify+Sans:wght@500;700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.3.4">
+  <link rel="stylesheet" href="style.css?v=1.3.5">
 </head>
 
 <body>
@@ -60,12 +60,11 @@
             GALLERY
           </div>
           <p class="hero-subtitle">
-            A place to share the Safari extensions you’ve made with Describe an Extension. Try what others have built
-            and make it your own.
+            A curated collection of community extensions built with Safari’s "Describe an Extension". Discover, install with one click, or remix prompts to make your own.
           </p>
           <div class="hero-cta-group">
-            <a href="#gallery" class="btn-pill-cream">browse extensions</a>
-            <a href="#how" class="btn-pill-outline">how it works</a>
+            <a href="#gallery" class="btn-pill-cream">explore gallery</a>
+            <button id="hero-submit-btn" class="btn-pill-outline">submit extension</button>
           </div>
         </div>
       </section>
@@ -180,19 +179,16 @@
             </div>
           </div>
 
-          <p class="install-route-hint" style="margin-top: 12px; font-size: 11px;">
-            Prefer Homebrew? <code>brew install Vatsal057/tap/safari-magic-ext</code>
-          </p>
+          <div class="cli-brew-setup-box" style="margin-top: 14px;">
+            <span class="cli-brew-label">Prefer Homebrew?</span>
+            <div class="code-row code-row-tight">
+              <code id="setup-brew-cmd">brew install Vatsal057/tap/safari-magic-ext</code>
+              <button class="btn-mini-copy" data-copy-target="setup-brew-cmd"
+                data-copy-label="Brew command copied">copy</button>
+            </div>
+          </div>
         </article>
       </section>
-
-      <!-- Gallery Footer Bar -->
-      <div class="gallery-bottom-bar">
-        <button id="footer-submit-btn" class="link-to-community link-as-button">
-          <span>share your own extension</span>
-          <span class="arrow-glyph" aria-hidden="true">⟶</span>
-        </button>
-      </div>
 
     </main>
 
@@ -425,7 +421,7 @@
   <!-- Toast Notification -->
   <div id="toast" class="pixel-toast hidden" role="status" aria-live="polite"></div>
 
-  <script src="app.js?v=1.3.4"></script>
+  <script src="app.js?v=1.3.5"></script>
 </body>
 
 </html>
