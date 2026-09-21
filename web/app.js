@@ -338,6 +338,10 @@ function openInspector(ext, { updateHash = true } = {}) {
   modalDownloadPkgBtn.download = filename;
   if (modalDownloadLabel) modalDownloadLabel.textContent = 'Download .magicext bundle';
   modalDownloadPkgBtn.setAttribute('title', `Download ${filename}`);
+  const modalDownloadCmd = document.getElementById('modal-download-cmd');
+  if (modalDownloadCmd) {
+    modalDownloadCmd.textContent = `safari-magic-ext install ~/Downloads/${filename}`;
+  }
 
   const count = getDownloads(ext);
   const modalDownloads = document.getElementById('modal-downloads');
@@ -578,7 +582,7 @@ function setupEventListeners() {
     if (!btn) return;
     const targetEl = document.getElementById(btn.dataset.copyTarget);
     if (targetEl) {
-      if (btn.dataset.copyTarget === 'modal-download-install-cmd') {
+      if (btn.dataset.copyTarget === 'modal-download-cmd') {
         const activeExtMatch = modalMetaRow?.textContent?.match(/id:\s*([^\s·]+)/);
         if (activeExtMatch) trackDownload(activeExtMatch[1]);
       }
