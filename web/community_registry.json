@@ -1,7 +1,7 @@
 {
   "version": 1,
   "registry_name": "Safari Magic Extensions Community Hub",
-  "updated_at": "2026-09-20T15:34:44Z",
+  "updated_at": "2026-09-21T11:37:18Z",
   "extensions": [
     {
       "id": "hacker-news-minimal",
@@ -73,6 +73,23 @@
       "art_image": "assets/thumbnails/browser-pet-cat.png",
       "added_at": "2026-09-20T15:33:57Z",
       "download_url": "packages/browser-pet-cat.magicext"
+    },
+    {
+      "id": "greyscale-web",
+      "name": "Greyscale Web",
+      "author": "Vatsal",
+      "version": "1.0",
+      "description": "Applies a greyscale filter to all web pages. Click the extension icon to toggle the effect on and off.",
+      "prompt": "make all the web pages greyscale",
+      "selected_symbol": "circle.fill",
+      "symbol_color_name": "orange",
+      "tags": [
+        "newtab"
+      ],
+      "category": "newtab",
+      "art_image": "assets/thumbnails/greyscale-web.png",
+      "added_at": "2026-09-21T11:36:21Z",
+      "download_url": "packages/greyscale-web.magicext"
     },
     {
       "id": "random-animal-new-tab",
