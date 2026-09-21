@@ -9,7 +9,6 @@
   },
   "extensions": {
     "nightlife-in-the-wild": { "tags": ["ambient", "newtab"], "pinned": true },
-    "zen-focus-timer": { "tags": ["focus", "newtab"] },
-    "hacker-news-minimal": { "tags": ["tech", "newtab"] }
+    "zen-focus-timer": { "tags": ["focus", "newtab"] }
   }
 }

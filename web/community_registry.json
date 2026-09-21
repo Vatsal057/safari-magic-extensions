@@ -1,7 +1,7 @@
 {
   "version": 1,
   "registry_name": "Safari Magic Extensions Community Hub",
-  "updated_at": "2026-09-21T16:53:43Z",
+  "updated_at": "2026-09-21T17:08:54Z",
   "extensions": [
     {
       "id": "nightlife-in-the-wild",
@@ -23,24 +23,6 @@
       "pinned": true
     },
     {
-      "id": "hacker-news-minimal",
-      "name": "Hacker News Minimal",
-      "author": "community",
-      "version": "1.0",
-      "description": "Clean, ultra-fast Hacker News top stories reader directly in your Safari new tab.",
-      "prompt": "Create a modern minimalist Hacker News top stories reader for new tab with dark mode, score badges, and direct discussion links.",
-      "selected_symbol": "newspaper.fill",
-      "symbol_color_name": "blue",
-      "tags": [
-        "tech",
-        "newtab"
-      ],
-      "category": "tech",
-      "art_image": "assets/thumbnails/hacker-news-minimal.png",
-      "added_at": "2026-09-20T06:40:40Z",
-      "download_url": "packages/Hacker_News_Minimal.magicext"
-    },
-    {
       "id": "zen-focus-timer",
       "name": "Zen Focus & Timer",
       "author": "community",
@@ -57,23 +39,6 @@
       "art_image": "assets/thumbnails/zen-focus-timer.png",
       "added_at": "2026-09-20T06:40:40Z",
       "download_url": "packages/Zen_Focus_Timer.magicext"
-    },
-    {
-      "id": "browser-pet-cat",
-      "name": "Browser Pet Cat",
-      "author": "Vatsal",
-      "version": "1.0",
-      "description": "I have updated the Browser Pet Cat to use a proper cat icon instead of a simple circle. The cat will continue to roam around your screen and occasionally close a random background tab to annoy you.",
-      "prompt": "make me a cute pet cat on my browser. which roams around by itself. and beats some random tabs and annoys me. ; make it a proper cat. not a circle.",
-      "selected_symbol": "cat.fill",
-      "symbol_color_name": "purple",
-      "tags": [
-        "newtab"
-      ],
-      "category": "newtab",
-      "art_image": "assets/thumbnails/browser-pet-cat.png",
-      "added_at": "2026-09-20T15:33:57Z",
-      "download_url": "packages/browser-pet-cat.magicext"
     },
     {
       "id": "greyscale-web",

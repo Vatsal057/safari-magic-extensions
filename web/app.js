@@ -58,7 +58,7 @@ async function initGallery() {
   setupEventListeners();
 
   try {
-    const res = await fetch('community_registry.json', { cache: 'no-cache' });
+    const res = await fetch(`community_registry.json?t=${Date.now()}`, { cache: 'no-cache' });
     if (!res.ok) throw new Error(`registry responded ${res.status}`);
     const data = await res.json();
     extensions = Array.isArray(data.extensions) ? data.extensions : [];
