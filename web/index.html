@@ -20,7 +20,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&family=Pixelify+Sans:wght@500;700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.3.0">
+  <link rel="stylesheet" href="style.css?v=1.3.1">
 </head>
 
 <body>
@@ -275,34 +275,20 @@
 
             <!-- Tab switcher -->
             <div class="install-tab-bar" role="tablist">
-              <button class="install-tab active" id="tab-cli" role="tab" aria-selected="true"
-                aria-controls="install-pane-cli">
-                Homebrew / CLI
-              </button>
-              <button class="install-tab" id="tab-oneliner" role="tab" aria-selected="false"
+              <button class="install-tab active" id="tab-oneliner" role="tab" aria-selected="true"
                 aria-controls="install-pane-oneliner">
-                1-Step (No Brew)
+                ⚡ 1-Step (No Setup)
+              </button>
+              <button class="install-tab" id="tab-cli" role="tab" aria-selected="false"
+                aria-controls="install-pane-cli">
+                CLI / Homebrew
               </button>
             </div>
 
-            <!-- Pane 1: CLI command (Homebrew) -->
-            <div class="install-pane" id="install-pane-cli" role="tabpanel" aria-labelledby="tab-cli">
+            <!-- Pane 1: instant curl one-liner -->
+            <div class="install-pane" id="install-pane-oneliner" role="tabpanel" aria-labelledby="tab-oneliner">
               <p class="install-route-hint">
-                Run in Terminal:
-              </p>
-              <div class="code-row">
-                <code id="modal-cli-cmd"></code>
-                <button id="copy-modal-cli-btn" class="btn-mini-copy">copy</button>
-              </div>
-              <p class="install-route-hint" style="margin-top:8px;font-size:11px;">
-                Need the CLI? <code>brew install Vatsal057/tap/safari-magic-ext</code>
-              </p>
-            </div>
-
-            <!-- Pane 2: instant curl one-liner -->
-            <div class="install-pane hidden" id="install-pane-oneliner" role="tabpanel" aria-labelledby="tab-oneliner">
-              <p class="install-route-hint">
-                Paste into Terminal to install both the CLI tool and extension together (no Homebrew needed):
+                Paste into Terminal to install both the CLI tool and extension together:
               </p>
               <div class="code-row">
                 <code id="modal-oneliner-cmd"></code>
@@ -310,9 +296,30 @@
               </div>
             </div>
 
+            <!-- Pane 2: CLI command (Homebrew) -->
+            <div class="install-pane hidden" id="install-pane-cli" role="tabpanel" aria-labelledby="tab-cli">
+              <p class="install-route-hint">
+                Run in Terminal (if CLI is already installed):
+              </p>
+              <div class="code-row">
+                <code id="modal-cli-cmd"></code>
+                <button id="copy-modal-cli-btn" class="btn-mini-copy">copy</button>
+              </div>
+              <div class="cli-brew-setup-box">
+                <span class="cli-brew-label">First time? Install the CLI with Homebrew:</span>
+                <div class="code-row code-row-tight">
+                  <code id="modal-brew-cmd">brew install Vatsal057/tap/safari-magic-ext</code>
+                  <button class="btn-mini-copy" data-copy-target="modal-brew-cmd"
+                    data-copy-label="Brew command copied">copy</button>
+                </div>
+              </div>
+            </div>
+
             <!-- Download option with clear usage instructions -->
             <div class="install-route-download">
-              <span class="install-route-or">or</span>
+              <div class="install-route-divider">
+                <span class="install-route-or">or</span>
+              </div>
               <a href="#" id="modal-download-pkg-btn" class="btn-pill-cream btn-full-width" download>
                 <span id="modal-download-label">Download .magicext</span>
               </a>
@@ -453,7 +460,7 @@
   <!-- Toast Notification -->
   <div id="toast" class="pixel-toast hidden" role="status" aria-live="polite"></div>
 
-  <script src="app.js?v=1.3.0"></script>
+  <script src="app.js?v=1.3.1"></script>
 </body>
 
 </html>

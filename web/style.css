@@ -1936,18 +1936,50 @@ body.modal-open {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  margin-top: 16px;
-  padding-top: 14px;
-  border-top: 1px solid var(--cream-border, #ddd);
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.install-route-divider {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+  margin: 6px 0 2px;
+}
+
+.install-route-divider::before,
+.install-route-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--cream-border);
 }
 
 .install-route-or {
   font-family: var(--font-mono, monospace);
-  font-size: 11px;
-  color: var(--cream-muted, #888);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-dim);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
+  flex-shrink: 0;
+}
+
+.cli-brew-setup-box {
+  margin-top: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--cream-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.cli-brew-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
 }
 
 .download-instruction-box {
