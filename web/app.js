@@ -291,7 +291,7 @@ function openInspector(ext, { updateHash = true } = {}) {
   if (copyModalOnelinerBtn) copyModalOnelinerBtn.onclick = () =>
     copyText(oneliner, 'One-liner copied!', copyModalOnelinerBtn);
 
-  // Reset install tabs to default (one-liner)
+  // Reset install tabs to default (1-Step Install)
   if (installTabOneliner && installTabCli) {
     installTabOneliner.classList.add('active');
     installTabOneliner.setAttribute('aria-selected', 'true');
@@ -434,7 +434,21 @@ function setupEventListeners() {
     installTabCli.addEventListener('click', () => switchInstallTab(false));
   }
 
-  const openSubmit = () => openModal(submitModal);
+  const openSubmit = () => {
+    const stabCli = document.getElementById('stab-cli');
+    const stabFinder = document.getElementById('stab-nonterminal');
+    const paneCli = document.getElementById('submit-pane-cli');
+    const paneFinder = document.getElementById('submit-pane-nonterminal');
+    if (stabCli && stabFinder && paneCli && paneFinder) {
+      stabCli.classList.add('active');
+      stabCli.setAttribute('aria-selected', 'true');
+      stabFinder.classList.remove('active');
+      stabFinder.setAttribute('aria-selected', 'false');
+      paneCli.classList.remove('hidden');
+      paneFinder.classList.add('hidden');
+    }
+    openModal(submitModal);
+  };
   [openSubmitModalBtn, footerSubmitBtn].forEach(btn => {
     if (btn) btn.addEventListener('click', openSubmit);
   });
@@ -446,9 +460,8 @@ function setupEventListeners() {
 
   // Submit modal tab switcher
   const submitTabs = [
-    { btn: document.getElementById('stab-nonterminal'), pane: document.getElementById('submit-pane-nonterminal') },
-    { btn: document.getElementById('stab-oneliner'),    pane: document.getElementById('submit-pane-oneliner') },
     { btn: document.getElementById('stab-cli'),         pane: document.getElementById('submit-pane-cli') },
+    { btn: document.getElementById('stab-nonterminal'), pane: document.getElementById('submit-pane-nonterminal') },
   ];
   submitTabs.forEach(({ btn, pane }) => {
     if (!btn || !pane) return;

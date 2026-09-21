@@ -28,19 +28,22 @@ Safari can generate extensions from natural language prompts. This hub packages 
 
 ## 1. Installation
 
-### Quick install
+### Option A: Homebrew (Recommended)
 
-Run this command in Terminal to install the CLI and an extension together:
+```bash
+brew install Vatsal057/tap/safari-magic-ext
+safari-magic-ext install hacker-news-minimal
+```
+
+### Option B: Single command (No Homebrew required)
+
+Install the CLI tool and extension together in one step:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash -s -- install hacker-news-minimal
 ```
 
-Replace `hacker-news-minimal` with any slug from `safari-magic-ext explore` or the [web gallery][gallery].
-
-### Install the CLI
-
-Install the tool to `~/.local/bin`:
+To install just the standalone CLI:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Vatsal057/safari-magic-extensions/main/install-cli.sh | bash
