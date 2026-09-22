@@ -1,7 +1,7 @@
 {
   "version": 1,
   "registry_name": "Safari Magic Extensions Community Hub",
-  "updated_at": "2026-09-22T10:16:18Z",
+  "updated_at": "2026-09-22T10:59:15Z",
   "extensions": [
     {
       "id": "nightlife-in-the-wild",
@@ -58,7 +58,7 @@
       "art_image": "assets/thumbnails/add-to-mino.png",
       "added_at": "2026-09-21T19:55:03Z",
       "download_url": "packages/add-to-mino.magicext",
-      "downloads": 15
+      "downloads": 0
     },
     {
       "id": "greyscale-web",
