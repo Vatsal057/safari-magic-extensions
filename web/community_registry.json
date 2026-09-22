@@ -1,7 +1,7 @@
 {
   "version": 1,
   "registry_name": "Safari Magic Extensions Community Hub",
-  "updated_at": "2026-09-21T19:27:33Z",
+  "updated_at": "2026-09-22T10:16:18Z",
   "extensions": [
     {
       "id": "nightlife-in-the-wild",
@@ -41,6 +41,24 @@
       "added_at": "2026-09-20T06:40:40Z",
       "download_url": "packages/Zen_Focus_Timer.magicext",
       "downloads": 122
+    },
+    {
+      "id": "add-to-mino",
+      "name": "Add to Mino",
+      "author": "mario",
+      "version": "1.0",
+      "description": "Add the current GitHub repository to Mino.app",
+      "prompt": "Create an extension that allows adding GitHub repositories to the Mino.app application using this URL scheme: mino://add/<GitHub URL>",
+      "selected_symbol": "mug.fill",
+      "symbol_color_name": "gray",
+      "tags": [
+        "tech"
+      ],
+      "category": "tech",
+      "art_image": "assets/thumbnails/add-to-mino.png",
+      "added_at": "2026-09-21T19:55:03Z",
+      "download_url": "packages/add-to-mino.magicext",
+      "downloads": 15
     },
     {
       "id": "greyscale-web",

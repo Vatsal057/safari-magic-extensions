@@ -29,7 +29,7 @@ def main():
         # 2. Check for tmpfiles.org URL
         tmpfiles_match = re.search(r'(https://tmpfiles\.org/(?:dl/)?[a-zA-Z0-9]+/[a-zA-Z0-9_.-]+)', body)
         # 3. Check for GitHub attachments
-        gh_match = re.search(r'(https://github\.com/user-attachments/assets/[a-zA-Z0-9-]+)', body)
+        gh_match = re.search(r'(https://github\.com/user-attachments/(?:assets|files)/[^\s\)\"\'>]+)', body)
 
         if tmpfiles_match:
             view_url = tmpfiles_match.group(1)
@@ -58,10 +58,17 @@ def main():
         elif gh_match:
             url = gh_match.group(1)
             print(f"Downloading GitHub attachment: {url}")
-            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
             try:
-                with urllib.request.urlopen(req) as response, open(temp_path, 'wb') as out_file:
-                    out_file.write(response.read())
+                try:
+                    import requests
+                    resp = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=30)
+                    resp.raise_for_status()
+                    with open(temp_path, 'wb') as out_file:
+                        out_file.write(resp.content)
+                except ImportError:
+                    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+                    with urllib.request.urlopen(req, timeout=30) as response, open(temp_path, 'wb') as out_file:
+                        out_file.write(response.read())
             except Exception as e:
                 print(f"Error downloading attachment: {e}")
                 exit(1)

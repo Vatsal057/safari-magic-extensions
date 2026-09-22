@@ -57,6 +57,7 @@ render() {
   profile="$(mktemp -d)"
   "$BROWSER_BIN" --headless=new --disable-gpu --no-sandbox --mute-audio \
     --hide-scrollbars --force-color-profile=srgb \
+    --disable-background-networking --disable-component-update \
     --user-data-dir="$profile" \
     --virtual-time-budget="$SETTLE_MS" \
     --window-size="${WIDTH},${HEIGHT}" \
@@ -65,10 +66,11 @@ render() {
 
   local waited=0
   while (( waited < RENDER_TIMEOUT )); do
-    if [[ -f "$out" ]] && ! kill -0 "$pid" 2>/dev/null; then break; fi
+    if [[ -f "$out" ]]; then break; fi
     sleep 1; (( waited++ ))
   done
   kill "$pid" 2>/dev/null || true
+  kill -9 "$pid" 2>/dev/null || true
   wait "$pid" 2>/dev/null || true
   rm -rf "$profile"
   [[ -f "$out" ]]
