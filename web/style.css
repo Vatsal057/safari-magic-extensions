@@ -26,12 +26,20 @@
   --text-muted: #a6a49b;
   --text-dim: #78766e;
   
-  --font-pixel: 'Silkscreen', 'Pixelify Sans', monospace;
+  --font-pixel: 'Silkscreen', monospace;
   --font-mono: 'Space Mono', monospace;
   --font-sans: 'Space Grotesk', -apple-system, sans-serif;
   
   --transition-fast: 0.18s ease;
   --transition-smooth: 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Corner radius scale. Previously every radius was an ad-hoc literal, which
+     left 4 near-identical container values (10 / 16 / 18 / 20px) that read as
+     inconsistency rather than intent. */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-pill: 9999px;
 }
 
 *, *::before, *::after {
@@ -56,6 +64,20 @@ body {
   padding: 16px 12px;
 }
 
+/* Form controls and <code> do not inherit type by default, so any element that
+   forgets to set a family silently falls back to the UA font (Arial / generic
+   monospace) and leaks an extra typeface into the page. */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+code {
+  font-family: var(--font-mono);
+}
+
 /* =========================================================================
    Outer Page Wrapper
    ========================================================================= */
@@ -76,7 +98,7 @@ body {
 .main-canvas-frame {
   background-color: var(--bg-canvas);
   border: 1px solid var(--cream-border);
-  border-radius: 20px;
+  border-radius: var(--radius-md);
   padding: 24px 28px 40px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
   position: relative;
@@ -99,7 +121,7 @@ body {
   width: fit-content;
   padding: 8px 20px;
   border: 1px solid var(--cream-border-strong);
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   background: rgba(22, 23, 26, 0.94);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -138,7 +160,7 @@ body {
   border: none;
   cursor: pointer;
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
 }
 
 .nav-item:hover, .nav-item.active {
@@ -149,7 +171,7 @@ body {
 .nav-item.nav-btn {
   background: var(--cream-dim);
   border: 1px solid var(--cream-border);
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   padding: 4px 14px;
   color: var(--cream-accent);
 }
@@ -170,7 +192,7 @@ body {
   width: 100%;
   min-height: clamp(400px, 50vw, 560px);
   border: 1px solid var(--cream-border);
-  border-radius: 18px;
+  border-radius: var(--radius-md);
   position: relative;
   overflow: hidden;
   margin-bottom: 32px;
@@ -241,7 +263,7 @@ body {
   backdrop-filter: blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
   border: 1px solid var(--cream-border);
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(232, 224, 198, 0.15);
   margin: 0 auto;
 }
@@ -255,21 +277,19 @@ body {
   text-transform: uppercase;
   font-weight: 700;
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: clamp(8px, 1.8vw, 16px);
   text-shadow: 0 4px 14px rgba(0, 0, 0, 0.85);
 }
 
+/* Second line of the same title, now inside the <h1> so the accessible name
+   matches what is on screen. flex-basis:100% forces it onto its own row;
+   every other value is inherited from .pixel-title-main. */
 .pixel-title-sub {
-  font-family: var(--font-pixel);
-  font-size: clamp(24px, 4.2vw, 46px);
-  color: var(--cream-accent);
+  flex: 0 0 100%;
   letter-spacing: 0.06em;
-  line-height: 1.15;
-  text-transform: uppercase;
-  font-weight: 700;
   margin-top: 4px;
-  text-shadow: 0 4px 14px rgba(0, 0, 0, 0.85);
 }
 
 .hero-subtitle {
@@ -295,7 +315,7 @@ body {
   background-color: var(--cream-accent);
   color: var(--charcoal);
   border: 1px solid var(--cream-accent);
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   padding: 8px 18px;
   font-family: var(--font-sans);
   font-size: 13px;
@@ -319,7 +339,7 @@ body {
   background-color: rgba(37, 37, 37, 0.7);
   color: var(--cream-accent);
   border: 1px solid var(--cream-border-strong);
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   padding: 8px 18px;
   font-family: var(--font-sans);
   font-size: 13px;
@@ -367,7 +387,7 @@ body {
   gap: 12px;
   background: #1c1c1c;
   border: 1px solid var(--cream-border);
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   padding: 4px 14px;
 }
 
@@ -388,7 +408,7 @@ body {
   align-items: center;
   gap: 4px;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   transition: color var(--transition-fast);
 }
 
@@ -405,20 +425,18 @@ body {
   margin-bottom: 24px;
 }
 
+/* Static section label, not a tab. Deliberately has no border, no rounded
+   corners, and no overlap with the rule below it: that combination reads as a
+   selected folder tab and invites a click that does nothing. The rule stays as
+   a plain section divider underneath. */
 .section-tab-pill {
-  display: inline-block;
-  border: 1px solid var(--cream-border);
-  border-bottom: 1px solid var(--bg-canvas);
-  background-color: var(--bg-canvas);
-  border-radius: 12px 12px 0 0;
-  padding: 8px 18px;
+  display: block;
+  margin: 0 0 8px;
   font-family: var(--font-mono);
   font-size: 12px;
+  font-weight: 400;
   color: var(--cream-accent);
   text-transform: lowercase;
-  position: relative;
-  z-index: 2;
-  margin-bottom: -1px;
 }
 
 .section-tab-line {
@@ -461,7 +479,7 @@ body {
   padding: 3px 7px;
   background: var(--bg-card);
   border: 1px solid var(--cream-border);
-  border-radius: 5px;
+  border-radius: var(--radius-xs);
   font-size: 0.78rem;
   color: var(--cream-accent);
 }
@@ -557,7 +575,7 @@ body {
 .modal-pixel-card {
   background-color: var(--bg-canvas);
   border: 1px solid var(--cream-border-strong);
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   width: 100%;
   max-width: 640px;
   max-height: 90vh;
@@ -591,7 +609,7 @@ body {
   color: var(--cream-accent);
   background: var(--cream-dim);
   padding: 3px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   display: inline-block;
   margin-bottom: 0;
 }
@@ -606,7 +624,7 @@ body {
   color: var(--cream-accent);
   background: rgba(245, 242, 235, 0.08);
   border: 1px solid rgba(245, 242, 235, 0.15);
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   padding: 3px 8px;
   line-height: 1.2;
 }
@@ -638,7 +656,7 @@ body {
   line-height: 1;
   cursor: pointer;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   transition: background var(--transition-fast);
 }
 
@@ -656,7 +674,7 @@ body {
 .modal-image-preview {
   width: 100%;
   height: 220px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   border: 1px solid var(--cream-border);
 }
@@ -692,7 +710,7 @@ body {
   background: var(--cream-dim);
   border: 1px solid var(--cream-border);
   color: var(--cream-accent);
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   padding: 2px 8px;
   font-family: var(--font-mono);
   font-size: 10px;
@@ -722,9 +740,11 @@ body {
 .modal-prompt-box {
   background: #191919;
   border: 1px solid var(--cream-border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 12px 14px;
-  font-family: Georgia, serif;
+  /* Space Mono ships an italic and is already loaded, so the quoted-prompt
+     feel costs no extra typeface. Georgia here was the only off-system font. */
+  font-family: var(--font-mono);
   font-style: italic;
   font-size: 13px;
   line-height: 1.5;
@@ -737,7 +757,7 @@ body {
   justify-content: space-between;
   background: #141414;
   border: 1px solid var(--cream-border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 8px 12px;
 }
 
@@ -747,10 +767,12 @@ body {
   color: var(--cream-accent);
 }
 
+/* A width modifier only. It previously also changed padding and font-size,
+   which forked .btn-pill-outline into a second visually distinct button for no
+   reason; the type now matches the base pill. */
 .btn-full-width {
   width: 100%;
-  padding: 12px;
-  font-size: 12px;
+  padding: 12px 18px;
 }
 
 /* Submit Modal Grid */
@@ -775,7 +797,7 @@ body {
 .submit-option-box {
   background: #1c1c1c;
   border: 1px solid var(--cream-border);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -806,7 +828,7 @@ body {
 .submit-pack-helper {
   background: #141414;
   border: 1px solid var(--cream-border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 10px 14px;
   display: flex;
   flex-direction: column;
@@ -839,7 +861,7 @@ body {
   font-size: 11px;
   font-weight: 700;
   padding: 10px 18px;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   z-index: 2000;
   opacity: 1;
@@ -902,7 +924,7 @@ body.modal-open {
   gap: 10px;
   background: #141414;
   border: 1px solid var(--cream-border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 9px 10px 9px 12px;
 }
 
@@ -910,7 +932,7 @@ body.modal-open {
   flex: 1;
   min-width: 0; /* allows the pre-formatted command to scroll instead of stretching */
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: 10px;
   line-height: 1.5;
   color: var(--cream-accent);
   overflow-x: auto;
@@ -931,7 +953,7 @@ body.modal-open {
 .terminal-card {
   background: #141414;
   border: 1px solid var(--cream-border);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
@@ -981,6 +1003,10 @@ body.modal-open {
   border: none;
   background: transparent;
   padding: 10px 14px;
+  /* The Homebrew box below insets its row by 12px of box padding + 1px of row
+     border before the row's own 10px padding. The terminal card has no padding,
+     so match that total here or the two copy buttons sit 9px apart. */
+  padding-right: calc(12px + 1px + 10px);
 }
 
 .terminal-prompt-prefix {
@@ -1028,7 +1054,7 @@ body.modal-open {
   gap: 12px;
   background: var(--bg-card);
   border: 1px solid var(--cream-border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 20px;
 }
 
@@ -1048,7 +1074,7 @@ body.modal-open {
   flex-shrink: 0;
   background: var(--cream-accent);
   color: var(--charcoal);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-family: var(--font-pixel);
   font-size: 11px;
 }
@@ -1065,7 +1091,7 @@ body.modal-open {
   padding: 3px 8px;
   background: var(--cream-dim);
   border: 1px solid var(--cream-border);
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   font-family: var(--font-mono);
   font-size: 9px;
   text-transform: uppercase;
@@ -1076,7 +1102,7 @@ body.modal-open {
 .setup-desc {
   margin: 0;
   font-family: var(--font-sans);
-  font-size: 12.5px;
+  font-size: 12px;
   line-height: 1.65;
   color: var(--text-muted);
 }
@@ -1088,14 +1114,10 @@ body.modal-open {
   padding: 1px 5px;
   background: #141414;
   border: 1px solid var(--cream-border);
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: 10px;
   color: var(--cream-accent);
-}
-
-.btn-full-width {
-  width: 100%;
 }
 
 /* Collapsible notes keep caveats available without cluttering the card.
@@ -1166,7 +1188,7 @@ body.modal-open {
   max-width: 420px;
   background: var(--bg-card);
   border: 1px solid var(--cream-border);
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   padding: 0 12px;
 }
 
@@ -1223,7 +1245,7 @@ body.modal-open {
   color: var(--text-dim);
   background: var(--cream-dim);
   border: 1px solid var(--cream-border);
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   padding: 2px 5px;
   margin-right: 2px;
   pointer-events: none;
@@ -1280,7 +1302,7 @@ body.modal-open {
   flex-shrink: 0;
   background: var(--cream-dim);
   border: 1px solid var(--cream-border);
-  border-radius: 5px;
+  border-radius: var(--radius-xs);
   font-family: var(--font-mono);
   font-size: 9px;
   color: var(--cream-accent);
@@ -1288,7 +1310,7 @@ body.modal-open {
 
 .install-route-title {
   font-family: var(--font-sans);
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--cream-accent);
 }
@@ -1296,7 +1318,7 @@ body.modal-open {
 .install-route-hint {
   margin: 8px 0 10px;
   font-family: var(--font-sans);
-  font-size: 11.5px;
+  font-size: 11px;
   line-height: 1.6;
   color: var(--text-muted);
 }
@@ -1317,7 +1339,7 @@ body.modal-open {
   padding-top: 12px;
   border-top: 1px solid var(--cream-dim);
   font-family: var(--font-mono);
-  font-size: 9.5px;
+  font-size: 10px;
   letter-spacing: 0.04em;
   color: var(--text-dim);
   word-break: break-word;
@@ -1327,7 +1349,7 @@ body.modal-open {
 .submit-primary {
   background: var(--bg-card);
   border: 1px solid var(--cream-border-strong);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 18px;
   margin-bottom: 4px;
 }
@@ -1414,7 +1436,7 @@ body.modal-open {
   flex-shrink: 0;
   background: var(--cream-dim);
   border: 1px solid var(--cream-border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-family: var(--font-pixel);
   font-size: 12px;
   color: var(--cream-accent);
@@ -1484,7 +1506,7 @@ body.modal-open {
 .setup-primary {
   background: var(--bg-card);
   border: 1px solid var(--cream-border-strong);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   padding: 24px;
 }
 
@@ -1499,7 +1521,7 @@ body.modal-open {
 .setup-primary-title {
   margin: 0 0 6px;
   font-family: var(--font-pixel);
-  font-size: 17px;
+  font-size: 18px;
   letter-spacing: 0.02em;
   color: var(--cream-accent);
 }
@@ -1540,7 +1562,7 @@ body.modal-open {
 .setup-steps h4 {
   margin: 0 0 3px;
   font-family: var(--font-sans);
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--cream-accent);
 }
@@ -1548,7 +1570,7 @@ body.modal-open {
 .setup-steps p {
   margin: 0;
   font-family: var(--font-sans);
-  font-size: 11.5px;
+  font-size: 11px;
   line-height: 1.6;
   color: var(--text-muted);
 }
@@ -1557,7 +1579,7 @@ body.modal-open {
   padding: 1px 4px;
   background: #141414;
   border: 1px solid var(--cream-border);
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--cream-accent);
@@ -1572,7 +1594,7 @@ body.modal-open {
   margin-top: 16px;
   background: var(--bg-card);
   border: 1px solid var(--cream-border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 14px 18px;
 }
 
@@ -1583,7 +1605,7 @@ body.modal-open {
   cursor: pointer;
   list-style: none;
   font-family: var(--font-sans);
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--cream-muted);
 }
 
@@ -1673,7 +1695,7 @@ body.modal-open {
   background: var(--bg-card);
   color: var(--cream-accent);
   border: 1px solid var(--cream-border);
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   padding: 8px 30px 8px 14px;
   font-family: var(--font-mono);
   font-size: 11px;
@@ -1704,7 +1726,7 @@ body.modal-open {
   flex-direction: column;
   background: var(--bg-card);
   border: 1px solid var(--cream-border);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   cursor: pointer;
   transition: border-color var(--transition-fast), transform var(--transition-fast),
@@ -1743,7 +1765,7 @@ body.modal-open {
   gap: 5px;
   background: rgba(20, 20, 26, 0.88);
   border: 1px solid rgba(245, 242, 235, 0.2);
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   padding: 3px 9px;
   font-family: var(--font-mono);
   font-size: 10px;
@@ -1821,7 +1843,7 @@ body.modal-open {
   color: var(--cream-muted);
   background: var(--cream-dim);
   border: 1px solid var(--cream-border);
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   padding: 2px 8px;
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -1850,7 +1872,7 @@ body.modal-open {
   color: var(--text-muted);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(245, 242, 235, 0.08);
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   padding: 3px 8px;
   transition: color var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
 }
@@ -1889,7 +1911,7 @@ body.modal-open {
   margin-bottom: 14px;
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid var(--cream-border);
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   padding: 4px;
 }
 
@@ -1904,7 +1926,7 @@ body.modal-open {
   font-weight: 600;
   letter-spacing: 0.02em;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
   cursor: pointer;
   background: transparent;
@@ -1973,14 +1995,14 @@ body.modal-open {
   margin-top: 12px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--cream-border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 10px 12px;
 }
 
 .cli-brew-label {
   display: block;
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: 10px;
   color: var(--text-muted);
   margin-bottom: 6px;
 }
@@ -2016,7 +2038,7 @@ body.modal-open {
 
 .submit-dropzone {
   border: 2px dashed var(--cream-border, #ccc);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   padding: 24px 16px;
   text-align: center;
   cursor: pointer;
@@ -2069,7 +2091,7 @@ body.modal-open {
   margin-top: 16px;
   padding: 14px;
   border: 1px solid var(--cream-border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--bg-card);
 }
 
@@ -2104,7 +2126,7 @@ kbd {
   font-size: 11px;
   border: 1px solid var(--cream-border);
   border-bottom-width: 2px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   background: var(--bg-card);
   color: var(--cream-accent);
 }

@@ -214,6 +214,21 @@ Packages are treated as untrusted input. Extraction incorporates these protectio
 
 To report a vulnerability, open a private security advisory on GitHub instead of a public issue.
 
+### Download Counts
+
+When `install` fetches a package from the community catalog, the CLI increments that
+extension's public download counter so the gallery's numbers reflect CLI installs and
+not just browser downloads. Only the catalog slug (for example `video-pip`) is sent.
+No user, machine, or network identifiers are transmitted, the request is best-effort
+with a 3 second timeout, and a failure never affects the install.
+
+Installing from a local file, folder, or direct URL is not counted, since there is no
+catalog entry involved. To opt out entirely:
+
+```bash
+export SAFARI_MAGIC_EXT_NO_TRACKING=1   # or the conventional DO_NOT_TRACK=1
+```
+
 ---
 
 ## 9. Repository Layout

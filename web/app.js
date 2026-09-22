@@ -115,19 +115,26 @@ const liveCounts = {};
 async function fetchLiveCounts() {
   try {
     const res = await fetch(`${FIREBASE_DB_URL}.json`, { cache: 'no-cache' });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && typeof data === 'object') {
-        Object.entries(data).forEach(([slug, count]) => {
-          if (typeof count === 'number') {
-            liveCounts[slug] = count;
-            updateDownloadsUI(slug);
-          }
-        });
-      }
+    if (!res.ok) {
+      // Usually a rules/permission problem. Warn rather than fail silently:
+      // a frozen counter is otherwise indistinguishable from "no downloads yet".
+      console.warn(`Live download counts unavailable (HTTP ${res.status}). Showing baseline only.`);
+      return;
     }
-  } catch {
-    // Graceful fallback to static curation baseline
+    const data = await res.json();
+    if (data && typeof data === 'object') {
+      Object.entries(data).forEach(([slug, count]) => {
+        if (typeof count === 'number') {
+          liveCounts[slug] = count;
+          updateDownloadsUI(slug);
+        } else {
+          console.warn(`Ignoring non-numeric download count for "${slug}":`, count);
+        }
+      });
+    }
+  } catch (err) {
+    // Graceful fallback to the static curation baseline.
+    console.warn('Could not load live download counts:', err);
   }
 }
 
@@ -161,15 +168,21 @@ function trackDownload(extId) {
       [extId]: { '.sv': { 'increment': 1 } }
     })
   })
-    .then(res => res.json())
+    .then(async res => {
+      if (!res.ok) throw new Error(`counter responded ${res.status}: ${await res.text()}`);
+      return res.json();
+    })
     .then(data => {
       if (data && typeof data[extId] === 'number') {
+        // Reconcile the optimistic bump with the authoritative server total.
         liveCounts[extId] = data[extId];
         updateDownloadsUI(extId);
       }
     })
-    .catch(() => {
-      // Retain optimistic count on network error
+    .catch(err => {
+      // Keep the optimistic count for this session, but say so: a write that
+      // never lands is the difference between a live counter and a frozen one.
+      console.warn(`Download count for "${extId}" was not recorded:`, err);
     });
 }
 
@@ -406,14 +419,13 @@ function openInspector(ext, { updateHash = true } = {}) {
   };
   copyModalPromptBtn.onclick = () =>
     copyText(ext.prompt, 'Prompt copied. Paste it into Safari to remix.', copyModalPromptBtn);
-  if (copyModalCliBtn) copyModalCliBtn.onclick = () => {
-    trackDownload(ext.id);
+  // Copying an install command is not a download. The CLI reports the real
+  // install itself once it fetches the package, so counting the copy here
+  // would book the same install twice.
+  if (copyModalCliBtn) copyModalCliBtn.onclick = () =>
     copyText(cliCommand, 'Install command copied.', copyModalCliBtn);
-  };
-  if (copyModalOnelinerBtn) copyModalOnelinerBtn.onclick = () => {
-    trackDownload(ext.id);
+  if (copyModalOnelinerBtn) copyModalOnelinerBtn.onclick = () =>
     copyText(oneliner, 'One-liner copied!', copyModalOnelinerBtn);
-  };
 
   // Reset install tabs to default (1-Step Install)
   if (installTabOneliner && installTabCli) {
@@ -625,10 +637,6 @@ function setupEventListeners() {
     if (!btn) return;
     const targetEl = document.getElementById(btn.dataset.copyTarget);
     if (targetEl) {
-      if (btn.dataset.copyTarget === 'modal-download-cmd') {
-        const activeExtMatch = modalMetaRow?.textContent?.match(/id:\s*([^\s·]+)/);
-        if (activeExtMatch) trackDownload(activeExtMatch[1]);
-      }
       copyText(targetEl.textContent, btn.dataset.copyLabel || 'Copied!', btn);
     }
   });

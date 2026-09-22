@@ -68,6 +68,13 @@ CACHE_DIR = Path.home() / "Library/Caches/safari-magic-ext"
 CACHED_REGISTRY_PATH = CACHE_DIR / "community_registry.json"
 USER_AGENT = "SafariMagicExtensionsManager/1.0"
 
+# Shared counter behind the gallery's live download badges. CLI installs are
+# reported here too, otherwise the published numbers only ever reflect people
+# who clicked the browser download button and never the (recommended) CLI path.
+DOWNLOAD_COUNTER_URL = (
+    "https://safari-magic-hub-8679-default-rtdb.firebaseio.com/downloads.json"
+)
+
 
 def get_db_connection(db_path: Path = DB_PATH) -> sqlite3.Connection:
     """Open connection to the SQLite database with WAL awareness."""
@@ -710,6 +717,42 @@ def safe_extract_archive(archive_path: Path, dest_dir: Path) -> dict:
     return magic_meta
 
 
+def _tracking_disabled() -> bool:
+    """True when the user has opted out of download counting."""
+    for var in ("SAFARI_MAGIC_EXT_NO_TRACKING", "DO_NOT_TRACK"):
+        value = os.environ.get(var, "").strip().lower()
+        if value and value not in {"0", "false", "no"}:
+            return True
+    return False
+
+
+def report_download(ext_id: str) -> None:
+    """Best-effort increment of the shared download counter for `ext_id`.
+
+    Sends only the catalog slug: no user, machine, or network identifiers. The
+    server resolves the increment atomically, so concurrent installs cannot
+    clobber each other. Every failure is swallowed and the timeout is short,
+    because counting a download must never break or noticeably delay an install.
+    Set SAFARI_MAGIC_EXT_NO_TRACKING=1 (or DO_NOT_TRACK=1) to opt out.
+    """
+    if not ext_id or _tracking_disabled():
+        return
+
+    payload = json.dumps({ext_id: {".sv": {"increment": 1}}}).encode("utf-8")
+    req = urllib.request.Request(
+        DOWNLOAD_COUNTER_URL,
+        data=payload,
+        method="PATCH",
+        headers={"Content-Type": "application/json", "User-Agent": USER_AGENT},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=3):
+            pass
+    except Exception:
+        # Offline, firewalled, or the counter is down: not worth surfacing.
+        pass
+
+
 def resolve_source_to_package(source: str, temp_workspace: Path) -> tuple[Path, dict]:
     """Resolve a source (local file, URL, or community registry ID) into a local archive."""
     source_str = str(source).strip()
@@ -785,6 +828,8 @@ def resolve_source_to_package(source: str, temp_workspace: Path) -> tuple[Path, 
         with urllib.request.urlopen(req, timeout=30) as resp:
             with open(download_target, "wb") as f:
                 shutil.copyfileobj(resp, f)
+        # Count it only once the bytes actually landed.
+        report_download(str(catalog_item.get("id") or "").strip())
         return download_target, catalog_item
 
     # 4. Local Folder (direct sideload)

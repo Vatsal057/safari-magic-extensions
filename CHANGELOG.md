@@ -5,6 +5,30 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Download counts barely moved.** CLI installs were never counted. The gallery
+  only incremented its counter from the browser download button, while the README
+  and site both recommend `safari-magic-ext install <id>` and the `curl | bash`
+  one-liner, so the majority of real installs were invisible. The CLI now reports a
+  download when it fetches a package from the catalog.
+- Copying an install command no longer counts as a download. Copying the CLI
+  command, the one-liner, or the `~/Downloads` install snippet each incremented the
+  counter, which inflated the numbers and, now that the CLI reports installs itself,
+  would have booked the same install twice.
+- Failed counter reads and writes are no longer swallowed in silence. Both paths
+  caught every error and discarded it, so a frozen counter looked exactly like
+  "no downloads yet". They now warn on the console and still fall back to the
+  static baseline without affecting the page or the download itself.
+
+### Added
+
+- `SAFARI_MAGIC_EXT_NO_TRACKING=1` (and the conventional `DO_NOT_TRACK=1`) opt out
+  of CLI download counting. See the Download Counts section of the README for what
+  is sent.
+
 ## [1.1.1] - 2026-09-20
 
 ### Fixed
