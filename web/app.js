@@ -74,6 +74,7 @@ async function initGallery() {
   }
 
   render();
+  fetchLiveCounts();
   openFromHash();
   window.addEventListener('hashchange', openFromHash);
 }
@@ -108,10 +109,32 @@ function oneLineInstallFor(ext) {
   return `curl -fsSL ${CLI_INSTALLER_URL} | bash -s -- install ${ext.id}`;
 }
 
+const FIREBASE_DB_URL = 'https://safari-magic-hub-8679-default-rtdb.firebaseio.com/downloads';
+const liveCounts = {};
+
+async function fetchLiveCounts() {
+  try {
+    const res = await fetch(`${FIREBASE_DB_URL}.json`, { cache: 'no-cache' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && typeof data === 'object') {
+        Object.entries(data).forEach(([slug, count]) => {
+          if (typeof count === 'number') {
+            liveCounts[slug] = count;
+            updateDownloadsUI(slug);
+          }
+        });
+      }
+    }
+  } catch {
+    // Graceful fallback to static curation baseline
+  }
+}
+
 function getDownloads(ext) {
   if (!ext) return 0;
-  const localDelta = parseInt(localStorage.getItem(`downloads_${ext.id}`) || '0', 10);
-  return (ext.downloads || 0) + (isNaN(localDelta) ? 0 : localDelta);
+  const globalCount = liveCounts[ext.id] || 0;
+  return (ext.downloads || 0) + globalCount;
 }
 
 function formatDownloads(count) {
@@ -126,9 +149,28 @@ function formatDownloads(count) {
 
 function trackDownload(extId) {
   if (!extId) return;
-  const currentDelta = parseInt(localStorage.getItem(`downloads_${extId}`) || '0', 10) || 0;
-  localStorage.setItem(`downloads_${extId}`, String(currentDelta + 1));
+  // Optimistic instant UI update
+  liveCounts[extId] = (liveCounts[extId] || 0) + 1;
   updateDownloadsUI(extId);
+
+  // Atomic server increment: auto-provisions new extension keys on the fly
+  fetch(`${FIREBASE_DB_URL}.json`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      [extId]: { '.sv': { 'increment': 1 } }
+    })
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data && typeof data[extId] === 'number') {
+        liveCounts[extId] = data[extId];
+        updateDownloadsUI(extId);
+      }
+    })
+    .catch(() => {
+      // Retain optimistic count on network error
+    });
 }
 
 function updateDownloadsUI(extId) {
