@@ -995,29 +995,131 @@ function downloadBlob(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 
-async function traverseFileSystemEntry(entry, currentPath = '') {
-  const name = entry.name;
-  const itemPath = currentPath ? `${currentPath}/${name}` : name;
+// Safely extract all files from a directory entry via webkitGetAsEntry (Safari/Chrome legacy)
+function readFileSystemEntry(entry, currentPath = '') {
+  const itemPath = currentPath ? `${currentPath}/${entry.name}` : entry.name;
+  return new Promise((resolve) => {
+    if (entry.isFile) {
+      entry.getFile(
+        file => resolve([{ path: itemPath, file }]),
+        err => {
+          console.warn('entry.getFile error:', err);
+          resolve([]);
+        }
+      );
+    } else if (entry.isDirectory) {
+      const reader = entry.createReader();
+      const allEntries = [];
 
-  if (entry.isFile) {
-    const file = await new Promise((resolve, reject) => entry.getFile(resolve, reject));
-    return [{ path: itemPath, file }];
-  } else if (entry.isDirectory) {
-    const dirReader = entry.createReader();
-    const subEntries = [];
-    while (true) {
-      const batch = await new Promise((resolve, reject) => dirReader.readEntries(resolve, reject));
-      if (!batch.length) break;
-      subEntries.push(...batch);
+      function readBatch() {
+        reader.readEntries(
+          async (batch) => {
+            if (!batch || batch.length === 0) {
+              const childPromises = allEntries.map(child => readFileSystemEntry(child, itemPath));
+              const childArrays = await Promise.all(childPromises);
+              resolve(childArrays.flat());
+            } else {
+              allEntries.push(...batch);
+              readBatch();
+            }
+          },
+          (err) => {
+            console.warn('readEntries error:', err);
+            resolve([]);
+          }
+        );
+      }
+      readBatch();
+    } else {
+      resolve([]);
     }
-    const results = [];
-    for (const child of subEntries) {
-      const childResults = await traverseFileSystemEntry(child, itemPath);
-      results.push(...childResults);
+  });
+}
+
+// Safely extract all files from a modern FileSystemHandle (Safari 15.2+, Chrome 86+)
+async function readFileSystemHandle(handle, currentPath = '') {
+  const itemPath = currentPath ? `${currentPath}/${handle.name}` : handle.name;
+  const results = [];
+  try {
+    if (handle.kind === 'file') {
+      const file = await handle.getFile();
+      results.push({ path: itemPath, file });
+    } else if (handle.kind === 'directory') {
+      for await (const [name, childHandle] of handle.entries()) {
+        const sub = await readFileSystemHandle(childHandle, itemPath);
+        results.push(...sub);
+      }
     }
-    return results;
+  } catch (err) {
+    console.warn('readFileSystemHandle error:', err);
   }
-  return [];
+  return results;
+}
+
+// Comprehensive extraction function supporting Safari, WebKit, and Chromium
+async function extractDroppedFiles(dataTransfer) {
+  if (!dataTransfer) return [];
+  const results = [];
+  const items = dataTransfer.items;
+
+  // 1. Try FileSystemHandle API (modern standard)
+  if (items && items.length > 0 && typeof items[0].getAsFileSystemHandle === 'function') {
+    try {
+      const handlePromises = [];
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.kind === 'file') {
+          handlePromises.push(item.getAsFileSystemHandle());
+        }
+      }
+      const handles = (await Promise.all(handlePromises)).filter(Boolean);
+      if (handles.length > 0) {
+        for (const handle of handles) {
+          const files = await readFileSystemHandle(handle);
+          results.push(...files);
+        }
+        if (results.length > 0) return results;
+      }
+    } catch (e) {
+      console.warn('FileSystemHandle fallback:', e);
+    }
+  }
+
+  // 2. Try webkitGetAsEntry (Safari / WebKit / Chrome folder drop)
+  if (items && items.length > 0) {
+    try {
+      const entries = [];
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.kind === 'file' && typeof item.webkitGetAsEntry === 'function') {
+          const entry = item.webkitGetAsEntry();
+          if (entry) entries.push(entry);
+        }
+      }
+      if (entries.length > 0) {
+        const entryResults = await Promise.all(entries.map(e => readFileSystemEntry(e)));
+        for (const list of entryResults) {
+          results.push(...list);
+        }
+        if (results.length > 0) return results;
+      }
+    } catch (e) {
+      console.warn('webkitGetAsEntry fallback:', e);
+    }
+  }
+
+  // 3. Fallback: dataTransfer.files
+  if (dataTransfer.files && dataTransfer.files.length > 0) {
+    for (let i = 0; i < dataTransfer.files.length; i++) {
+      const file = dataTransfer.files[i];
+      results.push({
+        path: file.webkitRelativePath || file.name,
+        file: file
+      });
+    }
+  }
+
+  return results;
 }
 
 async function compileAndPreviewExtension(fileItems) {
@@ -1343,35 +1445,51 @@ function setupDropzone() {
   const preview = document.getElementById('submit-preview');
   if (!dropzone || !folderInput || !preview) return;
 
-  dropzone.addEventListener('dragover', e => {
+  function handleDragOver(e) {
     e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = 'copy';
+    }
     dropzone.classList.add('dropzone-over');
-  });
-  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dropzone-over'));
+  }
 
-  dropzone.addEventListener('drop', async e => {
+  function handleDragLeave(e) {
     e.preventDefault();
+    e.stopPropagation();
+    dropzone.classList.remove('dropzone-over');
+  }
+
+  dropzone.addEventListener('dragenter', handleDragOver);
+  dropzone.addEventListener('dragover', handleDragOver);
+  dropzone.addEventListener('dragleave', handleDragLeave);
+  dropzone.addEventListener('dragend', handleDragLeave);
+
+  dropzone.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     dropzone.classList.remove('dropzone-over');
 
-    const items = [...(e.dataTransfer.items || [])];
-    const entries = items.map(i => i.webkitGetAsEntry && i.webkitGetAsEntry()).filter(Boolean);
-
-    if (entries.length) {
-      const allFiles = [];
-      for (const entry of entries) {
-        const entryFiles = await traverseFileSystemEntry(entry);
-        allFiles.push(...entryFiles);
-      }
-      if (allFiles.length) {
+    try {
+      showToast('Processing dropped files...');
+      const allFiles = await extractDroppedFiles(e.dataTransfer);
+      if (allFiles && allFiles.length > 0) {
         await compileAndPreviewExtension(allFiles);
+      } else {
+        showToast('Could not read files from dropped item. Please use "browse folder".');
       }
-    } else if (e.dataTransfer.files.length) {
-      const allFiles = Array.from(e.dataTransfer.files).map(f => ({
-        path: f.webkitRelativePath || f.name,
-        file: f
-      }));
-      await compileAndPreviewExtension(allFiles);
+    } catch (err) {
+      console.error('Drop error:', err);
+      showToast('Error reading dropped folder: ' + err.message);
     }
+  });
+
+  // Prevent Safari default file navigation when dropping outside dropzone
+  window.addEventListener('dragover', (e) => {
+    e.preventDefault();
+  });
+  window.addEventListener('drop', (e) => {
+    e.preventDefault();
   });
 
   dropzone.addEventListener('keydown', e => {
