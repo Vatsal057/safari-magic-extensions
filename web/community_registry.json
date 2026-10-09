@@ -1,7 +1,7 @@
 {
   "version": 1,
   "registry_name": "Safari Magic Extensions Community Hub",
-  "updated_at": "2026-09-22T10:59:15Z",
+  "updated_at": "2026-10-09T06:47:24Z",
   "extensions": [
     {
       "id": "nightlife-in-the-wild",
@@ -95,6 +95,24 @@
       "added_at": "2026-09-20T15:23:24Z",
       "download_url": "packages/random-animal-new-tab.magicext",
       "downloads": 47
+    },
+    {
+      "id": "shan-shui-scroll",
+      "name": "Shan Shui Scroll",
+      "author": "community",
+      "version": "1.0",
+      "description": "Infinite procedural Chinese ink landscape scroll with auto-scrolling, seed generation, and interactive exploration directly in your Safari new tab.",
+      "prompt": "Create Shan Shui Infinite Scroll new tab page with procedural Chinese ink landscape painting, auto-scroll, seed generator, interactive panning, and zen ambient design.",
+      "selected_symbol": "mountain.2.fill",
+      "symbol_color_name": "blue",
+      "tags": [
+        "newtab"
+      ],
+      "category": "newtab",
+      "art_image": "assets/thumbnails/shan-shui-scroll.png",
+      "added_at": "2026-10-09T06:46:16.117Z",
+      "download_url": "packages/shan-shui-scroll.magicext",
+      "downloads": 0
     },
     {
       "id": "video-pip",
