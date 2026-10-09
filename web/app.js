@@ -738,8 +738,604 @@ function escapeHTML(str) {
     .replace(/'/g, '&#39;');
 }
 
-// ---------------------------------------------------------------- dropzone
+// ---------------------------------------------------------------- dropzone & zip engine
 const GITHUB_REPO = 'Vatsal057/safari-magic-extensions';
+
+const IGNORE_PATTERNS = [
+  /^\./,             // hidden files / folders (.DS_Store, .git, etc.)
+  /^__MACOSX/i,
+  /^node_modules/i,
+  /Thumbs\.db/i,
+  /\.tmp$/i,
+  /\.vscode/i,
+];
+
+// Precomputed CRC32 table
+const CRC_TABLE = new Uint32Array(256);
+for (let n = 0; n < 256; n++) {
+  let c = n;
+  for (let k = 0; k < 8; k++) {
+    c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+  }
+  CRC_TABLE[n] = c >>> 0;
+}
+
+function calcCrc32(buf) {
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < buf.length; i++) {
+    c = CRC_TABLE[(c ^ buf[i]) & 0xFF] ^ (c >>> 8);
+  }
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+function toDosDateTime(date) {
+  const d = date || new Date();
+  const time = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+  const dt = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  return { time, date: dt };
+}
+
+async function createZipArchive(entries) {
+  const localHeaders = [];
+  const centralHeaders = [];
+  let offset = 0;
+
+  for (const entry of entries) {
+    const rawData = entry.data;
+    const pathBytes = new TextEncoder().encode(entry.path);
+    const crc = calcCrc32(rawData);
+
+    let compData = rawData;
+    let method = 0; // STORE
+
+    // Attempt DEFLATE compression if modern CompressionStream is supported
+    if (typeof CompressionStream !== 'undefined') {
+      try {
+        const cs = new CompressionStream('deflate-raw');
+        const writer = cs.writable.getWriter();
+        writer.write(rawData);
+        writer.close();
+        const reader = cs.readable.getReader();
+        const chunks = [];
+        let total = 0;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+          total += value.length;
+        }
+        const merged = new Uint8Array(total);
+        let pos = 0;
+        for (const ch of chunks) {
+          merged.set(ch, pos);
+          pos += ch.length;
+        }
+        if (merged.length < rawData.length) {
+          compData = merged;
+          method = 8; // DEFLATE
+        }
+      } catch {
+        method = 0;
+        compData = rawData;
+      }
+    }
+
+    const { time, date } = toDosDateTime();
+
+    // Local Header: 30 bytes + pathBytes.length + compData.length
+    const lh = new Uint8Array(30 + pathBytes.length + compData.length);
+    const lView = new DataView(lh.buffer);
+    lView.setUint32(0, 0x04034b50, true);
+    lView.setUint16(4, 20, true);
+    lView.setUint16(6, 0x0800, true); // UTF-8 filename flag
+    lView.setUint16(8, method, true);
+    lView.setUint16(10, time, true);
+    lView.setUint16(12, date, true);
+    lView.setUint32(14, crc, true);
+    lView.setUint32(18, compData.length, true);
+    lView.setUint32(22, rawData.length, true);
+    lView.setUint16(26, pathBytes.length, true);
+    lView.setUint16(28, 0, true);
+    lh.set(pathBytes, 30);
+    lh.set(compData, 30 + pathBytes.length);
+    localHeaders.push(lh);
+
+    // Central Directory Header: 46 bytes + pathBytes.length
+    const ch = new Uint8Array(46 + pathBytes.length);
+    const cView = new DataView(ch.buffer);
+    cView.setUint32(0, 0x02014b50, true);
+    cView.setUint16(4, 20, true);
+    cView.setUint16(6, 20, true);
+    cView.setUint16(8, 0x0800, true);
+    cView.setUint16(10, method, true);
+    cView.setUint16(12, time, true);
+    cView.setUint16(14, date, true);
+    cView.setUint32(16, crc, true);
+    cView.setUint32(20, compData.length, true);
+    cView.setUint32(24, rawData.length, true);
+    cView.setUint16(28, pathBytes.length, true);
+    cView.setUint16(30, 0, true);
+    cView.setUint16(32, 0, true);
+    cView.setUint16(34, 0, true);
+    cView.setUint16(36, 0, true);
+    cView.setUint32(38, 0, true);
+    cView.setUint32(42, offset, true);
+    ch.set(pathBytes, 46);
+    centralHeaders.push(ch);
+
+    offset += lh.length;
+  }
+
+  const centralDirOffset = offset;
+  let centralDirSize = 0;
+  for (const ch of centralHeaders) centralDirSize += ch.length;
+
+  const eocd = new Uint8Array(22);
+  const eView = new DataView(eocd.buffer);
+  eView.setUint32(0, 0x06054b50, true);
+  eView.setUint16(4, 0, true);
+  eView.setUint16(6, 0, true);
+  eView.setUint16(8, entries.length, true);
+  eView.setUint16(10, entries.length, true);
+  eView.setUint32(12, centralDirSize, true);
+  eView.setUint32(16, centralDirOffset, true);
+  eView.setUint16(20, 0, true);
+
+  const totalSize = offset + centralDirSize + 22;
+  const out = new Uint8Array(totalSize);
+  let p = 0;
+  for (const lh of localHeaders) {
+    out.set(lh, p);
+    p += lh.length;
+  }
+  for (const ch of centralHeaders) {
+    out.set(ch, p);
+    p += ch.length;
+  }
+  out.set(eocd, p);
+  return out;
+}
+
+async function readZipArchive(buffer) {
+  const bytes = new Uint8Array(buffer);
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+
+  let eocd = -1;
+  for (let i = bytes.length - 22; i >= 0; i--) {
+    if (view.getUint32(i, true) === 0x06054b50) {
+      eocd = i;
+      break;
+    }
+  }
+  if (eocd === -1) throw new Error('Not a valid ZIP archive');
+
+  const cdOffset = view.getUint32(eocd + 16, true);
+  const totalEntries = view.getUint16(eocd + 10, true);
+  const entries = [];
+  let p = cdOffset;
+
+  for (let i = 0; i < totalEntries; i++) {
+    if (view.getUint32(p, true) !== 0x02014b50) break;
+    const method = view.getUint16(p + 10, true);
+    const compSize = view.getUint32(p + 20, true);
+    const fnLen = view.getUint16(p + 28, true);
+    const extraLen = view.getUint16(p + 30, true);
+    const commentLen = view.getUint16(p + 32, true);
+    const localHeaderOffset = view.getUint32(p + 42, true);
+
+    const fnBytes = bytes.subarray(p + 46, p + 46 + fnLen);
+    const filename = new TextDecoder('utf-8').decode(fnBytes);
+
+    const localFnLen = view.getUint16(localHeaderOffset + 26, true);
+    const localExtraLen = view.getUint16(localHeaderOffset + 28, true);
+    const dataOffset = localHeaderOffset + 30 + localFnLen + localExtraLen;
+    const compData = bytes.subarray(dataOffset, dataOffset + compSize);
+
+    let data;
+    if (method === 0) {
+      data = compData;
+    } else if (method === 8) {
+      if (typeof DecompressionStream === 'undefined') {
+        throw new Error('DecompressionStream not supported in this browser');
+      }
+      const ds = new DecompressionStream('deflate-raw');
+      const writer = ds.writable.getWriter();
+      writer.write(compData);
+      writer.close();
+      const reader = ds.readable.getReader();
+      const chunks = [];
+      let total = 0;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        total += value.length;
+      }
+      data = new Uint8Array(total);
+      let pos = 0;
+      for (const ch of chunks) {
+        data.set(ch, pos);
+        pos += ch.length;
+      }
+    } else {
+      throw new Error(`Unsupported ZIP compression method: ${method}`);
+    }
+
+    entries.push({ filename, data });
+    p += 46 + fnLen + extraLen + commentLen;
+  }
+  return entries;
+}
+
+function uint8ArrayToBase64(bytes) {
+  let binary = '';
+  const len = bytes.byteLength;
+  const chunkSize = 8192;
+  for (let i = 0; i < len; i += chunkSize) {
+    const chunk = bytes.subarray(i, Math.min(i + chunkSize, len));
+    binary += String.fromCharCode.apply(null, chunk);
+  }
+  return btoa(binary);
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+async function traverseFileSystemEntry(entry, currentPath = '') {
+  const name = entry.name;
+  const itemPath = currentPath ? `${currentPath}/${name}` : name;
+
+  if (entry.isFile) {
+    const file = await new Promise((resolve, reject) => entry.getFile(resolve, reject));
+    return [{ path: itemPath, file }];
+  } else if (entry.isDirectory) {
+    const dirReader = entry.createReader();
+    const subEntries = [];
+    while (true) {
+      const batch = await new Promise((resolve, reject) => dirReader.readEntries(resolve, reject));
+      if (!batch.length) break;
+      subEntries.push(...batch);
+    }
+    const results = [];
+    for (const child of subEntries) {
+      const childResults = await traverseFileSystemEntry(child, itemPath);
+      results.push(...childResults);
+    }
+    return results;
+  }
+  return [];
+}
+
+async function compileAndPreviewExtension(fileItems) {
+  const statusIndicator = document.getElementById('status-indicator');
+  const statusText = document.getElementById('submit-status-text');
+
+  function setStatus(text, type = 'info') {
+    if (statusText) statusText.textContent = text;
+    if (statusIndicator) {
+      statusIndicator.className = 'status-indicator' + (type === 'success' ? ' success' : type === 'error' ? ' error' : '');
+    }
+  }
+
+  // Check if a single .magicext or .zip package was dropped
+  const singlePackage = fileItems.length === 1 && (
+    fileItems[0].path.endsWith('.magicext') ||
+    fileItems[0].path.endsWith('.zip') ||
+    fileItems[0].file?.name.endsWith('.magicext') ||
+    fileItems[0].file?.name.endsWith('.zip')
+  ) ? fileItems[0] : null;
+
+  let pkgBytes;
+  let metadata = {};
+
+  if (singlePackage) {
+    setStatus('Reading package archive...');
+    try {
+      const buf = await singlePackage.file.arrayBuffer();
+      const zipEntries = await readZipArchive(buf);
+      pkgBytes = new Uint8Array(buf);
+
+      const magicEntry = zipEntries.find(e => e.filename === 'magic.json' || e.filename.endsWith('/magic.json'));
+      const manifestEntry = zipEntries.find(e => e.filename === 'manifest.json' || e.filename.endsWith('/manifest.json'));
+
+      let magic = {};
+      if (magicEntry) {
+        try { magic = JSON.parse(new TextDecoder().decode(magicEntry.data)); } catch {}
+      }
+      let manifest = {};
+      if (manifestEntry) {
+        try { manifest = JSON.parse(new TextDecoder().decode(manifestEntry.data)); } catch {}
+      }
+
+      metadata.name = magic.name || manifest.name || singlePackage.file.name.replace(/\.(magicext|zip)$/, '');
+      metadata.prompt = magic.prompt || manifest.browser_specific_settings?.safari?.prompt || manifest.description || metadata.name;
+      metadata.description = magic.description || manifest.description || '';
+      metadata.author = magic.author || localStorage.getItem('safari_magic_author') || 'community';
+      metadata.selected_symbol = magic.selected_symbol || 'sparkles';
+      metadata.symbol_color_name = magic.symbol_color_name || 'blue';
+    } catch (err) {
+      showToast('Could not read package archive: ' + err.message);
+      setStatus('Failed to read package', 'error');
+      return;
+    }
+  } else {
+    // Compiling from a dropped folder
+    setStatus('Analyzing extension files...');
+
+    // Locate manifest.json
+    const manifestItem = fileItems.find(item => {
+      const p = item.path.replace(/\\/g, '/');
+      return p === 'manifest.json' || p.endsWith('/manifest.json');
+    });
+
+    let manifest = null;
+    let rootPrefix = '';
+
+    if (manifestItem) {
+      const normPath = manifestItem.path.replace(/\\/g, '/');
+      const idx = normPath.lastIndexOf('manifest.json');
+      rootPrefix = normPath.slice(0, idx);
+      try {
+        const text = await manifestItem.file.text();
+        manifest = JSON.parse(text);
+      } catch {
+        showToast('manifest.json is not valid JSON.');
+        setStatus('Invalid manifest.json', 'error');
+        return;
+      }
+    } else {
+      // Synthesize manifest if an HTML file exists
+      const htmlItem = fileItems.find(item => item.path.endsWith('.html'));
+      if (!htmlItem) {
+        showToast('Could not find manifest.json or HTML entry in that folder. Is this a Safari extension?');
+        setStatus('Not a valid extension folder', 'error');
+        return;
+      }
+      const folderName = fileItems[0]?.path.split('/')[0] || 'My Extension';
+      manifest = {
+        manifest_version: 3,
+        name: folderName.replace(/[-_]/g, ' '),
+        version: '1.0',
+        description: `${folderName} Safari Extension`,
+        browser_url_overrides: { newtab: 'index.html' },
+        browser_specific_settings: {
+          safari: { prompt: `Create ${folderName}` }
+        },
+        icon_variants: [{ any: 'symbol:sparkles' }]
+      };
+    }
+
+    const name = manifest.name || 'My Extension';
+    const description = manifest.description || '';
+    const safariPrompt = manifest.browser_specific_settings?.safari?.prompt;
+    const prompt = safariPrompt || description || name;
+
+    let symbol = 'puzzlepiece.extension';
+    const iconStr = manifest.icon_variants?.[0]?.any || '';
+    if (typeof iconStr === 'string' && iconStr.startsWith('symbol:')) {
+      symbol = iconStr.replace('symbol:', '');
+    } else if (iconStr) {
+      symbol = iconStr;
+    }
+
+    const savedAuthor = localStorage.getItem('safari_magic_author') || 'community';
+    const uuid = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID().toUpperCase()
+      : 'E' + Date.now().toString(16).toUpperCase();
+
+    // Check if magic.json already exists in the folder
+    let existingMagic = null;
+    const magicItem = fileItems.find(item => {
+      const p = item.path.replace(/\\/g, '/');
+      return p === rootPrefix + 'magic.json';
+    });
+    if (magicItem) {
+      try {
+        existingMagic = JSON.parse(await magicItem.file.text());
+      } catch {}
+    }
+
+    metadata = {
+      name: existingMagic?.name || name,
+      author: existingMagic?.author || savedAuthor,
+      description: existingMagic?.description || description,
+      prompt: existingMagic?.prompt || prompt,
+      selected_symbol: existingMagic?.selected_symbol || symbol,
+      symbol_color_name: existingMagic?.symbol_color_name || 'blue',
+      version: manifest.version || '1.0',
+    };
+
+    // Normalize manifest
+    if (!manifest.browser_specific_settings) manifest.browser_specific_settings = {};
+    if (!manifest.browser_specific_settings.safari) manifest.browser_specific_settings.safari = {};
+    manifest.browser_specific_settings.safari.prompt = metadata.prompt;
+    manifest.icon_variants = [{ any: `symbol:${metadata.selected_symbol}` }];
+
+    // Construct magic.json
+    const magicData = {
+      magic_format_version: 1,
+      id: existingMagic?.id || uuid,
+      name: metadata.name,
+      author: metadata.author,
+      version: metadata.version,
+      description: metadata.description,
+      prompt: metadata.prompt,
+      selected_symbol: metadata.selected_symbol,
+      symbol_color_name: metadata.symbol_color_name,
+      packaged_at: new Date().toISOString()
+    };
+
+    setStatus('Compiling files into .magicext bundle...');
+
+    // Collect zip entries
+    const zipEntries = [];
+    zipEntries.push({
+      path: 'magic.json',
+      data: new TextEncoder().encode(JSON.stringify(magicData, null, 2))
+    });
+    zipEntries.push({
+      path: 'manifest.json',
+      data: new TextEncoder().encode(JSON.stringify(manifest, null, 2))
+    });
+
+    for (const item of fileItems) {
+      const normPath = item.path.replace(/\\/g, '/');
+      if (!normPath.startsWith(rootPrefix)) continue;
+      const relPath = normPath.slice(rootPrefix.length);
+      if (!relPath || relPath === 'magic.json' || relPath === 'manifest.json') continue;
+
+      const parts = relPath.split('/');
+      const isIgnored = parts.some(part => IGNORE_PATTERNS.some(regex => regex.test(part)));
+      if (isIgnored) continue;
+
+      const fileBuf = await item.file.arrayBuffer();
+      zipEntries.push({
+        path: relPath,
+        data: new Uint8Array(fileBuf)
+      });
+    }
+
+    try {
+      pkgBytes = await createZipArchive(zipEntries);
+    } catch (err) {
+      showToast('Error packaging .magicext: ' + err.message);
+      setStatus('Packaging failed', 'error');
+      return;
+    }
+  }
+
+  await handlePackageReady(pkgBytes, metadata);
+}
+
+async function handlePackageReady(pkgBytes, metadata) {
+  const preview = document.getElementById('submit-preview');
+  const dropzone = document.getElementById('submit-dropzone');
+  const statusIndicator = document.getElementById('status-indicator');
+  const statusText = document.getElementById('submit-status-text');
+  const authorInput = document.getElementById('submit-author-input');
+  const downloadBtn = document.getElementById('submit-download-btn');
+  const ghBtn = document.getElementById('submit-github-btn');
+
+  function setStatus(text, type = 'info') {
+    if (statusText) statusText.textContent = text;
+    if (statusIndicator) {
+      statusIndicator.className = 'status-indicator' + (type === 'success' ? ' success' : type === 'error' ? ' error' : '');
+    }
+  }
+
+  const safeName = (metadata.name || 'Extension').replace(/[^a-zA-Z0-9_-]/g, '_').replace(/^_+|_+$/g, '') || 'Extension';
+  const filename = `${safeName}.magicext`;
+  const slug = (metadata.name || 'extension').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'extension';
+
+  // Display metadata
+  document.getElementById('preview-name').textContent = metadata.name;
+  document.getElementById('preview-prompt').textContent = metadata.prompt ? `"${metadata.prompt}"` : '';
+  document.getElementById('preview-icon').textContent = metadata.selected_symbol ? '🪄' : '📦';
+  document.getElementById('preview-filename').textContent = filename;
+  document.getElementById('preview-filesize').textContent = `(${formatBytes(pkgBytes.length)})`;
+
+  // Set author handle
+  if (authorInput) {
+    const savedAuthor = localStorage.getItem('safari_magic_author') || metadata.author || '';
+    authorInput.value = savedAuthor;
+  }
+
+  // Setup download button
+  const blob = new Blob([pkgBytes], { type: 'application/zip' });
+  if (downloadBtn) {
+    downloadBtn.onclick = () => {
+      downloadBlob(blob, filename);
+      showToast(`Downloaded ${filename}!`);
+    };
+  }
+
+  // Base64 encoding
+  const b64Payload = uint8ArrayToBase64(pkgBytes);
+
+  let uploadedUrl = null;
+
+  function updateGhLink() {
+    const author = (authorInput?.value || '').trim() || metadata.author || 'community';
+    let pkgField = '';
+    if (uploadedUrl) {
+      pkgField += `Download link: ${uploadedUrl}\n\n`;
+    }
+    if (b64Payload.length < 2500) {
+      pkgField += `<!-- MAGICEXT_BASE64_START -->\n${b64Payload}\n<!-- MAGICEXT_BASE64_END -->`;
+    }
+    if (!uploadedUrl && b64Payload.length >= 2500) {
+      pkgField += `*Package compiled locally (${filename}). Please attach the downloaded file below.*`;
+    }
+
+    const params = new URLSearchParams({
+      template: 'extension_submission.yml',
+      title: `[Extension Submission]: ${metadata.name}`,
+      extension_name: metadata.name,
+      author_handle: author,
+      ai_prompt: metadata.prompt || metadata.name,
+      description: metadata.description || '',
+      selected_symbol: metadata.selected_symbol || 'puzzlepiece.extension',
+      symbol_color: metadata.symbol_color_name || 'blue',
+      package_upload: pkgField,
+    });
+    ghBtn.href = `https://github.com/${GITHUB_REPO}/issues/new?${params.toString()}`;
+  }
+
+  updateGhLink();
+
+  if (authorInput) {
+    authorInput.oninput = () => {
+      localStorage.setItem('safari_magic_author', authorInput.value.trim());
+      updateGhLink();
+    };
+  }
+
+  preview.classList.remove('hidden');
+  dropzone.classList.add('dropzone-done');
+  showToast(`Compiled "${filename}" (${formatBytes(pkgBytes.length)})!`);
+
+  // Concurrently upload to tmpfiles.org as automated ingest link
+  setStatus('Uploading package to secure temporary link...', 'info');
+  try {
+    const formData = new FormData();
+    formData.append('file', blob, `${slug}.zip`);
+    const resp = await fetch('https://tmpfiles.org/api/v1/upload', {
+      method: 'POST',
+      body: formData
+    });
+    if (resp.ok) {
+      const resJson = await resp.json();
+      if (resJson?.data?.url) {
+        uploadedUrl = resJson.data.url;
+        updateGhLink();
+        setStatus('✓ .magicext compiled & pre-attached! Ready to submit.', 'success');
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn('tmpfiles upload notice:', err);
+  }
+
+  if (b64Payload.length < 2500) {
+    setStatus('✓ .magicext compiled & embedded! Ready to submit.', 'success');
+  } else {
+    setStatus('✓ .magicext compiled! Download and attach to GitHub.', 'success');
+  }
+}
 
 function setupDropzone() {
   const dropzone = document.getElementById('submit-dropzone');
@@ -752,102 +1348,47 @@ function setupDropzone() {
     dropzone.classList.add('dropzone-over');
   });
   dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dropzone-over'));
-  dropzone.addEventListener('drop', e => {
+
+  dropzone.addEventListener('drop', async e => {
     e.preventDefault();
     dropzone.classList.remove('dropzone-over');
+
     const items = [...(e.dataTransfer.items || [])];
     const entries = items.map(i => i.webkitGetAsEntry && i.webkitGetAsEntry()).filter(Boolean);
+
     if (entries.length) {
-      processDroppedEntries(entries);
+      const allFiles = [];
+      for (const entry of entries) {
+        const entryFiles = await traverseFileSystemEntry(entry);
+        allFiles.push(...entryFiles);
+      }
+      if (allFiles.length) {
+        await compileAndPreviewExtension(allFiles);
+      }
     } else if (e.dataTransfer.files.length) {
-      processFileList(e.dataTransfer.files);
+      const allFiles = Array.from(e.dataTransfer.files).map(f => ({
+        path: f.webkitRelativePath || f.name,
+        file: f
+      }));
+      await compileAndPreviewExtension(allFiles);
     }
   });
+
   dropzone.addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === ' ') folderInput.click();
   });
 
-  folderInput.addEventListener('change', () => {
-    if (folderInput.files.length) processFileList(folderInput.files);
+  folderInput.addEventListener('change', async () => {
+    if (folderInput.files.length) {
+      const allFiles = Array.from(folderInput.files).map(f => ({
+        path: f.webkitRelativePath || f.name,
+        file: f
+      }));
+      await compileAndPreviewExtension(allFiles);
+    }
   });
-
-  async function processDroppedEntries(entries) {
-    const allFiles = [];
-    for (const entry of entries) {
-      await collectFiles(entry, allFiles);
-    }
-    await buildPreviewFromFiles(allFiles);
-  }
-
-  function processFileList(fileList) {
-    buildPreviewFromFiles([...fileList]);
-  }
-
-  function collectFiles(entry, collector) {
-    return new Promise(resolve => {
-      if (entry.isFile) {
-        entry.getFile(f => { collector.push(f); resolve(); });
-      } else if (entry.isDirectory) {
-        const reader = entry.createReader();
-        reader.readEntries(async subEntries => {
-          for (const sub of subEntries) await collectFiles(sub, collector);
-          resolve();
-        });
-      } else {
-        resolve();
-      }
-    });
-  }
-
-  async function buildPreviewFromFiles(files) {
-    // Find manifest.json anywhere in the dropped set.
-    const manifestFile = files.find(f => f.name === 'manifest.json');
-    if (!manifestFile) {
-      showToast('Could not find manifest.json in that folder. Is this a Safari extension?');
-      return;
-    }
-
-    let manifest;
-    try {
-      const text = await manifestFile.text();
-      manifest = JSON.parse(text);
-    } catch {
-      showToast('manifest.json is not valid JSON.');
-      return;
-    }
-
-    const name = manifest.name || 'My Extension';
-    const prompt = manifest.browser_specific_settings?.safari?.prompt || manifest.description || '';
-    const iconStr = manifest.icon_variants?.[0]?.any || '';
-    const symbol = iconStr.startsWith('symbol:') ? iconStr.slice(7) : iconStr;
-    const description = manifest.description || '';
-
-    // Build GitHub pre-filled issue URL.
-    const params = new URLSearchParams({
-      template: 'extension_submission.yml',
-      title: `[Extension Submission]: ${name}`,
-      extension_name: name,
-      ai_prompt: prompt,
-      description,
-      selected_symbol: symbol,
-    });
-    const ghUrl = `https://github.com/${GITHUB_REPO}/issues/new?${params.toString()}`;
-
-    // Show preview.
-    document.getElementById('preview-name').textContent = name;
-    document.getElementById('preview-prompt').textContent = prompt ? `"${prompt}"` : '';
-    document.getElementById('preview-icon').textContent = symbol ? '🪄' : '📦';
-    const safeName = name.replace(/[^a-zA-Z0-9_-]/g, '_') || 'Extension';
-    const filename = `${safeName}.magicext`;
-    const previewFilename = document.getElementById('preview-filename');
-    if (previewFilename) previewFilename.textContent = filename;
-    document.getElementById('submit-github-btn').href = ghUrl;
-
-    preview.classList.remove('hidden');
-    dropzone.classList.add('dropzone-done');
-    showToast(`Found "${name}". Click Submit to GitHub to open the form.`);
-  }
 }
 
 document.addEventListener('DOMContentLoaded', initGallery);
+
 

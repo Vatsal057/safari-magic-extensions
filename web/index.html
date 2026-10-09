@@ -379,11 +379,11 @@
           </div>
 
           <div id="submit-dropzone" class="submit-dropzone" role="button" tabindex="0"
-            aria-label="Drop extension folder here">
+            aria-label="Drop extension folder or package here">
             <div class="dropzone-inner">
               <span class="dropzone-icon" aria-hidden="true">📂</span>
               <p class="dropzone-label">Drop your extension folder here</p>
-              <p class="dropzone-sub">or <label for="submit-folder-input" class="dropzone-browse-link">browse</label></p>
+              <p class="dropzone-sub">or <label for="submit-folder-input" class="dropzone-browse-link">browse folder</label> (or drop <code>.magicext</code> / <code>.zip</code>)</p>
               <input type="file" id="submit-folder-input" webkitdirectory multiple style="display:none"
                 aria-label="Select extension folder">
             </div>
@@ -392,15 +392,44 @@
           <div id="submit-preview" class="submit-preview hidden">
             <div class="submit-preview-header">
               <span class="submit-preview-icon" id="preview-icon">🪄</span>
-              <div>
-                <strong id="preview-name"></strong>
+              <div style="flex:1;min-width:0;">
+                <div class="preview-title-row">
+                  <strong id="preview-name"></strong>
+                  <span id="preview-badge" class="preview-badge">.magicext</span>
+                </div>
                 <div class="submit-preview-meta" id="preview-prompt"></div>
+                <div class="preview-file-info">
+                  <span class="preview-file-icon">📦</span>
+                  <span id="preview-filename">Extension.magicext</span>
+                  <span id="preview-filesize" class="preview-filesize"></span>
+                </div>
               </div>
             </div>
-            <a id="submit-github-btn" href="#" target="_blank" rel="noopener" class="btn-pill-cream"
-              style="margin-top:12px;display:block;text-align:center">
-              Submit to GitHub ↗
-            </a>
+
+            <div class="submit-author-row">
+              <label for="submit-author-input" class="submit-field-label">Author Name / GitHub Handle (for credit):</label>
+              <input type="text" id="submit-author-input" class="submit-input-field"
+                placeholder="e.g. your-github-handle" aria-label="Author Name or GitHub Handle">
+            </div>
+
+            <div id="submit-status" class="submit-status" role="status" aria-live="polite">
+              <span class="status-indicator" id="status-indicator"></span>
+              <span id="submit-status-text">Compiling .magicext package...</span>
+            </div>
+
+            <div class="submit-actions-row">
+              <button id="submit-download-btn" type="button" class="btn-pill-outline btn-download-magicext"
+                title="Download compiled .magicext package">
+                <span>⬇</span> Download .magicext
+              </button>
+              <a id="submit-github-btn" href="#" target="_blank" rel="noopener" class="btn-pill-cream btn-submit-gh">
+                Submit to GitHub ↗
+              </a>
+            </div>
+
+            <p class="submit-hint-note">
+              ✓ Package data compiled and pre-attached. You can also drag the downloaded <code>.magicext</code> into the GitHub issue box.
+            </p>
           </div>
         </div>
 
@@ -415,7 +444,7 @@
   <!-- Toast Notification -->
   <div id="toast" class="pixel-toast hidden" role="status" aria-live="polite"></div>
 
-  <script src="app.js?v=1.3.8"></script>
+  <script src="app.js?v=1.3.9"></script>
 </body>
 
 </html>

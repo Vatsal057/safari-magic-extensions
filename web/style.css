@@ -2118,6 +2118,127 @@ body.modal-open {
   max-width: 260px;
 }
 
+.preview-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.preview-badge {
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  background: rgba(232, 224, 198, 0.12);
+  border: 1px solid var(--cream-border);
+  border-radius: var(--radius-xs);
+  padding: 1px 6px;
+  color: var(--cream-accent);
+}
+
+.preview-file-info {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.preview-filesize {
+  color: var(--cream-accent);
+  font-weight: 600;
+}
+
+.submit-author-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 12px;
+}
+
+.submit-field-label {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.submit-input-field {
+  background: rgba(18, 18, 18, 0.7);
+  border: 1px solid var(--cream-border);
+  border-radius: var(--radius-xs);
+  color: var(--cream-accent);
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  padding: 7px 10px;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.submit-input-field:focus {
+  border-color: var(--cream-accent);
+}
+
+.submit-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.status-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f59e0b;
+  flex-shrink: 0;
+  transition: background-color var(--transition-fast);
+}
+
+.status-indicator.success {
+  background: #10b981;
+}
+
+.status-indicator.error {
+  background: #ef4444;
+}
+
+.submit-actions-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.submit-actions-row > * {
+  flex: 1 1 140px;
+}
+
+.btn-download-magicext {
+  padding: 8px 14px;
+  font-size: 12px;
+}
+
+.btn-submit-gh {
+  padding: 8px 14px;
+  font-size: 12px;
+}
+
+.submit-hint-note {
+  margin-top: 10px;
+  font-size: 11px;
+  font-family: var(--font-mono, monospace);
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+
 /* kbd tag */
 kbd {
   display: inline-block;
