@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Shan Shui Scroll",
+  "version": "1.0",
+  "description": "Infinite procedural Chinese ink landscape scroll with auto-scrolling, seed generation, and interactive exploration directly in your Safari new tab.",
+  "browser_url_overrides": {
+    "newtab": "index.html"
+  },
+  "action": {
+    "default_title": "Shan Shui Scroll",
+    "icon_variants": [
+      {
+        "any": "symbol:mountain.2.fill"
+      }
+    ]
+  },
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "icon_variants": [
+    {
+      "any": "symbol:mountain.2.fill"
+    }
+  ],
+  "browser_specific_settings": {
+    "safari": {
+      "prompt": "Create Shan Shui Infinite Scroll new tab page with procedural Chinese ink landscape painting, auto-scroll, seed generator, interactive panning, and zen ambient design."
+    }
+  }
+}

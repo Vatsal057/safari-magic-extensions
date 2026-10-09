@@ -1,7 +1,7 @@
 {
   "version": 1,
   "registry_name": "Safari Magic Extensions Community Hub",
-  "updated_at": "2026-10-09T06:47:24Z",
+  "updated_at": "2026-10-09T07:00:52Z",
   "extensions": [
     {
       "id": "nightlife-in-the-wild",
@@ -99,7 +99,7 @@
     {
       "id": "shan-shui-scroll",
       "name": "Shan Shui Scroll",
-      "author": "community",
+      "author": "Vatsal057",
       "version": "1.0",
       "description": "Infinite procedural Chinese ink landscape scroll with auto-scrolling, seed generation, and interactive exploration directly in your Safari new tab.",
       "prompt": "Create Shan Shui Infinite Scroll new tab page with procedural Chinese ink landscape painting, auto-scroll, seed generator, interactive panning, and zen ambient design.",

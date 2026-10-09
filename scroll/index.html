@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Shan Shui (山水) — Infinite Procedural Landscape</title>
+  <style>
+    :root {
+      --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      --glass-bg: rgba(255, 255, 255, 0.74);
+      --glass-border: rgba(0, 0, 0, 0.08);
+      --glass-shadow: 0 16px 40px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+      --ink-primary: rgba(30, 30, 30, 0.88);
+      --ink-secondary: rgba(60, 60, 60, 0.65);
+      --ink-muted: rgba(0, 0, 0, 0.35);
+      --seal-red: #a82424;
+      --accent-hover: rgba(0, 0, 0, 0.06);
+      --accent-active: rgba(0, 0, 0, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #f0ebe1;
+      font-family: var(--font-stack);
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Container & Canvas */
+    #viewport-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      touch-action: none;
+      contain: strict;
+    }
+
+    #BG {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      touch-action: none;
+      background-repeat: repeat;
+      contain: layout paint size;
+      will-change: transform;
+    }
+
+    #BG:active {
+      cursor: grabbing;
+    }
+
+    /* Imperial Vermilion Seal Stamp (Traditional Mountain-Water Seal) */
+    #seal-stamp {
+      position: fixed;
+      top: 28px;
+      left: 32px;
+      z-index: 90;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 6px;
+      border: 2px solid var(--seal-red);
+      border-radius: 4px;
+      background: rgba(168, 36, 36, 0.05);
+      box-shadow: inset 0 0 6px rgba(168, 36, 36, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    #seal-stamp:hover {
+      transform: scale(1.05);
+      background: rgba(168, 36, 36, 0.09);
+      box-shadow: inset 0 0 8px rgba(168, 36, 36, 0.2), 0 4px 12px rgba(168, 36, 36, 0.15);
+    }
+
+    .seal-text {
+      font-family: "Songti SC", "SimSun", "STSong", "PingFang SC", serif;
+      font-weight: 800;
+      font-size: 15px;
+      line-height: 1.15;
+      color: var(--seal-red);
+      letter-spacing: 2px;
+      text-shadow: 0 0 1px rgba(168, 36, 36, 0.3);
+    }
+
+    .seal-sub {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: var(--seal-red);
+      opacity: 0.8;
+      margin-top: 2px;
+      font-family: var(--font-stack);
+    }
+
+    /* Glassmorphic Floating HUD */
+    #hud {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(30px) saturate(190%);
+      -webkit-backdrop-filter: blur(30px) saturate(190%);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+      border-radius: 9999px;
+      transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    #hud.hidden {
+      opacity: 0;
+      transform: translateX(-50%) translateY(24px);
+      pointer-events: none;
+    }
+
+    .hud-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border: none;
+      background: transparent;
+      color: var(--ink-primary);
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+      outline: none;
+    }
+
+    .hud-btn:hover {
+      background: var(--accent-hover);
+      color: #000;
+      transform: scale(1.06);
+    }
+
+    .hud-btn:active {
+      background: var(--accent-active);
+      transform: scale(0.96);
+    }
+
+    .hud-btn svg {
+      width: 17px;
+      height: 17px;
+      fill: currentColor;
+    }
+
+    .hud-divider {
+      width: 1px;
+      height: 20px;
+      background: rgba(0, 0, 0, 0.1);
+      margin: 0 2px;
+    }
+
+    /* Speed Selector Pill */
+    .speed-group {
+      display: flex;
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 9999px;
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .speed-btn {
+      border: none;
+      background: transparent;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .speed-btn.active {
+      background: #ffffff;
+      color: #000;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Seed Badge */
+    .seed-pill {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      background: rgba(0, 0, 0, 0.04);
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .seed-pill:hover {
+      background: rgba(0, 0, 0, 0.08);
+      color: #000;
+    }
+
+    /* Zen Mode Restore Pill */
+    #zen-restore-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+      border-radius: 50%;
+      cursor: pointer;
+      color: var(--ink-secondary);
+      transition: all 0.2s ease;
+      opacity: 0.45;
+    }
+
+    #zen-restore-btn:hover {
+      opacity: 1;
+      transform: scale(1.1);
+      color: #000;
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 200;
+      background: rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+    }
+
+    .modal-card {
+      width: 90%;
+      max-width: 440px;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(40px) saturate(200%);
+      -webkit-backdrop-filter: blur(40px) saturate(200%);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.06);
+      border-radius: 20px;
+      padding: 24px;
+      color: #111;
+      transform: scale(0.95);
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-backdrop.open .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: -0.3px;
+    }
+
+    .modal-close {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: rgba(0, 0, 0, 0.06);
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      font-size: 15px;
+      transition: all 0.15s ease;
+    }
+
+    .modal-close:hover {
+      background: rgba(0, 0, 0, 0.12);
+      color: #000;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--ink-secondary);
+      margin-bottom: 6px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .text-input {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      background: rgba(255, 255, 255, 0.7);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .text-input:focus {
+      border-color: #007aff;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+    }
+
+    .primary-btn {
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: none;
+      background: #1d1d1f;
+      color: #fff;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .primary-btn:hover {
+      background: #000;
+      transform: translateY(-1px);
+    }
+
+    .secondary-btn {
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      background: rgba(0, 0, 0, 0.04);
+      color: #111;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .secondary-btn:hover {
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    .shortcut-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 12px;
+    }
+
+    .shortcut-table td {
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .shortcut-table td:last-child {
+      text-align: right;
+    }
+
+    .kbd {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 5px;
+      background: rgba(0, 0, 0, 0.07);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 300;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div id="viewport-container">
+    <div id="BG"></div>
+  </div>
+
+  <!-- Traditional Vermilion Seal Stamp -->
+  <div id="seal-stamp" title="Shan Shui (山水) — About this landscape">
+    <div class="seal-text">山水</div>
+    <div class="seal-sub">SHAN SHUI</div>
+  </div>
+
+  <!-- Floating Glass HUD -->
+  <div id="hud">
+    <!-- Play/Pause Drift -->
+    <button id="btn-play-pause" class="hud-btn" title="Pause Drift (Space)">
+      <svg id="pause-icon" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+      <svg id="play-icon" viewBox="0 0 24 24" style="display:none;"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+
+    <!-- Drift Direction -->
+    <button id="btn-dir" class="hud-btn" title="Drift: Rightward (Click to reverse)">
+      →
+    </button>
+
+    <!-- Speed Group -->
+    <div class="speed-group">
+      <button class="speed-btn" data-speed="0.5">0.5×</button>
+      <button class="speed-btn active" data-speed="1.0">1×</button>
+      <button class="speed-btn" data-speed="2.0">2×</button>
+    </div>
+
+    <div class="hud-divider"></div>
+
+    <!-- Step Left / Right -->
+    <button id="btn-pan-left" class="hud-btn" title="Pan Left (← or A)">
+      ‹
+    </button>
+    <button id="btn-pan-right" class="hud-btn" title="Pan Right (→ or D)">
+      ›
+    </button>
+
+    <div class="hud-divider"></div>
+
+    <!-- Randomize Seed -->
+    <button id="btn-random-seed" class="hud-btn" title="Generate New Landscape (R)">
+      <svg viewBox="0 0 24 24"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+    </button>
+
+    <!-- Seed Pill Badge -->
+    <div id="seed-pill" class="seed-pill" title="Click to copy current landscape seed">
+      <span class="seed-badge-text">#Seed</span>
+    </div>
+
+    <div class="hud-divider"></div>
+
+    <!-- Download SVG -->
+    <button id="btn-download-svg" class="hud-btn" title="Export current landscape as SVG (S)">
+      <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+    </button>
+
+    <!-- Settings Modal Trigger -->
+    <button id="btn-settings" class="hud-btn" title="Settings & Shortcuts">
+      <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+    </button>
+
+    <!-- Zen Mode (Hide HUD) -->
+    <button id="btn-zen-mode" class="hud-btn" title="Zen View (Hide HUD, press H)">
+      <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+    </button>
+  </div>
+
+  <!-- Zen Mode Restore Button -->
+  <div id="zen-restore-btn" title="Show Controls (H)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Shan Shui Settings</h3>
+        <button id="btn-close-settings" class="modal-close">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Landscape Seed</label>
+        <div class="input-row">
+          <input type="text" id="modal-seed-input" class="text-input seed-val-input" placeholder="Enter custom seed..." />
+          <button id="btn-apply-seed" class="primary-btn">Apply</button>
+          <button id="btn-copy-seed-modal" class="secondary-btn">Copy</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Export</label>
+        <button id="btn-modal-download" class="secondary-btn" style="width:100%;">
+          Download Standalone SVG File
+        </button>
+      </div>
+
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">Keyboard Shortcuts</label>
+        <table class="shortcut-table">
+          <tr><td>Play / Pause Auto-Drift</td><td><span class="kbd">Space</span></td></tr>
+          <tr><td>Pan Left / Right</td><td><span class="kbd">←</span> <span class="kbd">→</span> or <span class="kbd">A</span> <span class="kbd">D</span></td></tr>
+          <tr><td>Randomize Seed</td><td><span class="kbd">R</span></td></tr>
+          <tr><td>Download SVG</td><td><span class="kbd">S</span></td></tr>
+          <tr><td>Toggle Zen Mode</td><td><span class="kbd">H</span></td></tr>
+          <tr><td>Close Popups</td><td><span class="kbd">Esc</span></td></tr>
+          <tr><td>Pan Gestures</td><td><span class="kbd">Trackpad Swipe</span> or <span class="kbd">Drag</span></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info Modal -->
+  <div id="info-modal" class="modal-backdrop">
+    <div class="modal-card" style="text-align:center;">
+      <div style="font-size: 32px; font-weight:800; color:var(--seal-red); font-family:'Songti SC', serif; margin-bottom: 8px;">山水</div>
+      <h3 class="modal-title" style="margin-bottom:8px;">Shan Shui — Infinite Landscape</h3>
+      <p style="font-size:13px; line-height:1.6; color:#555; margin-bottom:16px;">
+        Procedurally generated Chinese ink landscape painting running natively in your Safari browser.
+        Inspired by classical Chinese handscrolls (手卷), the mountains, trees, pagodas, and misty rivers are mathematically synthesized to infinity.
+      </p>
+      <div style="display:flex; justify-content:center; gap:8px;">
+        <button id="btn-info-random" class="secondary-btn">🎲 New Landscape</button>
+        <button id="btn-info-continue" class="primary-btn">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast"></div>
+
+  <!-- Procedural Noise Canvas for Rice Paper Texture -->
+  <canvas id="bgcanv" width="512" height="512" style="display:none;"></canvas>
+
+  <!-- Procedural Math & Engine Scripts (Loaded in DOM-ready order) -->
+  
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  <script src="scroll.js"></script>
+</body>
+</html>

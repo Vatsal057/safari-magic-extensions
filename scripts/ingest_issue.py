@@ -78,15 +78,44 @@ def main():
 
     print("Package downloaded / extracted successfully.")
     
-    # Extract the name from the magic.json to rename the file properly
+    # Extract and update metadata from magic.json and issue body
     extension_name = "Extension"
     try:
         with zipfile.ZipFile(temp_path, 'r') as zf:
             with zf.open("magic.json") as f:
                 magic_data = json.load(f)
                 extension_name = magic_data.get("name", "Extension")
+
+        # Parse Author Handle from issue body if provided
+        author_match = re.search(r'###\s*Author Name\s*/\s*GitHub Handle\s*\n+([^\n#]+)', body)
+        issue_author = author_match.group(1).strip() if author_match else ""
+        if issue_author and issue_author.lower() not in ("no response", "_no response_", "none"):
+            print(f"Applying author from issue: {issue_author}")
+            magic_data["author"] = issue_author
+
+        # Parse Symbol from issue body if provided
+        symbol_match = re.search(r'###\s*SF Symbol Name\s*\n+([^\n#]+)', body)
+        issue_symbol = symbol_match.group(1).strip() if symbol_match else ""
+        if issue_symbol and issue_symbol.lower() not in ("no response", "_no response_", "none"):
+            magic_data["selected_symbol"] = issue_symbol
+
+        # Parse Symbol Color from issue body if provided
+        color_match = re.search(r'###\s*SF Symbol Tint Color\s*\n+([^\n#]+)', body)
+        issue_color = color_match.group(1).strip() if color_match else ""
+        if issue_color and issue_color.lower() not in ("no response", "_no response_", "none"):
+            magic_data["symbol_color_name"] = issue_color
+
+        # Re-pack package with updated magic.json
+        temp_updated = packages_dir / "temp_updated.zip"
+        with zipfile.ZipFile(temp_path, 'r') as zin, zipfile.ZipFile(temp_updated, 'w') as zout:
+            for item in zin.infolist():
+                data = zin.read(item.filename)
+                if item.filename == "magic.json":
+                    data = json.dumps(magic_data, indent=2).encode('utf-8')
+                zout.writestr(item, data)
+        temp_updated.replace(temp_path)
     except Exception as e:
-        print(f"Error reading magic.json from downloaded package: {e}")
+        print(f"Error reading/updating magic.json from downloaded package: {e}")
         temp_path.unlink(missing_ok=True)
         exit(1)
         
