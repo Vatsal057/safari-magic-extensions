@@ -1,7 +1,7 @@
 {
   "version": 1,
   "registry_name": "Safari Magic Extensions Community Hub",
-  "updated_at": "2026-10-29T16:20:43Z",
+  "updated_at": "2026-10-29T16:43:04Z",
   "extensions": [
     {
       "id": "nightlife-in-the-wild",
@@ -76,6 +76,24 @@
       "art_image": "assets/thumbnails/audio-tab-switcher.png",
       "added_at": "2026-10-29T16:16:53.423Z",
       "download_url": "packages/audio-tab-switcher.magicext",
+      "downloads": 0
+    },
+    {
+      "id": "close-other-windows",
+      "name": "Close Other Windows",
+      "author": "wills11",
+      "version": "1.0",
+      "description": "Close all other Safari windows while keeping the active window open.",
+      "prompt": "Close all other Safari windows while keeping the active window open.",
+      "selected_symbol": "square",
+      "symbol_color_name": "blue",
+      "tags": [
+        "newtab"
+      ],
+      "category": "newtab",
+      "art_image": "assets/thumbnails/close-other-windows.png",
+      "added_at": "2026-10-29T16:24:10.572Z",
+      "download_url": "packages/close-other-windows.magicext",
       "downloads": 0
     },
     {
