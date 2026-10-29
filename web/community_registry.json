@@ -1,7 +1,7 @@
 {
   "version": 1,
   "registry_name": "Safari Magic Extensions Community Hub",
-  "updated_at": "2026-10-09T07:00:52Z",
+  "updated_at": "2026-10-29T16:20:43Z",
   "extensions": [
     {
       "id": "nightlife-in-the-wild",
@@ -58,6 +58,24 @@
       "art_image": "assets/thumbnails/add-to-mino.png",
       "added_at": "2026-09-21T19:55:03Z",
       "download_url": "packages/add-to-mino.magicext",
+      "downloads": 0
+    },
+    {
+      "id": "audio-tab-switcher",
+      "name": "Audio Tab Switcher",
+      "author": "wills11",
+      "version": "1.0",
+      "description": "Switch to the next Safari tab that is currently playing audio.",
+      "prompt": "When activated, switch to the next Safari tab that is currently playing audio. Consider tabs in all Safari windows. If the current tab is one of the tabs playing audio, select the next one; after the last one, return to the first.; Add a keyboard shortcut that activates this extension: Control-`.; The keyboard shortcut isn't working. Change it to Shift-Option-A; remove the keyboard shortcut",
+      "selected_symbol": "speaker.wave.2.fill",
+      "symbol_color_name": "blue",
+      "tags": [
+        "newtab"
+      ],
+      "category": "newtab",
+      "art_image": "assets/thumbnails/audio-tab-switcher.png",
+      "added_at": "2026-10-29T16:16:53.423Z",
+      "download_url": "packages/audio-tab-switcher.magicext",
       "downloads": 0
     },
     {
