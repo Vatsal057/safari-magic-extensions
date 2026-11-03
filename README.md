@@ -222,6 +222,15 @@ not just browser downloads. Only the catalog slug (for example `video-pip`) is s
 No user, machine, or network identifiers are transmitted, the request is best-effort
 with a 3 second timeout, and a failure never affects the install.
 
+In the gallery, clicking **Download .magicext** counts once per extension per browser.
+Copying an install command is never counted (the CLI reports the real install).
+
+The numbers shown are the live totals only; there are no seeded or curated baselines.
+They live in a Firebase Realtime Database whose rules are versioned in
+[`database.rules.json`](database.rules.json): `/downloads` is publicly readable, and a
+write is accepted only when it raises a single lowercase-slug counter by exactly 1.
+Maintainers deploy rule changes with `firebase deploy --only database`.
+
 Installing from a local file, folder, or direct URL is not counted, since there is no
 catalog entry involved. To opt out entirely:
 

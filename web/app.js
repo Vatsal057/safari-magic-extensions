@@ -118,7 +118,7 @@ async function fetchLiveCounts() {
     if (!res.ok) {
       // Usually a rules/permission problem. Warn rather than fail silently:
       // a frozen counter is otherwise indistinguishable from "no downloads yet".
-      console.warn(`Live download counts unavailable (HTTP ${res.status}). Showing baseline only.`);
+      console.warn(`Live download counts unavailable (HTTP ${res.status}). Showing 0 until the counter is reachable.`);
       return;
     }
     const data = await res.json();
@@ -131,17 +131,30 @@ async function fetchLiveCounts() {
           console.warn(`Ignoring non-numeric download count for "${slug}":`, count);
         }
       });
+      // Cards rendered before the counts arrived are in the wrong order.
+      if (sortMode === 'downloads') render();
     }
   } catch (err) {
-    // Graceful fallback to the static curation baseline.
+    // Graceful fallback: counts stay at 0, the gallery still works.
     console.warn('Could not load live download counts:', err);
   }
 }
 
+// The live counter is the only source: real gallery downloads plus CLI installs.
 function getDownloads(ext) {
-  if (!ext) return 0;
-  const globalCount = liveCounts[ext.id] || 0;
-  return (ext.downloads || 0) + globalCount;
+  return (ext && liveCounts[ext.id]) || 0;
+}
+
+// One counted download per extension per browser, so re-clicking the button
+// (or a flaky double-click) does not inflate the public number.
+const COUNTED_KEY = 'smg-counted-downloads';
+function alreadyCounted(extId) {
+  try {
+    const seen = JSON.parse(localStorage.getItem(COUNTED_KEY) || '[]');
+    if (seen.includes(extId)) return true;
+    localStorage.setItem(COUNTED_KEY, JSON.stringify([...seen, extId]));
+  } catch (_) { /* storage blocked: count it */ }
+  return false;
 }
 
 function formatDownloads(count) {
@@ -155,7 +168,7 @@ function formatDownloads(count) {
 }
 
 function trackDownload(extId) {
-  if (!extId) return;
+  if (!extId || alreadyCounted(extId)) return;
   // Optimistic instant UI update
   liveCounts[extId] = (liveCounts[extId] || 0) + 1;
   updateDownloadsUI(extId);

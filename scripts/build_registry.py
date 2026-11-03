@@ -190,10 +190,6 @@ def build_extensions() -> tuple[list[dict], list[str]]:
             added_at = EPOCH_FALLBACK
 
         pinned = bool(curated.get("pinned", False))
-        try:
-            downloads = int(curated.get("downloads", 0))
-        except (ValueError, TypeError):
-            downloads = 0
 
         entry = {
             "id": slug,
@@ -213,7 +209,6 @@ def build_extensions() -> tuple[list[dict], list[str]]:
             "art_image": resolve_art_image(slug, curated),
             "added_at": added_at,
             "download_url": f"packages/{pkg.name}",
-            "downloads": downloads,
         }
         if pinned:
             entry["pinned"] = True

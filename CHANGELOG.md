@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Download counter stopped working entirely.** The Firebase database was still on
+  its 30-day "test mode" rules, which expired on 2026-10-22; every read and write
+  since then returned `401 Permission denied`, so the gallery froze on stale numbers.
+  Replaced with permanent rules (`database.rules.json`, deployed via `firebase.json`):
+  `/downloads` is public-read, each counter only accepts a +1 increment on a valid
+  slug, and everything else is denied.
+- **Download counts are honest.** Removed the hand-set `downloads` baselines from
+  `registry_curation.json` (for example 501 shown for an extension with 5 real
+  downloads). Gallery and `safari-magic-ext explore` now show live totals only.
+- Sorting by "Most downloaded" re-sorts once live counts arrive instead of using
+  the order from before they loaded.
+- Repeated clicks on the gallery download button count once per browser.
+- Social previews: `og:image` is now an absolute URL (relative paths are ignored by
+  link unfurlers), plus `og:url`, a Twitter card, and a favicon.
+
 - **Download counts barely moved.** CLI installs were never counted. The gallery
   only incremented its counter from the browser download button, while the README
   and site both recommend `safari-magic-ext install <id>` and the `curl | bash`

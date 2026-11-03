@@ -1,7 +1,7 @@
 {
   "version": 1,
   "registry_name": "Safari Magic Extensions Community Hub",
-  "updated_at": "2026-10-29T16:43:04Z",
+  "updated_at": "2026-11-03T21:25:27Z",
   "extensions": [
     {
       "id": "nightlife-in-the-wild",
@@ -20,7 +20,6 @@
       "art_image": "assets/thumbnails/nightlife-in-the-wild.png",
       "added_at": "2026-09-20T06:22:18Z",
       "download_url": "packages/Nightlife_in_the_Wild.magicext",
-      "downloads": 501,
       "pinned": true
     },
     {
@@ -39,8 +38,7 @@
       "category": "focus",
       "art_image": "assets/thumbnails/zen-focus-timer.png",
       "added_at": "2026-09-20T06:40:40Z",
-      "download_url": "packages/Zen_Focus_Timer.magicext",
-      "downloads": 122
+      "download_url": "packages/Zen_Focus_Timer.magicext"
     },
     {
       "id": "add-to-mino",
@@ -57,8 +55,7 @@
       "category": "tech",
       "art_image": "assets/thumbnails/add-to-mino.png",
       "added_at": "2026-09-21T19:55:03Z",
-      "download_url": "packages/add-to-mino.magicext",
-      "downloads": 0
+      "download_url": "packages/add-to-mino.magicext"
     },
     {
       "id": "audio-tab-switcher",
@@ -75,8 +72,7 @@
       "category": "newtab",
       "art_image": "assets/thumbnails/audio-tab-switcher.png",
       "added_at": "2026-10-29T16:16:53.423Z",
-      "download_url": "packages/audio-tab-switcher.magicext",
-      "downloads": 0
+      "download_url": "packages/audio-tab-switcher.magicext"
     },
     {
       "id": "close-other-windows",
@@ -93,8 +89,7 @@
       "category": "newtab",
       "art_image": "assets/thumbnails/close-other-windows.png",
       "added_at": "2026-10-29T16:24:10.572Z",
-      "download_url": "packages/close-other-windows.magicext",
-      "downloads": 0
+      "download_url": "packages/close-other-windows.magicext"
     },
     {
       "id": "greyscale-web",
@@ -111,8 +106,7 @@
       "category": "newtab",
       "art_image": "assets/thumbnails/greyscale-web.png",
       "added_at": "2026-09-21T11:36:21Z",
-      "download_url": "packages/greyscale-web.magicext",
-      "downloads": 320
+      "download_url": "packages/greyscale-web.magicext"
     },
     {
       "id": "random-animal-new-tab",
@@ -129,8 +123,7 @@
       "category": "newtab",
       "art_image": "assets/thumbnails/random-animal-new-tab.png",
       "added_at": "2026-09-20T15:23:24Z",
-      "download_url": "packages/random-animal-new-tab.magicext",
-      "downloads": 47
+      "download_url": "packages/random-animal-new-tab.magicext"
     },
     {
       "id": "shan-shui-scroll",
@@ -147,8 +140,7 @@
       "category": "newtab",
       "art_image": "assets/thumbnails/shan-shui-scroll.png",
       "added_at": "2026-10-09T06:46:16.117Z",
-      "download_url": "packages/shan-shui-scroll.magicext",
-      "downloads": 0
+      "download_url": "packages/shan-shui-scroll.magicext"
     },
     {
       "id": "video-pip",
@@ -165,8 +157,7 @@
       "category": "newtab",
       "art_image": "assets/thumbnails/video-pip.png",
       "added_at": "2026-09-20T15:07:32Z",
-      "download_url": "packages/video-pip.magicext",
-      "downloads": 480
+      "download_url": "packages/video-pip.magicext"
     }
   ]
 }

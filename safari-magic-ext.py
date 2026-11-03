@@ -753,6 +753,19 @@ def report_download(ext_id: str) -> None:
         pass
 
 
+def fetch_download_counts() -> dict:
+    """Live download totals keyed by slug, or {} when the counter is unreachable."""
+    req = urllib.request.Request(DOWNLOAD_COUNTER_URL, headers={"User-Agent": USER_AGENT})
+    try:
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            data = json.load(resp)
+    except Exception:
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    return {k: v for k, v in data.items() if isinstance(v, int)}
+
+
 def resolve_source_to_package(source: str, temp_workspace: Path) -> tuple[Path, dict]:
     """Resolve a source (local file, URL, or community registry ID) into a local archive."""
     source_str = str(source).strip()
@@ -1116,14 +1129,15 @@ def explore_community(query: str = "") -> None:
         return
 
     print(f"Found {len(items)} community extension(s):\n")
+    counts = fetch_download_counts()
     for item in items:
         tags = ", ".join(item.get("tags", []))
         print(f"  ★ {item.get('name')} (by {item.get('author')})")
         print(f"      ID:     {item.get('id')}")
         print(f"      Symbol: {item.get('selected_symbol')} ({item.get('symbol_color_name')})")
         print(f"      Tags:   {tags}")
-        if item.get("downloads"):
-            print(f"      Downloads: {item.get('downloads'):,}")
+        if item.get("id") in counts:
+            print(f"      Downloads: {counts[item['id']]:,}")
         print(f"      Prompt: \"{item.get('prompt')}\"")
         print(f"      Desc:   {item.get('description')}")
         print(f"      Install command: {invocation_name()} install {item.get('id')}\n")

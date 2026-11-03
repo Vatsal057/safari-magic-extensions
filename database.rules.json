@@ -1,0 +1,13 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "downloads": {
+      ".read": true,
+      "$slug": {
+        ".write": "$slug.matches(/^[a-z0-9][a-z0-9-]{0,63}$/)",
+        ".validate": "newData.isNumber() && newData.val() === (data.exists() ? data.val() : 0) + 1"
+      }
+    }
+  }
+}
