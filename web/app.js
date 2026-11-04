@@ -101,19 +101,19 @@ function getLucideIcon(symbolName) {
 }
 
 const TILE_COLORS = {
-  purple: { bg: '#3a2b42', fg: '#d3b8ea' },
-  blue:   { bg: '#233748', fg: '#96c4e0' },
-  gray:   { bg: '#363636', fg: '#d0ceca' },
-  orange: { bg: '#422f22', fg: '#e8a96d' },
-  pink:   { bg: '#422835', fg: '#ea99b5' },
-  green:  { bg: '#25382c', fg: '#9ec49b' },
-  red:    { bg: '#402426', fg: '#e48a8c' },
-  yellow: { bg: '#3d3824', fg: '#dfc67b' },
+  purple: { bg: '#9a6fc4', fg: '#ffffff' },
+  blue:   { bg: '#4f86c6', fg: '#ffffff' },
+  gray:   { bg: '#7c7a72', fg: '#ffffff' },
+  orange: { bg: '#d08a3c', fg: '#ffffff' },
+  pink:   { bg: '#c9607c', fg: '#ffffff' },
+  green:  { bg: '#5f9e62', fg: '#ffffff' },
+  red:    { bg: '#c75a4f', fg: '#ffffff' },
+  yellow: { bg: '#c9a93c', fg: '#ffffff' },
 };
 
 function getTileColor(colorName) {
   const c = String(colorName || '').toLowerCase();
-  return TILE_COLORS[c] || { bg: '#363636', fg: '#E8E0C6' };
+  return TILE_COLORS[c] || { bg: '#7c7a72', fg: '#ffffff' };
 }
 
 function getPrimaryCategory(ext) {
@@ -259,7 +259,7 @@ function updateDownloadsUI(extId) {
   }
 
   const modalDownloads = document.getElementById('modal-downloads');
-  if (modalDownloads && !inspectorModal.classList.contains('hidden')) {
+  if (modalDownloads && !inspectorModal.classList.contains('hidden') && inspectorModal.dataset.id === extId) {
     modalDownloads.innerHTML = `
       <svg class="download-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
       <span>${total.toLocaleString()} downloads</span>
@@ -457,6 +457,7 @@ function switchInstallTab(tabName) {
 
 // ---------------------------------------------------------------- inspector
 function openInspector(ext, { updateHash = true } = {}) {
+  inspectorModal.dataset.id = ext.id; // live count updates target only this extension
   modalTitle.textContent = ext.name;
   modalAuthor.textContent = `by @${ext.author || 'community'}`;
 

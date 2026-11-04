@@ -7,7 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Gallery works like a store, keeping the retro pixel theme.** Category filter
+  (all / new tab / ambient / focus / tools) with a live "x of y shown" count; each
+  extension gets a filled app tile whose icon maps its SF Symbol to a Lucide glyph;
+  cards have a "get" button and a category · author · downloads line; the pinned
+  extension is badged "Editor's pick"; skeleton cards show while the catalog loads.
+- The detail sheet has Terminal / Homebrew / Download install tabs, a category
+  chip that filters the grid, a copyable prompt, and ID · version · added date.
+- Three-column grid on desktop (page widened to 1240px); pixel-font section
+  headings; bottom sheets and a non-overflowing toolbar on phones.
+
 ### Fixed
+
+- The detail sheet showed the wrong download count (the last extension's total
+  from the live counter instead of its own).
 
 - **Download counter stopped working entirely.** The Firebase database was still on
   its 30-day "test mode" rules, which expired on 2026-10-22; every read and write
