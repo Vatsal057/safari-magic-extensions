@@ -41,10 +41,12 @@ const copyModalPromptBtn = document.getElementById('copy-modal-prompt-btn');
 const copyModalCliBtn = document.getElementById('copy-modal-cli-btn');
 
 // Install tab switcher elements
-const installTabOneliner = document.getElementById('tab-oneliner');
-const installTabCli = document.getElementById('tab-cli');
-const installPaneOneliner = document.getElementById('install-pane-oneliner');
-const installPaneCli = document.getElementById('install-pane-cli');
+const tabTerminal = document.getElementById('tab-terminal');
+const tabHomebrew = document.getElementById('tab-homebrew');
+const tabDownload = document.getElementById('tab-download');
+const paneTerminal = document.getElementById('install-pane-terminal');
+const paneHomebrew = document.getElementById('install-pane-homebrew');
+const paneDownload = document.getElementById('install-pane-download');
 
 const submitModal = document.getElementById('submit-modal');
 const openSubmitModalBtn = document.getElementById('open-submit-modal-btn');
@@ -57,6 +59,7 @@ const PLACEHOLDER_ART = 'assets/hero_cyberpunk.jpg';
 // ---------------------------------------------------------------- boot
 async function initGallery() {
   setupEventListeners();
+  renderSkeletonGrid();
 
   try {
     const res = await fetch(`community_registry.json?t=${Date.now()}`, { cache: 'no-cache' });
@@ -80,6 +83,49 @@ async function initGallery() {
 }
 
 // ---------------------------------------------------------------- helpers
+const SF_TO_LUCIDE = {
+  'moon.stars.fill': 'moon-star',
+  'sparkles': 'sparkles',
+  'mug.fill': 'coffee',
+  'speaker.wave.2.fill': 'volume-2',
+  'square': 'square',
+  'circle.fill': 'circle',
+  'pawprint.fill': 'paw-print',
+  'mountain.2.fill': 'mountain-snow',
+  'video.fill': 'video',
+};
+
+function getLucideIcon(symbolName) {
+  if (!symbolName) return 'puzzle';
+  return SF_TO_LUCIDE[symbolName] || 'puzzle';
+}
+
+const TILE_COLORS = {
+  purple: { bg: '#3a2b42', fg: '#d3b8ea' },
+  blue:   { bg: '#233748', fg: '#96c4e0' },
+  gray:   { bg: '#363636', fg: '#d0ceca' },
+  orange: { bg: '#422f22', fg: '#e8a96d' },
+  pink:   { bg: '#422835', fg: '#ea99b5' },
+  green:  { bg: '#25382c', fg: '#9ec49b' },
+  red:    { bg: '#402426', fg: '#e48a8c' },
+  yellow: { bg: '#3d3824', fg: '#dfc67b' },
+};
+
+function getTileColor(colorName) {
+  const c = String(colorName || '').toLowerCase();
+  return TILE_COLORS[c] || { bg: '#363636', fg: '#E8E0C6' };
+}
+
+function getPrimaryCategory(ext) {
+  const tags = (Array.isArray(ext.tags) ? ext.tags : []).map(t => String(t).toLowerCase());
+  const cat = String(ext.category || '').toLowerCase();
+  if (tags.includes('ambient') || cat === 'ambient') return 'ambient';
+  if (tags.includes('focus') || cat === 'focus') return 'focus';
+  if (tags.includes('tools') || tags.includes('tech') || cat === 'tools' || cat === 'tech') return 'tools';
+  if (tags.includes('newtab') || tags.includes('new tab') || cat === 'newtab' || cat === 'new tab') return 'new tab';
+  return 'new tab';
+}
+
 function categoriesFor(ext) {
   const values = Array.isArray(ext.tags) ? [...ext.tags] : [];
   if (ext.category) values.push(ext.category);
@@ -262,7 +308,7 @@ function sortExtensions(list) {
 function visibleExtensions() {
   const filtered = extensions.filter(
     ext =>
-      (activeCategory === 'all' || categoriesFor(ext).includes(activeCategory)) &&
+      (activeCategory === 'all' || getPrimaryCategory(ext) === activeCategory) &&
       matchesSearch(ext, searchQuery)
   );
   return sortExtensions(filtered);
@@ -278,10 +324,28 @@ function render() {
 function renderCount(shown) {
   if (!resultCount) return;
   const total = extensions.length;
-  resultCount.textContent =
-    shown === total
-      ? `${total} extension${total === 1 ? '' : 's'}`
-      : `${shown} of ${total} shown`;
+  resultCount.textContent = `${shown} of ${total} shown`;
+}
+
+function renderSkeletonGrid() {
+  if (!grid) return;
+  grid.innerHTML = Array.from({ length: 6 }).map(() => `
+    <div class="skeleton-card" aria-hidden="true">
+      <div class="skeleton-media shimmer"></div>
+      <div class="skeleton-middle">
+        <div class="skeleton-tile shimmer"></div>
+        <div class="skeleton-info">
+          <div class="skeleton-line shimmer" style="width: 55%;"></div>
+          <div class="skeleton-line shimmer" style="width: 85%;"></div>
+        </div>
+        <div class="skeleton-btn shimmer"></div>
+      </div>
+      <div class="skeleton-foot">
+        <div class="skeleton-line shimmer" style="width: 40%;"></div>
+        <div class="skeleton-line shimmer" style="width: 25%;"></div>
+      </div>
+    </div>
+  `).join('');
 }
 
 function renderGrid(list) {
@@ -299,27 +363,33 @@ function renderGrid(list) {
   grid.innerHTML = list.map(ext => {
     const count = getDownloads(ext);
     const countFormatted = formatDownloads(count);
+    const primaryCat = getPrimaryCategory(ext);
+    const iconName = getLucideIcon(ext.selected_symbol);
+    const tileColor = getTileColor(ext.symbol_color_name);
+
     return `
     <article class="ext-card ${ext.pinned ? 'ext-card-pinned' : ''}" data-id="${escapeHTML(ext.id)}" role="button" tabindex="0"
              aria-label="${escapeHTML(ext.name)} by ${escapeHTML(ext.author || 'community')}: view install instructions">
       <div class="ext-card-media">
-        ${ext.pinned ? '<span class="ext-pinned-badge"><span class="pinned-icon">📌</span> Pinned</span>' : ''}
+        ${ext.pinned ? '<span class="ext-pinned-badge"><span class="pinned-icon">★</span> Editor\'s pick</span>' : ''}
         <img src="${escapeHTML(artFor(ext))}" alt="Preview of ${escapeHTML(ext.name)}" loading="lazy">
       </div>
-      <div class="ext-card-body">
-        <h3 class="ext-card-title">${escapeHTML(ext.name)}</h3>
-        <p class="ext-card-author">by @${escapeHTML(ext.author || 'community')}</p>
-        <p class="ext-card-desc">${escapeHTML(ext.description || '')}</p>
-        <div class="ext-card-tags">
-          ${(ext.tags || []).map(t => `<button type="button" class="ext-tag" data-tag="${escapeHTML(t)}" title="Filter by #${escapeHTML(t)}">#${escapeHTML(t)}</button>`).join('')}
+      <div class="ext-card-middle">
+        <div class="ext-tile" style="background-color: ${tileColor.bg}; color: ${tileColor.fg};" aria-hidden="true">
+          <svg class="tile-icon" width="22" height="22" viewBox="0 0 24 24"><use href="assets/icons.svg#${iconName}"></use></svg>
         </div>
+        <div class="ext-card-info">
+          <h3 class="ext-card-title">${escapeHTML(ext.name)}</h3>
+          <p class="ext-card-desc" title="${escapeHTML(ext.description || '')}">${escapeHTML(ext.description || '')}</p>
+        </div>
+        <button type="button" class="btn-get" data-id="${escapeHTML(ext.id)}" aria-label="Get ${escapeHTML(ext.name)}">get</button>
       </div>
       <div class="ext-card-foot">
+        <div class="ext-card-foot-left">${escapeHTML(primaryCat)} · @${escapeHTML(ext.author || 'community')}</div>
         <span class="ext-card-downloads" title="${count.toLocaleString()} downloads">
-          <svg class="download-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <svg class="download-icon" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#download"></use></svg>
           <span class="download-count-text">${countFormatted}</span>
         </span>
-        <span class="ext-card-cta">Install →</span>
       </div>
     </article>`;
   }).join('');
@@ -338,46 +408,29 @@ function renderGrid(list) {
     });
   });
 
-  grid.querySelectorAll('.ext-tag').forEach(tagBtn => {
-    tagBtn.addEventListener('click', e => {
+  grid.querySelectorAll('.btn-get').forEach(btn => {
+    btn.addEventListener('click', e => {
       e.stopPropagation();
-      const tag = tagBtn.getAttribute('data-tag');
-      if (tag) applyTagFilter(tag);
+      const item = extensions.find(e => e.id === btn.getAttribute('data-id'));
+      if (item) openInspector(item);
     });
   });
 }
 
-function applyTagFilter(tag) {
-  if (!searchInput) return;
-  searchInput.value = tag;
-  searchQuery = tag.toLowerCase();
-  if (searchClear) searchClear.classList.remove('hidden');
-  const searchKbd = document.querySelector('.search-kbd');
-  if (searchKbd) searchKbd.classList.add('hidden');
+function setCategory(cat) {
+  activeCategory = cat;
+  document.querySelectorAll('.category-segment').forEach(btn => {
+    const isMatch = btn.dataset.category === cat;
+    btn.classList.toggle('active', isMatch);
+    btn.setAttribute('aria-selected', String(isMatch));
+    btn.setAttribute('tabindex', isMatch ? '0' : '-1');
+    if (isMatch) btn.focus();
+  });
   render();
-  const galleryEl = document.getElementById('gallery');
-  if (galleryEl) galleryEl.scrollIntoView({ behavior: 'smooth' });
-}
-
-function renderLoadError(err) {
-  console.error('Could not load community_registry.json:', err);
-  if (resultCount) resultCount.textContent = '';
-  grid.innerHTML = `
-    <p class="grid-empty-note">
-      Could not load the extension catalog.<br>
-      If you opened this file directly, serve it over HTTP instead:
-      <code>python3 -m http.server 8000 --directory web</code>
-    </p>`;
-}
-
-function renderEmptyState() {
-  if (resultCount) resultCount.textContent = '';
-  grid.innerHTML =
-    '<p class="grid-empty-note">No extensions published yet. Be the first to share one.</p>';
 }
 
 function resetFilters() {
-  activeCategory = 'all';
+  setCategory('all');
   searchQuery = '';
   if (searchInput) searchInput.value = '';
   if (searchClear) searchClear.classList.add('hidden');
@@ -386,11 +439,45 @@ function resetFilters() {
   render();
 }
 
+function switchInstallTab(tabName) {
+  const tabs = [
+    { name: 'terminal', btn: tabTerminal, pane: paneTerminal },
+    { name: 'homebrew', btn: tabHomebrew, pane: paneHomebrew },
+    { name: 'download', btn: tabDownload, pane: paneDownload },
+  ];
+  tabs.forEach(t => {
+    if (!t.btn || !t.pane) return;
+    const isTarget = (t.name === tabName);
+    t.btn.classList.toggle('active', isTarget);
+    t.btn.setAttribute('aria-selected', String(isTarget));
+    t.btn.setAttribute('tabindex', isTarget ? '0' : '-1');
+    t.pane.classList.toggle('hidden', !isTarget);
+  });
+}
+
 // ---------------------------------------------------------------- inspector
 function openInspector(ext, { updateHash = true } = {}) {
   modalTitle.textContent = ext.name;
   modalAuthor.textContent = `by @${ext.author || 'community'}`;
-  modalCategory.textContent = (ext.category || 'extension').toUpperCase();
+
+  const primaryCat = getPrimaryCategory(ext);
+  if (modalCategory) {
+    modalCategory.textContent = primaryCat;
+    modalCategory.setAttribute('data-category', primaryCat);
+  }
+
+  const iconName = getLucideIcon(ext.selected_symbol);
+  const tileColor = getTileColor(ext.symbol_color_name);
+  const modalTile = document.getElementById('modal-tile');
+  const modalTileUse = document.getElementById('modal-tile-use');
+  if (modalTile) {
+    modalTile.style.backgroundColor = tileColor.bg;
+    modalTile.style.color = tileColor.fg;
+  }
+  if (modalTileUse) {
+    modalTileUse.setAttribute('href', `assets/icons.svg#${iconName}`);
+  }
+
   modalImg.src = artFor(ext);
   modalImg.alt = `Preview of ${ext.name}`;
   modalDescription.textContent = ext.description || 'Safari AI Magic Extension';
@@ -403,10 +490,12 @@ function openInspector(ext, { updateHash = true } = {}) {
 
   const download = safeUrl(ext.download_url);
   const filename = download.split('/').pop() || `${ext.name}.magicext`;
-  modalDownloadPkgBtn.href = download;
-  modalDownloadPkgBtn.download = filename;
-  if (modalDownloadLabel) modalDownloadLabel.textContent = 'Download .magicext bundle';
-  modalDownloadPkgBtn.setAttribute('title', `Download ${filename}`);
+  if (modalDownloadPkgBtn) {
+    modalDownloadPkgBtn.href = download;
+    modalDownloadPkgBtn.download = filename;
+    modalDownloadPkgBtn.setAttribute('title', `Download ${filename}`);
+  }
+  if (modalDownloadLabel) modalDownloadLabel.textContent = `Download ${filename}`;
   const modalDownloadCmd = document.getElementById('modal-download-cmd');
   if (modalDownloadCmd) {
     modalDownloadCmd.textContent = `safari-magic-ext install ~/Downloads/${filename}`;
@@ -416,39 +505,42 @@ function openInspector(ext, { updateHash = true } = {}) {
   const modalDownloads = document.getElementById('modal-downloads');
   if (modalDownloads) {
     modalDownloads.innerHTML = `
-      <svg class="download-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      <svg class="download-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="assets/icons.svg#download"></use></svg>
       <span>${count.toLocaleString()} downloads</span>
     `;
   }
 
-  const bits = [`id: ${ext.id}`];
-  if (ext.version) bits.push(`v${ext.version}`);
-  bits.push(`${count.toLocaleString()} downloads`);
-  if (Array.isArray(ext.tags) && ext.tags.length) bits.push(ext.tags.map(t => `#${t}`).join(' '));
-  modalMetaRow.textContent = bits.join('  ·  ');
-
-  modalDownloadPkgBtn.onclick = () => {
-    trackDownload(ext.id);
-  };
-  copyModalPromptBtn.onclick = () =>
-    copyText(ext.prompt, 'Prompt copied. Paste it into Safari to remix.', copyModalPromptBtn);
-  // Copying an install command is not a download. The CLI reports the real
-  // install itself once it fetches the package, so counting the copy here
-  // would book the same install twice.
-  if (copyModalCliBtn) copyModalCliBtn.onclick = () =>
-    copyText(cliCommand, 'Install command copied.', copyModalCliBtn);
-  if (copyModalOnelinerBtn) copyModalOnelinerBtn.onclick = () =>
-    copyText(oneliner, 'One-liner copied!', copyModalOnelinerBtn);
-
-  // Reset install tabs to default (1-Step Install)
-  if (installTabOneliner && installTabCli) {
-    installTabOneliner.classList.add('active');
-    installTabOneliner.setAttribute('aria-selected', 'true');
-    installTabCli.classList.remove('active');
-    installTabCli.setAttribute('aria-selected', 'false');
-    installPaneOneliner.classList.remove('hidden');
-    installPaneCli.classList.add('hidden');
+  let dateStr = '';
+  if (ext.added_at) {
+    const d = new Date(ext.added_at);
+    if (!isNaN(d.getTime())) {
+      dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
   }
+  const footnoteParts = [`id: ${ext.id}`, `v${ext.version || '1.0'}`];
+  if (dateStr) footnoteParts.push(`Added ${dateStr}`);
+  if (modalMetaRow) modalMetaRow.textContent = footnoteParts.join('  ·  ');
+
+  if (modalDownloadPkgBtn) {
+    modalDownloadPkgBtn.onclick = () => {
+      trackDownload(ext.id);
+    };
+  }
+  if (copyModalPromptBtn) {
+    copyModalPromptBtn.onclick = () =>
+      copyText(ext.prompt, 'Prompt copied. Paste it into Safari to remix.', copyModalPromptBtn);
+  }
+  if (copyModalCliBtn) {
+    copyModalCliBtn.onclick = () =>
+      copyText(cliCommand, 'Install command copied.', copyModalCliBtn);
+  }
+  if (copyModalOnelinerBtn) {
+    copyModalOnelinerBtn.onclick = () =>
+      copyText(oneliner, 'One-liner copied!', copyModalOnelinerBtn);
+  }
+
+  // Reset install tabs to default: Terminal tab
+  switchInstallTab('terminal');
 
   if (updateHash) history.replaceState(null, '', `#ext=${encodeURIComponent(ext.id)}`);
   openModal(inspectorModal);
@@ -522,13 +614,36 @@ function setupEventListeners() {
 
   if (modalCategory) {
     modalCategory.style.cursor = 'pointer';
-    modalCategory.title = 'Filter by category';
+    modalCategory.title = 'Filter by this category';
     modalCategory.addEventListener('click', () => {
-      const cat = modalCategory.textContent.trim().toLowerCase();
+      const cat = modalCategory.getAttribute('data-category') || modalCategory.textContent.trim().toLowerCase();
       closeModal(inspectorModal);
-      applyTagFilter(cat);
+      setCategory(cat);
+      const galleryEl = document.getElementById('gallery');
+      if (galleryEl) galleryEl.scrollIntoView({ behavior: 'smooth' });
     });
   }
+
+  // Category segmented control
+  const catSegments = Array.from(document.querySelectorAll('.category-segment'));
+  catSegments.forEach((btn, idx) => {
+    btn.addEventListener('click', () => {
+      setCategory(btn.dataset.category);
+    });
+    btn.addEventListener('keydown', e => {
+      let targetIdx = null;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        targetIdx = (idx + 1) % catSegments.length;
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        targetIdx = (idx - 1 + catSegments.length) % catSegments.length;
+      }
+      if (targetIdx !== null) {
+        e.preventDefault();
+        const nextBtn = catSegments[targetIdx];
+        setCategory(nextBtn.dataset.category);
+      }
+    });
+  });
 
   if (searchInput) {
     const searchKbd = document.querySelector('.search-kbd');
@@ -570,18 +685,27 @@ function setupEventListeners() {
   if (modalSetupLink) modalSetupLink.addEventListener('click', () => closeModal(inspectorModal));
 
   // Install modal tab switcher
-  if (installTabOneliner && installTabCli) {
-    function switchInstallTab(toOneliner) {
-      installTabOneliner.classList.toggle('active', toOneliner);
-      installTabOneliner.setAttribute('aria-selected', String(toOneliner));
-      installTabCli.classList.toggle('active', !toOneliner);
-      installTabCli.setAttribute('aria-selected', String(!toOneliner));
-      installPaneOneliner.classList.toggle('hidden', !toOneliner);
-      installPaneCli.classList.toggle('hidden', toOneliner);
-    }
-    installTabOneliner.addEventListener('click', () => switchInstallTab(true));
-    installTabCli.addEventListener('click', () => switchInstallTab(false));
-  }
+  const installTabs = [tabTerminal, tabHomebrew, tabDownload].filter(Boolean);
+  installTabs.forEach((tab, idx) => {
+    tab.addEventListener('click', () => {
+      const name = tab.id.replace('tab-', '');
+      switchInstallTab(name);
+    });
+    tab.addEventListener('keydown', e => {
+      let targetIdx = null;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        targetIdx = (idx + 1) % installTabs.length;
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        targetIdx = (idx - 1 + installTabs.length) % installTabs.length;
+      }
+      if (targetIdx !== null) {
+        e.preventDefault();
+        const nextTab = installTabs[targetIdx];
+        const name = nextTab.id.replace('tab-', '');
+        switchInstallTab(name);
+      }
+    });
+  });
 
   const openSubmit = () => {
     const stabCli = document.getElementById('stab-cli');
@@ -725,7 +849,7 @@ function flashCopiedButton(btn) {
   btn.dataset.copying = 'true';
   const originalHtml = btn.innerHTML;
   btn.classList.add('is-copied');
-  btn.textContent = 'copied!';
+  btn.innerHTML = `<svg class="icon-inline" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true" style="margin-right:4px;vertical-align:middle;"><use href="assets/icons.svg#check"></use></svg>copied!`;
   setTimeout(() => {
     btn.innerHTML = originalHtml;
     btn.classList.remove('is-copied');

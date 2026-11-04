@@ -262,6 +262,11 @@ make registry   # Recompile community catalog
 make serve      # Preview gallery at http://localhost:8000
 ```
 
+## Credits & Acknowledgements
+
+- Icons by [Lucide](https://lucide.dev/) (ISC License).
+- This is an independent open-source project and is not affiliated with, sponsored by, or endorsed by Apple Inc. Safari and macOS are trademarks of Apple Inc.
+
 ## License
 
 [MIT](LICENSE)

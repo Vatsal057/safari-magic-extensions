@@ -40,6 +40,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Extension store gallery overhaul.** Updated web gallery with proper extension store UX while preserving the retro pixel aesthetic:
+  - Added category filter segmented control (`all`, `new tab`, `ambient`, `focus`, `tools`) with live count and arrow-key keyboard navigation.
+  - Added app tiles with muted color palette and local Lucide SVG sprite mapped from registry SF Symbols.
+  - 3-column responsive card grid with screenshot, app tile, title, single-line description, and hover-cream "get" pill button.
+  - Renamed pinned badge to "Editor's pick".
+  - Detail sheet redesigned with app tile header, deep link support, and 3-tab install switcher (Terminal, Homebrew, Download).
+  - Shimmer skeleton loading cards while `community_registry.json` loads.
+  - Sticky blurred charcoal toolbar with ⌘K search and mobile responsiveness (bottom sheet and zero horizontal scroll at 390px).
+  - Enhanced accessibility: contrast compliance, full keyboard navigation, `prefers-reduced-motion` and `prefers-reduced-transparency` / `prefers-contrast: more` support.
 - `SAFARI_MAGIC_EXT_NO_TRACKING=1` (and the conventional `DO_NOT_TRACK=1`) opt out
   of CLI download counting. See the Download Counts section of the README for what
   is sent.

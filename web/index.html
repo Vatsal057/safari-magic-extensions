@@ -23,7 +23,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.3.6">
+  <link rel="stylesheet" href="style.css?v=1.4.0">
 </head>
 
 <body>
@@ -36,17 +36,36 @@
     <!-- Main Framed Canvas Container -->
     <main class="main-canvas-frame">
 
-      <!-- Streamlined Capsule Navigation -->
-      <nav class="capsule-nav" aria-label="Main navigation">
-        <a href="#" class="nav-rocket-link" title="Safari Magic Home" aria-label="Safari Magic Home">
-          <img src="assets/pixel_rocket.svg" alt="" class="nav-rocket-img">
-        </a>
-        <a href="#gallery" class="nav-item">browse</a>
-        <a href="#how" class="nav-item">how it works</a>
-        <a href="https://github.com/Vatsal057/safari-magic-extensions" target="_blank" rel="noopener"
-          class="nav-item">github</a>
-        <button id="open-submit-modal-btn" class="nav-item nav-btn">share yours</button>
-      </nav>
+      <!-- Sticky Retro Toolbar -->
+      <header class="gallery-toolbar" id="toolbar" aria-label="Gallery header and navigation">
+        <div class="toolbar-inner">
+          <a href="#" class="toolbar-brand" title="Safari Magic Home" aria-label="Safari Magic Home">
+            <img src="assets/pixel_rocket.svg" alt="" class="toolbar-rocket-img">
+            <span class="toolbar-brand-name">safari magic</span>
+          </a>
+
+          <div class="search-wrap">
+            <svg class="search-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+              stroke-width="2" aria-hidden="true">
+              <use href="assets/icons.svg#search"></use>
+            </svg>
+            <label class="visually-hidden" for="search-input">Search extensions</label>
+            <input type="search" id="search-input" class="search-input" autocomplete="off"
+              placeholder="search extensions…">
+            <kbd class="search-kbd" aria-hidden="true">⌘K</kbd>
+            <button id="search-clear" class="search-clear hidden" aria-label="Clear search">&times;</button>
+          </div>
+
+          <nav class="toolbar-nav" aria-label="Main navigation">
+            <a href="#gallery" class="nav-item">browse</a>
+            <a href="#how" class="nav-item">how it works</a>
+            <a href="https://github.com/Vatsal057/safari-magic-extensions" target="_blank" rel="noopener"
+              class="nav-item">github</a>
+          </nav>
+
+          <button id="open-submit-modal-btn" class="nav-item nav-btn toolbar-share-btn">share yours</button>
+        </div>
+      </header>
 
       <!-- Hero Atmospheric Showcase: Integrated Canvas & Frosted HUD -->
       <section class="hero-showcase-box" id="hero-box" aria-label="Safari Magic Introduction">
@@ -77,36 +96,33 @@
           <div class="section-tab-line"></div>
         </div>
 
-        <!-- Search, sort, and result count -->
+        <!-- Category segmented control, sort, and result count -->
         <div class="browse-toolbar">
-          <div class="search-wrap">
-            <svg class="search-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
-              stroke-width="2" aria-hidden="true">
-              <circle cx="11" cy="11" r="7"></circle>
-              <path d="M21 21l-4.3-4.3"></path>
-            </svg>
-            <label class="visually-hidden" for="search-input">Search extensions</label>
-            <input type="search" id="search-input" class="search-input" autocomplete="off"
-              placeholder="search by name, prompt, author, or tag…">
-            <kbd class="search-kbd" aria-hidden="true">⌘K</kbd>
-            <button id="search-clear" class="search-clear hidden" aria-label="Clear search">&times;</button>
+          <div class="category-segmented-control" role="tablist" aria-label="Filter extensions by category">
+            <button type="button" class="category-segment active" role="tab" id="cat-all" aria-selected="true" data-category="all" tabindex="0">all</button>
+            <button type="button" class="category-segment" role="tab" id="cat-newtab" aria-selected="false" data-category="new tab" tabindex="-1">new tab</button>
+            <button type="button" class="category-segment" role="tab" id="cat-ambient" aria-selected="false" data-category="ambient" tabindex="-1">ambient</button>
+            <button type="button" class="category-segment" role="tab" id="cat-focus" aria-selected="false" data-category="focus" tabindex="-1">focus</button>
+            <button type="button" class="category-segment" role="tab" id="cat-tools" aria-selected="false" data-category="tools" tabindex="-1">tools</button>
           </div>
 
-          <div class="sort-wrap">
-            <label class="sort-label" for="sort-select">Sort</label>
-            <select id="sort-select" class="sort-select">
-              <option value="newest">Newest first</option>
-              <option value="downloads">Most downloaded</option>
-              <option value="oldest">Oldest first</option>
-              <option value="name">Name (A-Z)</option>
-              <option value="author">Author (A-Z)</option>
-            </select>
-          </div>
+          <div class="browse-toolbar-right">
+            <div class="sort-wrap">
+              <label class="sort-label" for="sort-select">Sort</label>
+              <select id="sort-select" class="sort-select">
+                <option value="newest">Newest first</option>
+                <option value="downloads">Most downloaded</option>
+                <option value="oldest">Oldest first</option>
+                <option value="name">Name (A-Z)</option>
+                <option value="author">Author (A-Z)</option>
+              </select>
+            </div>
 
-          <div class="browse-count" id="result-count" role="status" aria-live="polite"></div>
+            <div class="browse-count" id="result-count" role="status" aria-live="polite">9 of 9 shown</div>
+          </div>
         </div>
 
-        <!-- One uniform grid: every extension gets the same treatment. -->
+        <!-- 3-column extension grid -->
         <div class="extension-grid" id="extension-grid">
           <p class="grid-empty-note">Loading extensions…</p>
         </div>
@@ -165,7 +181,7 @@
                 <span class="traffic-dot dot-yellow"></span>
                 <span class="traffic-dot dot-green"></span>
               </div>
-              <span class="terminal-card-title">Terminal - zsh</span>
+              <span class="terminal-card-title">Terminal — zsh</span>
             </div>
             <div class="code-row code-row-terminal">
               <span class="terminal-prompt-prefix" aria-hidden="true">%</span>
@@ -210,15 +226,23 @@
     aria-hidden="true">
     <div class="modal-pixel-card">
       <div class="modal-pixel-header">
-        <div class="modal-header-meta">
-          <div class="modal-badge-row">
-            <span class="modal-category-tag" id="modal-category">EXTENSION</span>
-            <span class="modal-downloads-badge" id="modal-downloads"></span>
+        <div class="modal-header-top">
+          <div id="modal-tile" class="modal-tile" aria-hidden="true">
+            <svg class="modal-tile-icon" width="28" height="28" viewBox="0 0 24 24"><use id="modal-tile-use" href="assets/icons.svg#puzzle"></use></svg>
           </div>
-          <h2 class="modal-title" id="modal-title"></h2>
-          <div class="modal-author-badge" id="modal-author"></div>
+          <div class="modal-header-meta">
+            <div class="modal-badge-row">
+              <button type="button" class="modal-category-tag" id="modal-category" title="Filter by this category">EXTENSION</button>
+              <span class="modal-downloads-badge" id="modal-downloads">
+                <svg class="download-icon" width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#download"></use></svg>
+                <span>0 downloads</span>
+              </span>
+            </div>
+            <h2 class="modal-title" id="modal-title"></h2>
+            <div class="modal-author-badge" id="modal-author"></div>
+          </div>
+          <button id="close-inspector-btn" class="modal-pixel-close" aria-label="Close">&times;</button>
         </div>
-        <button id="close-inspector-btn" class="modal-pixel-close" aria-label="Close">&times;</button>
       </div>
 
       <div class="modal-pixel-body">
@@ -232,64 +256,70 @@
             <p class="modal-desc-text" id="modal-description"></p>
           </div>
 
-          <!-- Install: instant 1-liner first, CLI toggle second -->
+          <!-- Install section with three tabs: Terminal / Homebrew / Download -->
           <div class="modal-section-block">
             <div class="modal-section-label">INSTALL IT</div>
 
             <!-- Tab switcher -->
-            <div class="install-tab-bar" role="tablist">
-              <button class="install-tab active" id="tab-oneliner" role="tab" aria-selected="true"
-                aria-controls="install-pane-oneliner">
-                ⚡ 1-Step (No Setup)
+            <div class="install-tab-bar" role="tablist" aria-label="Installation methods">
+              <button class="install-tab active" id="tab-terminal" role="tab" aria-selected="true"
+                aria-controls="install-pane-terminal" tabindex="0">
+                <svg class="tab-icon" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#terminal"></use></svg>
+                Terminal
               </button>
-              <button class="install-tab" id="tab-cli" role="tab" aria-selected="false"
-                aria-controls="install-pane-cli">
-                CLI / Homebrew
+              <button class="install-tab" id="tab-homebrew" role="tab" aria-selected="false"
+                aria-controls="install-pane-homebrew" tabindex="-1">
+                <svg class="tab-icon" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#package"></use></svg>
+                Homebrew
+              </button>
+              <button class="install-tab" id="tab-download" role="tab" aria-selected="false"
+                aria-controls="install-pane-download" tabindex="-1">
+                <svg class="tab-icon" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#download"></use></svg>
+                Download
               </button>
             </div>
 
-            <!-- Pane 1: instant curl one-liner -->
-            <div class="install-pane" id="install-pane-oneliner" role="tabpanel" aria-labelledby="tab-oneliner">
+            <!-- Pane 1: Terminal (one-line curl installer) -->
+            <div class="install-pane" id="install-pane-terminal" role="tabpanel" aria-labelledby="tab-terminal">
               <p class="install-route-hint">
-                Paste into Terminal to install both the CLI tool and extension together:
+                Run this one-line command to install both the CLI tool and extension:
               </p>
               <div class="code-row">
                 <code id="modal-oneliner-cmd"></code>
-                <button id="copy-modal-oneliner-btn" class="btn-mini-copy">copy</button>
+                <button id="copy-modal-oneliner-btn" class="btn-mini-copy" data-copy-target="modal-oneliner-cmd"
+                  data-copy-label="Install command copied">copy</button>
               </div>
             </div>
 
-            <!-- Pane 2: CLI command (Homebrew) -->
-            <div class="install-pane hidden" id="install-pane-cli" role="tabpanel" aria-labelledby="tab-cli">
+            <!-- Pane 2: Homebrew -->
+            <div class="install-pane hidden" id="install-pane-homebrew" role="tabpanel" aria-labelledby="tab-homebrew">
               <p class="install-route-hint">
-                Run in Terminal (if CLI is already installed):
+                Install the tap with Homebrew, then run the installer:
               </p>
-              <div class="code-row">
-                <code id="modal-cli-cmd"></code>
-                <button id="copy-modal-cli-btn" class="btn-mini-copy">copy</button>
+              <div class="code-row code-row-tight" style="margin-bottom: 8px;">
+                <code id="modal-brew-cmd">brew install Vatsal057/tap/safari-magic-ext</code>
+                <button class="btn-mini-copy" data-copy-target="modal-brew-cmd"
+                  data-copy-label="Brew command copied">copy</button>
               </div>
-              <div class="cli-brew-setup-box">
-                <span class="cli-brew-label">First time? Install the CLI with Homebrew:</span>
-                <div class="code-row code-row-tight">
-                  <code id="modal-brew-cmd">brew install Vatsal057/tap/safari-magic-ext</code>
-                  <button class="btn-mini-copy" data-copy-target="modal-brew-cmd"
-                    data-copy-label="Brew command copied">copy</button>
-                </div>
+              <div class="code-row code-row-tight">
+                <code id="modal-cli-cmd"></code>
+                <button id="copy-modal-cli-btn" class="btn-mini-copy" data-copy-target="modal-cli-cmd"
+                  data-copy-label="Install command copied">copy</button>
               </div>
             </div>
 
-            <!-- Download option with clear usage instructions -->
-            <div class="install-route-download">
-              <div class="install-route-divider">
-                <span class="install-route-or">or</span>
-              </div>
-              <a href="#" id="modal-download-pkg-btn" class="btn-pill-outline btn-full-width" download>
-                <span id="modal-download-label">Download .magicext bundle</span>
-              </a>
-              <p class="download-instruction-note">
-                Standard zip archive. Unzip in Finder to inspect source code, or install offline:
+            <!-- Pane 3: Download -->
+            <div class="install-pane hidden" id="install-pane-download" role="tabpanel" aria-labelledby="tab-download">
+              <p class="install-route-hint">
+                Download the package to inspect source code or install offline:
               </p>
-              <div class="code-row code-row-tight" style="margin-top: 6px; width: 100%;">
+              <div style="margin-bottom: 10px;">
+                <a href="#" id="modal-download-pkg-btn" class="btn-pill-cream btn-full-width" download>
+                  <svg class="icon-inline" width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" style="margin-right: 6px;"><use href="assets/icons.svg#download"></use></svg>
+                  <span id="modal-download-label">Download .magicext bundle</span>
+                </a>
+              </div>
+              <div class="code-row code-row-tight">
                 <code id="modal-download-cmd">safari-magic-ext install ~/Downloads/package.magicext</code>
                 <button class="btn-mini-copy" data-copy-target="modal-download-cmd"
                   data-copy-label="Install command copied">copy</button>
@@ -303,9 +333,6 @@
               <button id="copy-modal-prompt-btn" class="btn-mini-copy">copy prompt</button>
             </div>
             <blockquote class="modal-prompt-box" id="modal-prompt"></blockquote>
-            <p class="install-route-hint">
-              Paste this into Safari's extension creator to generate your own variation.
-            </p>
           </div>
 
           <div class="modal-meta-row" id="modal-meta-row"></div>
@@ -447,7 +474,7 @@
   <!-- Toast Notification -->
   <div id="toast" class="pixel-toast hidden" role="status" aria-live="polite"></div>
 
-  <script src="app.js?v=1.4.1"></script>
+  <script src="app.js?v=1.5.0"></script>
 </body>
 
 </html>
